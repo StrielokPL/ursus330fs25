@@ -1,8 +1,7 @@
 {
-  "version": "0.0.0.2",
-  "tag": "0.0.0.2",
-  "title": "0.0.0.2 - Compatibility baseline",
+  "version": "0.0.0.3",
+  "tag": "0.0.0.3",
+  "title": "0.0.0.3 - Cleanup + runtime diagnostics",
   "prerelease": true,
-  "zipName": "FS25_UrsusC330_330M_4x2.zip",
-  "sequence": 1
+  "zipName": "FS25_UrsusC330_330M_4x2.zip"
 }
