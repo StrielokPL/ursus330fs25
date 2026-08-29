@@ -103,7 +103,13 @@ Imported source package: `FS25_UrsusC330_330M_4x2.zip`, original mod version **1
 
 Total component mass before configuration/object changes: **1104 kg**.
 
-This is far below the factory **1675 kg ready-to-work** target and must be reworked together with centre-of-mass placement, wheel masses and configuration-specific ballast. Do not simply add 571 kg to one component; the target axle split is part of the physics requirement.
+This value must **not** be treated as the complete tractor mass. The standard wheel definitions add approximately:
+- front wheels: 2 x 40 kg = **80 kg**
+- rear wheels: 2 x 232 kg = **464 kg**
+
+That gives about **1648 kg before fuel**, already very close to the factory **1675 kg ready-to-work** figure. A full 35 l diesel tank can account for roughly another 29 kg depending on the density/model used by FS25.
+
+Therefore the next mass step is **runtime measurement, not a blind component-mass increase**. The target remains **1675 kg and 635/1040 kg axle loads**, but component mass and centre of mass should only be changed after measuring `Wheel:getMass()` and actual FL/FR/RL/RR tire loads in game.
 
 ### Current engine
 Current C-330 definition uses:
@@ -149,7 +155,7 @@ The model already contains configuration-specific mass changes, but the current 
 
 1. Preserve a clean imported-source baseline in Git history.
 2. Separate **C-330** and **C-330M** physics where real specifications differ.
-3. Rebuild base mass and longitudinal CoM to hit **1675 kg and 635/1040 kg axle loads** in the chosen standard configuration.
+3. Measure runtime mass, wheel masses and FL/FR/RL/RR loads; only then adjust base CoM/mass as needed to hit **1675 kg and 635/1040 kg axle loads**.
 4. Rebuild ballast masses and verify axle-load changes after each option.
 5. Replace the C-330 engine curve with a 100 Nm / 22.4 kW physically consistent curve.
 6. Rebuild the 6F/2R gearbox around the factory speed ladder.

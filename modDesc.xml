@@ -359,10 +359,10 @@ Configurations:
             <fr>Chargement</fr>
 		</text>	
         <text name="pradnica">   
-		    <en>Sprinkler</en>    
-		    <de>Sprinkleranlage</de>   
-		    <pl>Prądownica</pl>  
-            <fr>Arrosage</fr>
+		    <en>Generator</en>    
+		    <de>Gleichstromgenerator</de>   
+		    <pl>Prądnica</pl>  
+            <fr>Dynamo</fr>
 		</text>	
         <text name="alternator">   
 		    <en>Alternator</en>    
@@ -400,6 +400,13 @@ Configurations:
 		    <pl>Kable</pl>  
             <fr>Câbles</fr>
 		</text>		
+        <text name="connectionHoses">
+            <en>Connection Hoses</en>
+            <de>Anschlussschläuche</de>
+            <pl>Przewody przyłączeniowe</pl>
+            <fr>Flexibles de raccordement</fr>
+        </text>
+
         <text name="odblaski_tyl">   
 		    <en>Rear Reflectors</en>    
 		    <de>Rückstrahler</de>   
@@ -645,8 +652,8 @@ Configurations:
 
     <brands>        
         <brand name="URSUS" title="Ursus" image="brand_ursus.dds"/>
-        <brand name="Polowe" title="Opony Szosowe" image="brand_tire2.dds"/>
-        <brand name="Szosowe" title="Opony Polowe" image="brand_tire.dds"/>
+        <brand name="Polowe" title="Opony Polowe" image="brand_tire2.dds"/>
+        <brand name="Szosowe" title="Opony Szosowe" image="brand_tire.dds"/>
     </brands>
 
 </modDesc>

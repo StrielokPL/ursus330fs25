@@ -19,8 +19,8 @@
     <File fileId="106" filename="Textures/Ursus_lamps_spec.dds"/>
     <File fileId="37" filename="Textures/addons_normal.dds"/>
     <File fileId="38" filename="Textures/addons_vmask.dds"/>
-    <File fileId="127" filename="Textures/airConnector_normal.png"/>
-    <File fileId="128" filename="Textures/airConnector_vmask.png"/>
+    <File fileId="127" filename="Textures/airConnector_normal.dds"/>
+    <File fileId="128" filename="Textures/airConnector_vmask.dds"/>
     <File fileId="132" filename="Textures/blaszka_normal.dds"/>
     <File fileId="133" filename="Textures/blaszka_specular.dds"/>
     <File fileId="52" filename="Textures/c330_diffuse.dds"/>
@@ -59,8 +59,8 @@
     <File fileId="4" filename="Textures/rim_specular.dds"/>
     <File fileId="5" filename="Textures/rustVehicleShader.xml"/>
     <File fileId="47" filename="Textures/siegra.dds"/>
-    <File fileId="86" filename="Textures/ske50Cabin_normal.png"/>
-    <File fileId="87" filename="Textures/ske50Cabin_vmask.png"/>
+    <File fileId="86" filename="Textures/ske50Cabin_normal.dds"/>
+    <File fileId="87" filename="Textures/ske50Cabin_vmask.dds"/>
     <File fileId="17" filename="Textures/tur_normal.dds"/>
     <File fileId="18" filename="Textures/tur_specular.dds"/>
     <File fileId="31" filename="Textures/vehicleShader.xml"/>

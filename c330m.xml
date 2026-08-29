@@ -429,7 +429,7 @@
     </powerTakeOffs>
 	
 	<connectionHoses>
-		<connectionHoseConfigurations title="TEST">
+		<connectionHoseConfigurations title="$l10n_connectionHoses">
 			<connectionHoseConfiguration name="$l10n_configuration_valueNo" price="0">
 				<target attacherJointIndices="1 2 3" type="airDoubleRed" node="0&gt;14|1|0">
 					<objectChange node="0&gt;14|1|1" rotationActive="165 0 0" rotationInactive="-95 0 0"/>
@@ -583,33 +583,6 @@
             </motorConfiguration>
         </motorConfigurations>
 
-<!--
-        <motorConfigurations>
-            <motorConfiguration name="C-330m" hp="31" price="0">
-                <motor torqueScale="0.138" minRpm="600" maxRpm="2200" accelerationLimit="0.5" maxForwardSpeed="27" maxBackwardSpeed="8" brakeForce="1.3" lowBrakeForceScale="0.1" dampingRateScale="0.1">
-                    <torque normRpm="0.45" torque="0.9"/>
-                    <torque normRpm="0.50" torque="0.97"/>
-                    <torque normRpm="0.59" torque="1"/>
-                    <torque normRpm="0.72" torque="1"/>
-                    <torque normRpm="0.86" torque="0.88"/>
-                    <torque normRpm="1.00" torque="0.72"/>
-                </motor>
-                <transmission autoGearChangeTime="0.3" gearChangeTime="0.4" name="$l10n_info_transmission_manual">
-                    <directionChange useGear="true" reverseGearIndex="1" changeTime="0.5"/>
-
-                    <forwardGear maxSpeed="7.7" />
-                    <forwardGear maxSpeed="10.1" />
-                    <forwardGear maxSpeed="13.5" />
-                    <forwardGear maxSpeed="15.2" />
-                    <forwardGear maxSpeed="20.2" />
-                    <forwardGear maxSpeed="27.0" />
-
-                    <backwardGear maxSpeed="5.4" />
-                    <backwardGear maxSpeed="9.4" />
-                </transmission>
-            </motorConfiguration>
-        </motorConfigurations>
--->
         <gearLevers>
             <gearLever node="0&gt;5|5|1|0" centerAxis="3" changeTime="0.3" handsOnDelay="0.25">
                 <state gear="-2" zRot="-7" xRot="-10"/>
@@ -762,23 +735,8 @@
         <interactiveControlConfigurations title="$l10n_actionIC_Animation">
             <interactiveControlConfiguration name="$l10n_actionIC_IC">
                 <interactiveControls>
-                    <!-- AIASF compatibility test: cabin door/window/roof Interactive Controls removed --><outdoorTrigger node="0&gt;10|7"/>
-                    <!-- dach -->
-                    <!-- lewe drzwi -->
-                    <!-- prawe drzwi -->
-                    <!-- lewe drzwi -->
-                    <!-- prawe drzwi -->
-                    <!-- tylnia szyba -->
-                    <!-- dach -->
-                    <!-- lewe drzwi -->
-                    <!-- dach -->
-                    <!-- lewe drzwi -->
-                    <!-- dach -->
-                    <!-- lewe drzwi -->
-                    <!-- dach -->
-                    <!-- lewe drzwi -->
-                    <!-- prawe drzwi -->
-                    <!-- tylnia szyba -->
+                    <!-- Static Cabins / AIASF compatibility: cabin door/window/roof controls removed. -->
+                    <outdoorTrigger node="0&gt;10|7"/>
                     <interactiveControl posText="$l10n_actionIC_stopMotor" negText="$l10n_actionIC_startMotor">
                         <clickPoint node="0&gt;10|1|7" size="0.03" type="INDOOR" iconType="IGNITIONKEY"/>						
                         <function name="MOTOR_START_STOPP"/>              
@@ -839,13 +797,8 @@
 			<movingTool node="0&gt;5|8">
 				<dependentPart node="0&gt;5|8|1"/>
             </movingTool>
-			<!-- 1 -->
-            <!-- 2 -->
-            <!-- 3 -->	
-            <!-- 4 -->
-            <!-- 5 -->
-            <!-- 6 -->
-            <!-- AIASF compatibility test: 18 cabin movingTools removed; cabin geometry stays static --></movingTools>
+            <!-- Static Cabins / AIASF compatibility: 18 cabin movingTools removed; cabin geometry stays static. -->
+        </movingTools>
 
         <movingParts>
 			<movingPart node="0&gt;10|0|8" referencePoint="0&gt;10|0|9|0|0|0" referenceFrame="0&gt;10|0|9|0|0|0" isActiveDirty="true" maxUpdateDistance="40" scaleZ="false"/>	
@@ -3152,7 +3105,7 @@
         <designColor9Configuration price="0" name="$l10n_Black" color="0.05 0.05 0.05"/> 
         <designColor9Configuration price="0" name="$l10n_Red" color="0.14 0.016 0.005"/>     
         <designColor9Configuration price="0" name="$l10n_Red" color="0.2 0.016 0.005"/>  
-        <designColor9Configuration price="0" name="$l10n_Yelow" color="0.2 0.09 0.02"/> 
+        <designColor9Configuration price="0" name="$l10n_Yellow" color="0.2 0.09 0.02"/> 
         <designColor9Configuration color="0.51 0.47 0.43"/>
         <designColor9Configuration color="0.46 0.37 0.32"/>
         <designColor9Configuration color="0.41 0.37 0.33"/>
@@ -3211,7 +3164,7 @@
         <designColor10Configuration price="0" name="$l10n_Black" color="0.05 0.05 0.05"/> 
         <designColor10Configuration price="0" name="$l10n_Red" color="0.14 0.016 0.005"/>     
         <designColor10Configuration price="0" name="$l10n_Red" color="0.2 0.016 0.005"/>  
-        <designColor10Configuration price="0" name="$l10n_Yelow" color="0.2 0.09 0.02"/> 
+        <designColor10Configuration price="0" name="$l10n_Yellow" color="0.2 0.09 0.02"/> 
         <designColor10Configuration color="0.51 0.47 0.43"/>
         <designColor10Configuration color="0.46 0.37 0.32"/>
         <designColor10Configuration color="0.41 0.37 0.33"/>
@@ -3363,7 +3316,7 @@
         <designColor11Configuration price="0" name="$l10n_Black" color="0.05 0.05 0.05"/> 
         <designColor11Configuration price="0" name="$l10n_Red" color="0.14 0.016 0.005"/>     
         <designColor11Configuration price="0" name="$l10n_Red" color="0.2 0.016 0.005"/>  
-        <designColor11Configuration price="0" name="$l10n_Yelow" color="0.2 0.09 0.02"/> 
+        <designColor11Configuration price="0" name="$l10n_Yellow" color="0.2 0.09 0.02"/> 
  
         <material materialSlotName="kratkasiatka_mat"/>
 	</designColor11Configurations>
@@ -3897,7 +3850,7 @@
         <rimColorConfiguration price="100" name="$l10n_Black" color="0.05 0.05 0.05"/> 
         <rimColorConfiguration price="100" name="$l10n_Red" color="0.14 0.016 0.005"/>    
         <rimColorConfiguration price="100" name="$l10n_Red" color="0.2 0.016 0.005"/> 
-        <rimColorConfiguration price="100" name="$l10n_Yelow" color="0.2 0.09 0.02"/>    
+        <rimColorConfiguration price="100" name="$l10n_Yellow" color="0.2 0.09 0.02"/>    
         <rimColorConfiguration color="0.51 0.47 0.43"/>
         <rimColorConfiguration color="0.46 0.37 0.32"/>
         <rimColorConfiguration color="0.41 0.37 0.33"/>
