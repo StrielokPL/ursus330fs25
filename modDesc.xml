@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<modDesc descVersion="100">
+    <author>StrielokPL, Speedy, Miziuu</author>
+    <version>1.1.2.0</version>
+    <title>
+        <en>Ursus C-330/330M</en>
+    </title>
+    <description>
+        <en>
+            <![CDATA[C330M The tractor has the following information:
+Base Price: 15500 $
+Power: 31,5 hp
+Top Speed: 27 kph
+
+Configurations:
+- Tires
+- Front weights
+- Cabin
+- Mudflaps
+- Front fenders
+- Wheels weights
+- Colors (engine, the color of the hood and fenders, rims, front grille)
+- Stickers (black, silver)
+
+
+]]>
+        </en>
+        <de>
+            <![CDATA[C330M Der Traktor verfügt über die folgenden Informationen.
+Grundpreis: 15500 €
+Leistung: 31,5 PS
+Höchstgeschwindigkeit: 27 km/h
+
+Configurations:
+- Reifen
+- Frontgewicht
+- Kabine
+- Schmutzfänger
+- Kotflügel vorne
+- Radgewichte
+- Farben (Motor, Motorhaube, Kotflügel, Felgen, Frontgrill)
+- Aufkleber (schwarz, silber)
+
+
+]]>
+</de>
+        <fr><![CDATA[C330M Le tracteur dispose des informations suivantes.
+Prix de base: 15500 €
+Pouvoir: 31,5 cv
+Vitesse de pointe: 27 km/h
+
+Configurations:
+- Pneus
+- Masses avant
+- Cabine
+- Garde-boues
+- Ailes avant
+- Poids des roues
+- Couleurs (moteur, couleur du capot et des ailes, jantes, calandre)
+- Autocollants (noir, argent)
+
+
+]]>
+</fr>
+    </description>
+    <iconFilename>icon_c330m.dds</iconFilename>
+    <multiplayer supported="true" />
+
+    <storeItems>
+        <storeItem xmlFilename="c330m.xml" />
+    </storeItems>
+	
+    <specializations>
+        <specialization name="moreDesignConfigs" className="MoreDesignConfigs" filename="Scripts/MoreDesignConfigs.lua"/>   
+    </specializations>
+
+	<vehicleTypes>	
+		<type name="ursus" parent="tractor" className="Vehicle" filename="$dataS/scripts/vehicles/Vehicle.lua">			
+			<specialization name="moreDesignConfigs"/>		
+		</type>	
+	</vehicleTypes>	
+
+    <!-- Original l10n block and configuration strings are retained in the imported source package. -->
+</modDesc>
