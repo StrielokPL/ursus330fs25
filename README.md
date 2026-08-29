@@ -5,9 +5,25 @@ Working repository for analysis, correction and further development of the FS25 
 ## Authors
 **StrielokPL**, Speedy, Miziuu
 
-## Current source baseline
-Imported from mod package version **1.1.2.0**. The first pass is intended to preserve the source while documenting discrepancies between the current FS25 physics and factory Ursus specifications.
+## Current development version
+**0.0.0.2 – prerelease baseline**
 
+The repository was imported from mod package version **1.1.2.0**, but the project versioning was reset for the rebuild. Version `0.0.0.2` is the first documented development baseline in this repository.
+
+### Changes already present in the imported package
+The uploaded source package already contained the previously tested **Static Cabins** compatibility fix from `Farming25fixnmix`, so the patch was **not applied again**.
+
+The fix:
+- removes 18 cabin-related `movingTool` definitions,
+- removes the corresponding Interactive Control entries,
+- removes the cabin animations `leweDrzwi`, `praweDrzwi`, `dach` and `okno`,
+- keeps all cabin configurations available as static geometry,
+- leaves only the 3 technical tractor `movingTool` definitions,
+- reduces dirty-flag pressure that previously collided with AIAutomaticSteering/ADS behaviour in multiplayer.
+
+The original compatibility patch was tested with Advanced Damage System 0.9.2.4 and AIASF debug enabled without erroneous Automatic Steering updates.
+
+## Technical baseline
 Technical reference for the C-330 rebuild: [`docs/FS25_C330_TECHNICAL_BASELINE.md`](docs/FS25_C330_TECHNICAL_BASELINE.md).
 
 ## Current priority
