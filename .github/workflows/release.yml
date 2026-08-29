@@ -1,0 +1,89 @@
+name: Build and publish mod release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.release/release.json'
+      - '.release/notes.md'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Read release configuration
+        id: cfg
+        shell: bash
+        run: |
+          VERSION=$(python3 -c 'import json; print(json.load(open(".release/release.json"))["version"])')
+          TAG=$(python3 -c 'import json; print(json.load(open(".release/release.json"))["tag"])')
+          TITLE=$(python3 -c 'import json; print(json.load(open(".release/release.json"))["title"])')
+          PRERELEASE=$(python3 -c 'import json; print(str(json.load(open(".release/release.json"))["prerelease"]).lower())')
+          ZIP_NAME=$(python3 -c 'import json; print(json.load(open(".release/release.json"))["zipName"])')
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "title=$TITLE" >> "$GITHUB_OUTPUT"
+          echo "prerelease=$PRERELEASE" >> "$GITHUB_OUTPUT"
+          echo "zip_name=$ZIP_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Verify modDesc version
+        shell: bash
+        run: |
+          MOD_VERSION=$(python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          root = ET.parse('modDesc.xml').getroot()
+          print(root.findtext('version'))
+          PY
+          )
+          if [ "$MOD_VERSION" != "${{ steps.cfg.outputs.version }}" ]; then
+            echo "modDesc.xml version ($MOD_VERSION) does not match release version (${{ steps.cfg.outputs.version }})"
+            exit 1
+          fi
+
+      - name: Build Farming Simulator mod ZIP
+        shell: bash
+        run: |
+          rm -rf build
+          mkdir -p build/mod
+          rsync -a ./ build/mod/ \
+            --exclude='.git/' \
+            --exclude='.github/' \
+            --exclude='.release/' \
+            --exclude='docs/' \
+            --exclude='README.md' \
+            --exclude='CHANGELOG.md' \
+            --exclude='build/'
+          cd build/mod
+          zip -r -9 "../${{ steps.cfg.outputs.zip_name }}" .
+
+      - name: Create or update GitHub prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          TAG='${{ steps.cfg.outputs.tag }}'
+          TITLE='${{ steps.cfg.outputs.title }}'
+          ZIP='build/${{ steps.cfg.outputs.zip_name }}'
+          PRE='${{ steps.cfg.outputs.prerelease }}'
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$ZIP" --clobber
+            gh release edit "$TAG" --title "$TITLE" --notes-file .release/notes.md
+            if [ "$PRE" = "true" ]; then
+              gh release edit "$TAG" --prerelease
+            fi
+          else
+            ARGS=("$TAG" "$ZIP" --title "$TITLE" --notes-file .release/notes.md --target "${GITHUB_SHA}")
+            if [ "$PRE" = "true" ]; then
+              ARGS+=(--prerelease)
+            fi
+            gh release create "${ARGS[@]}"
+          fi
