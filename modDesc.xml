@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="100">
     <author>StrielokPL, Speedy, Miziuu</author>
-    <version>1.1.2.0</version>
+    <version>0.0.0.2</version>
     <title>
         <en>Ursus C-330/330M</en>
     </title>
@@ -537,7 +537,7 @@ Configurations:
 		    <en>Grille New with Inscriptions</en>    
 		    <de>Neuer Kühlergrill mit Beschriftung</de>   
 		    <pl>Kratka Nowa z Napisami</pl>  
-            <fr>Nouvelle calandre avec inscriptions</fr>
+            <fr>Nouvelle calandre avec inscription</fr>
 		</text>	
         <text name="KratkaNowazNaklejka">   
 		    <en>Grille New with Sticker</en>    
