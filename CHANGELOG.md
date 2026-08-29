@@ -1,5 +1,40 @@
 # Changelog
 
+## 0.0.0.3 - diagnostic prerelease
+
+Cleanup and read-only runtime diagnostic build. **No drivetrain, mass, tyre or engine tuning is included in this version.**
+
+### Source cleanup
+- Fixed four I3D texture references that pointed to missing PNG files while the corresponding DDS assets were present.
+- Corrected `$l10n_Yelow` references to the existing `$l10n_Yellow` key.
+- Replaced the development `TEST` title on connection-hose configurations with a proper localized title.
+- Corrected generator/dynamo translations and the Polish `Prądnica` label.
+- Corrected swapped store labels for field and road tyre brands.
+- Removed the obsolete fully commented alternative motor/transmission block.
+- Compacted dead placeholder comments left by the Static Cabins patch while preserving the compatibility fix itself.
+- Corrected the technical documentation so component mass is not mistaken for total runtime vehicle mass.
+
+### Diagnostics
+- Added temporary `debug/TractorDebugKit.lua`, scoped only to `c330m.xml`.
+- Logs actual front/rear tyre loads and axle split after physics settles.
+- Logs runtime component mass/defaultMass and component center of mass.
+- Logs wheel mass, tire load/restLoad and key suspension/traction parameters.
+- Logs active vehicle configurations, motor/gear/group state and differential graph.
+- Traces real gear/group changes and flags quick A→B→A shift oscillation candidates.
+- Reads ADS `dynamicMotorLoad` only when Advanced Damage System is present; there is no hard dependency.
+
+### Explicitly unchanged
+- Component mass values and center-of-mass values.
+- Wheel radius, width, mass, friction and stiffness values.
+- Engine torque curve, RPM limits and fuel usage.
+- Gear ratios, groups and speed limits.
+- Differential topology.
+- Front/rear ballast masses.
+- Static Cabins ADS/AIASF compatibility behavior.
+
+### Test goal
+Establish the real FS25 runtime baseline before changing mass distribution, ballast, engine, gearbox, tyres or suspension. Search the game log for `[TRACTORDBG]`.
+
 ## 0.0.0.2 - prerelease
 
 Development baseline for the Ursus C-330 / C-330M FS25 rebuild.
