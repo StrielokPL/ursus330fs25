@@ -1,0 +1,28 @@
+name: One-shot diagnostic setup 0.0.0.3
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/diagnostic-setup-0003.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Enable diagnostics
+        run: python3 tools/setup_diagnostic_0003.py
+
+      - name: Commit diagnostic setup
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add modDesc.xml README.md CHANGELOG.md
+          git commit -m 'Enable read-only diagnostics for 0.0.0.3'
+          git push
