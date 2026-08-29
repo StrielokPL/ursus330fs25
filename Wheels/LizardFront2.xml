@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+  <wheel>
+    <brand>Szosowe</brand>
+    <default>
+        <physics radius="0.40" width="0.190" mass="0.0400" tireType="mud" frictionScale="2" maxLongStiffness="9" maxLatStiffness="110" maxLatStiffnessLoad="2" />
+        <tire filename="Wheels/Wheels.i3d" nodeLeft="1|3" nodeRight="1|3" maxDeformation="0.12" isCareWheel="true" tireTrackAtlasIndex="1" />
+        <innerRim filename="Wheels/Wheels.i3d" nodeLeft="1|1" nodeRight="1|2" />
+    </default>
+  </wheel>
