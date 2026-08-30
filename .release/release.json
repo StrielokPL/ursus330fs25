@@ -1,7 +1,7 @@
 {
-  "version": "0.0.4.0",
-  "tag": "0.0.4.0",
-  "title": "0.0.4.0 - C-330 dry tyre physics milestone",
-  "prerelease": false,
+  "version": "0.0.4.1",
+  "tag": "0.0.4.1",
+  "title": "0.0.4.1 - C-330 rear tyre liquid ballast prototype",
+  "prerelease": true,
   "zipName": "FS25_UrsusC330_330M_4x2.zip"
 }

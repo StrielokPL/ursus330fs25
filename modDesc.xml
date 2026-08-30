@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="100">
     <author>StrielokPL, Speedy, Miziuu</author>
-    <version>0.0.4.0</version>
+    <version>0.0.4.1</version>
     <title>
         <en>Ursus C-330/330M</en>
     </title>
@@ -66,9 +66,11 @@ Configurations:
     <iconFilename>icon_c330m.dds</iconFilename>
     <multiplayer supported="true" />
 
-    <!-- Temporary read-only tyre/suspension diagnostics for 0.0.3.1 prerelease. -->
+    <!-- 0.0.4.1 liquid-ballast prototype + temporary read-only tyre diagnostics. -->
     <extraSourceFiles>
-            <sourceFile filename="Scripts/C330TransmissionFix.lua" />
+        <sourceFile filename="Scripts/C330LiquidBallast.lua" />
+        <sourceFile filename="debug/TyreDebugKit.lua" />
+        <sourceFile filename="Scripts/C330TransmissionFix.lua" />
     </extraSourceFiles>
 
     <storeItems>
@@ -652,6 +654,12 @@ Configurations:
 			<de>Platte an der runden Vorderachse</de>
 			<pl>Blaszka Na Osi Przedniej Okrągłej</pl>
 			<fr>Plaque sur l'essieu avant rond</fr>
+		</text>
+		<text name="LiquidBallast">
+			<en>Water in rear tyres</en>
+			<pl>Woda w tylnych oponach</pl>
+			<de>Wasser in den Hinterreifen</de>
+			<fr>Eau dans les pneus arrière</fr>
 		</text>
 	</l10n>
 

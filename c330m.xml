@@ -1987,6 +1987,12 @@
 	
 	
 
+<!-- Rear tyre liquid ballast (independent of metal wheel weights). -->
+	<design24Configurations title="$l10n_LiquidBallast">
+		<design24Configuration name="$l10n_ui_no" price="0"/>
+		<design24Configuration name="$l10n_ui_yes" price="0"/>
+	</design24Configurations>
+
 <!-- Kolory Blach -->
 	<designColorConfigurations title="$l10n_Sheetcolor" price="0" useDefaultColors="false">	
     <!--Zolte-->

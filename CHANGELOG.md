@@ -1,5 +1,35 @@
 # Changelog
 
+## 0.0.4.1 - C-330 rear tyre liquid ballast prototype
+
+First functional prerelease for water ballast in the rear tyres.
+
+### Independent shop configuration
+- Adds **Water in rear tyres: No / Yes** as `design24`, independent of the existing metal wheel-weight selection.
+- The water state therefore combines with the dry wheel, Small, Big and Both metal-weight variants instead of replacing them.
+
+### Physical mass
+- Adds **132 kg per rear wheel** when enabled, for **264 kg total liquid ballast**.
+- The mass is applied to the rear wheel object before wheel physics is finalized, so it adds to any existing metal wheel mass.
+- Expected unladen/no-metal total: about **1.939 t**, with the added 264 kg on the rear axle.
+
+### Preliminary filled-tyre response
+- Dry tyre baseline remains **spring=12 / damper=22**.
+- Filled rear tyres are scaled to approximately **spring=14 / damper=26**.
+- `suspTravel=0.07` remains unchanged.
+- This is an intentionally conservative first test point, not a final water-filled tyre model.
+
+### Diagnostics
+- Temporarily restores read-only `TyreDebugKit.lua`.
+- Adds `[C330WATER]` startup/application logging.
+- Diagnostics expose `design24`, wheel mass/additional mass, spring/damper and MudSystemPhysics pressure.
+
+### Explicitly unchanged
+- Front tyre physics stay on the dry 12/22 baseline.
+- Wheel geometry, nominal radii/widths, stiffness/friction values and MudSystemPhysics pressure logic are not overwritten.
+- Base tractor mass/COM and factory metal ballast remain unchanged.
+- Engine, transmission, differential and ADS protection remain unchanged.
+
 ## 0.0.4.0 - C-330 dry tyre physics milestone
 
 Stable milestone closing the first dry-tyre spring/damper tuning phase.

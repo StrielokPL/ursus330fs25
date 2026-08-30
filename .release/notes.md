@@ -1,16 +1,20 @@
-## Ursus C-330 / C-330M 0.0.4.0
+## Ursus C-330 / C-330M 0.0.4.1
 
-**Stable dry-tyre physics milestone.**
+**First functional rear-tyre water ballast prototype.**
 
-### Selected values
-- Wheel spring **12** (runtime ~120).
-- Wheel damper **22**.
+### New independent option
+- **Water in rear tyres: No / Yes**
+- Can be combined with existing metal rear wheel weights.
+
+### Prototype physics
+- **+132 kg per rear wheel** = **+264 kg total**.
+- Dry rear tyre remains **spring 12 / damper 22**.
+- Water-filled rear tyre is approximately **spring 14 / damper 26**.
 - Suspension travel remains **0.07 m**.
 
-These values were selected from standardized obstacle tests at 10 km/h plus a single-board Vmax test at 2.40 and 1.00 bar with MudSystemPhysics. Compared with spring=12 / damper=25, damper=22 reduced the single-wheel peak on the repeatable 10 km/h route at both pressures and reduced zero-contact samples.
+The filled-tyre spring/damper values are a conservative first test point, not a final target. MudSystemPhysics pressure/radius/friction behavior is left intact.
 
-Temporary tyre diagnostics are removed from the stable package. Mass/COM, metal ballast, wheel geometry/traction, engine, transmission, differential, MudSystemPhysics behavior and ADS protection are unchanged.
+### Suggested first test
+Use basic Polowe tyres, no metal wheel weights or attachments. Compare Water **Off vs On** at settled **2.40 bar** and **1.00 bar** using the established 10 km/h obstacle route plus the single-board Vmax pass. With water On and no metal weights, static total mass should be about **1.939 t**. Send the complete `log.txt`.
 
-Next development phase: rear tyre liquid ballast with physical mass plus a dedicated filled-tyre response.
-
-<!-- release-trigger-0.0.4.0-dry-tyres -->
+Temporary `TyreDebugKit` is restored for this prerelease. Engine/transmission/ADS, base mass/COM and metal ballast are unchanged.
