@@ -28,7 +28,7 @@ jobs:
           assert s.count('spring="12"') == 40
           assert s.count('damper="22"') == 40
           assert s.count('<design24Configurations') == 1
-          assert s.count('<design24Configuration') == 2
+          assert s.count('<design24Configuration name=') == 2
           md=open('modDesc.xml', encoding='utf-8').read()
           assert '<version>0.0.4.1</version>' in md
           assert 'Scripts/C330LiquidBallast.lua' in md
