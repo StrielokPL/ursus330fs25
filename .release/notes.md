@@ -18,3 +18,5 @@ Use the unballasted standard C-330 with no attachment. Test both tyre sets. For 
 4. change to the next clearly different MS pressure and repeat.
 
 Use as many pressure steps as convenient; three or more (low / medium / high) will make the spring/damping trend much easier to identify. Send the complete `log.txt`.
+
+<!-- release-trigger-0.0.3.1-tyre-diagnostics -->
