@@ -257,7 +257,6 @@ if not C330TransmissionFix.installed then
         )
 
         if not isAutomaticC330(self)
-            or vanillaTarget == nil
             or curGear == nil
             or curGear <= 0
             or gears == nil
@@ -358,7 +357,7 @@ if not C330TransmissionFix.installed then
 
         -- Keep vanilla's useful within-range prediction, but never let it skip
         -- multiple mechanical gears in a single decision.
-        local targetGear = vanillaTarget
+        local targetGear = vanillaTarget or curGear
         if targetGear > curGear + 1 then
             targetGear = curGear + 1
         elseif targetGear < curGear - 1 then
