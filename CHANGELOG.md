@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.0.1.3 - C-330 range-boundary safety
+
+Small isolated follow-up to the 0.0.1.2 gearbox/100 Nm compatibility test. **Engine and top-gear calibration are unchanged.**
+
+### Runtime evidence from 0.0.1.2
+- The II/2 -> II/3 predicted-RPM guard works: repeated `BLOCK TOP UPSHIFT` events occurred under load and the eventual shifts happened at materially higher RPM.
+- A remaining II/1 -> I/3 request occurred at about **7.41 km/h / 1488 rpm / ADS load 0.559**. That speed is above the factory I/3 road speed (5.649 km/h at 2200 rpm), so commanding I/3 there is mechanically undesirable even if the throttle/load condition is otherwise true.
+- After a near-stop in range II, the runtime state machine could sometimes accelerate again through II/2 and II/3 before `getBestStartGear` performed a range-I reset.
+- The interrupted interval with engine RPM=0 and implausible vehicle-speed jumps was excluded from calibration decisions.
+
+### Change
+- Forward II/1 -> I/3 is now permitted only at <= **6.0 km/h**. This leaves a small governor margin above the 5.649 km/h rated I/3 speed while avoiding an over-speed range selection.
+- Automatic forward now performs a deterministic **LOW SPEED RANGE RESET** to range I at <= **0.5 km/h** if range II is still active.
+
+### Explicitly unchanged
+- S-312C 100 Nm torque curve from 0.0.1.1.
+- 0.0.1.2 II/2 -> II/3 predicted-RPM guard (1200 rpm target, load-aware).
+- Factory 6F/2R ratios, other range thresholds and reverse logic.
+- Fuel use, min/max RPM, chassis physics and C-330M.
+- ADS remains optional, filtered and read-only.
+
 ## 0.0.1.2 - S-312C / gearbox compatibility fix
 
 Small isolated transmission-controller correction based on the 0.0.1.1 100 Nm engine runtime trace. **The S-312C torque curve itself is unchanged.**

@@ -1,5 +1,5 @@
 -- Ursus C-330 FS25 automatic range controller
--- 0.0.1.2 TEST: 6F/2R range control with 100 Nm engine compatibility guards; ADS-safe.
+-- 0.0.1.3 TEST: 6F/2R range-boundary safety with 100 Nm engine; ADS-safe.
 --
 -- The C-330 range box is NOT a powershift splitter. In automatic mode the
 -- intended virtual order is:
@@ -31,6 +31,14 @@ if not C330TransmissionFix.installed then
     -- Full throttle alone must not force II/1 -> I/3 when the engine is lightly loaded.
     -- 0.0.1.1 runtime trace showed an unnecessary reduction at ~1499 rpm, load 0.335.
     local RANGE_DOWNSHIFT_ACCEL_MIN_LOAD = 0.55
+    -- Factory I/3 is 5.649 km/h at 2200 rpm. Allow a small governor margin, but
+    -- never command the mechanical II/1 -> I/3 range change above 6.0 km/h.
+    -- 6.0 km/h corresponds to ~2337 rpm in I/3, still below the ~2450 rpm
+    -- no-load governor speed from the workshop documentation.
+    local FORWARD_RANGE_DOWNSHIFT_MAX_SPEED = 6.0
+    -- getBestStartGear is not guaranteed to be called during every near-stop.
+    -- Force range I deterministically once forward speed is essentially walking pace.
+    local FORWARD_LOW_SPEED_RANGE_RESET = 0.5
 
     local RANGE_UPSHIFT_RPM = 2050
     local RANGE_UPSHIFT_MAX_LOAD = 0.55
@@ -288,6 +296,19 @@ if not C330TransmissionFix.installed then
         local accel = math.abs(tonumber(acceleratorPedal) or 0)
         local maxGear = math.min(#gears, 3)
 
+        -- 0.0.1.2 showed that a near-stop can occasionally continue in range II
+        -- without getBestStartGear resetting the box first. Do not allow the
+        -- automatic forward transmission to re-accelerate through II/2 or II/3
+        -- from walking pace: a real C-330 restarts in range I.
+        if isAutomaticForward(self)
+            and range == HIGH_RANGE
+            and speed <= FORWARD_LOW_SPEED_RANGE_RESET then
+            return setAutomaticRange(
+                self, LOW_RANGE, 1, "LOW SPEED RANGE RESET",
+                rpm, load, loadSource, false
+            )
+        end
+
         -- Reverse has one mechanical reverse gear passing through the same I/II
         -- range box: R-I ~= 1.53 km/h, R-II ~= 6.21 km/h. GIANTS previously
         -- selected range II around 1.5 km/h even at ~0.8 ADS load. Treat reverse
@@ -338,6 +359,7 @@ if not C330TransmissionFix.installed then
         if range == HIGH_RANGE
             and curGear == 1
             and speed > 0.5
+            and speed <= FORWARD_RANGE_DOWNSHIFT_MAX_SPEED
             and rpm <= RANGE_DOWNSHIFT_RPM
             and (
                 (load ~= nil and load >= RANGE_DOWNSHIFT_LOAD)
@@ -415,5 +437,5 @@ if not C330TransmissionFix.installed then
         return targetGear
     end
 
-    Logging.info("[C330TRANS] 0.0.1.2 C-330 6F/2R controller installed (100Nm compatibility guards, ADS-safe)")
+    Logging.info("[C330TRANS] 0.0.1.3 C-330 6F/2R controller installed (range-boundary safety, ADS-safe)")
 end
