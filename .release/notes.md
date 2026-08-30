@@ -19,3 +19,5 @@ Engine torque, mass/COM, ballast, tyres, suspension and the C-330M drivetrain ar
 
 ### Test
 Use the C-330 (`motor=1`). First drive unloaded through the full speed range, then repeat with the heavy trailer that previously stayed in road range. Send the complete `log.txt`; useful lines are `[TRACTORDBG][SHIFT]` and `[C330TRANS]`.
+
+<!-- release-trigger-0.0.0.4 -->
