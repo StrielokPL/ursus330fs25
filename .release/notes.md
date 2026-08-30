@@ -1,34 +1,21 @@
-## Ursus C-330 / C-330M 0.0.0.3
+## Ursus C-330 / C-330M 0.0.0.4
 
-Cleanup and **read-only runtime diagnostic** prerelease. This build intentionally does **not** tune the engine, gearbox, mass, tyres, suspension or ballast yet.
+Dedicated **C-330 gearbox test** based on the 0.0.0.3 runtime log. C-330M is intentionally unchanged.
 
-### Cleanup included
-- fixed four I3D texture references that pointed to missing PNG files while matching DDS assets are present,
-- corrected the `$l10n_Yelow` typo,
-- replaced the development `TEST` connection-hose title with a localized label,
-- corrected generator/dynamo translations including Polish `Prądnica`,
-- corrected swapped field/road tyre store labels,
-- removed the obsolete fully commented alternative drivetrain block,
-- compacted dead comments left by the Static Cabins compatibility patch without changing its behaviour,
-- corrected the mass documentation: component mass alone is not total runtime vehicle mass.
+### What changed
+- factory C-330 3x2 speed ladder: ~1.825 / 3.537 / 5.649 / 7.389 / 14.324 / 22.878 km/h,
+- factory range reduction 4.050,
+- reverse targets ~1.533 / 6.207 km/h,
+- custom forward automatic range controller,
+- explicit heavy-load II/1 -> I/3 downshift,
+- controlled I/3 -> II/1 upshift,
+- one-mechanical-step limit inside a range,
+- cooldown and load/RPM guards against range hunting,
+- optional ADS load input with native GIANTS load fallback,
+- `[C330TRANS]` logging added; `[TRACTORDBG]` remains enabled.
 
-### Runtime diagnostics
-Temporary `debug/TractorDebugKit.lua` is enabled only for `c330m.xml`. It is read-only and records lines prefixed with `[TRACTORDBG]`:
-- front/rear tyre loads and axle split,
-- runtime component mass/defaultMass and COM,
-- wheel mass, tire load/restLoad and selected suspension/traction parameters,
-- active configurations,
-- motor, gear and group state,
-- differential graph,
-- actual gear/group transitions and quick A→B→A oscillation candidates,
-- ADS `dynamicMotorLoad` when Advanced Damage System is installed; ADS is optional.
+### Not changed
+Engine torque, mass/COM, ballast, tyres, suspension and the C-330M drivetrain are unchanged.
 
-### Suggested first test
-1. Start with no attached implement.
-2. Use the basic C-330 configuration and wait at least 3 seconds after the tractor is created/loaded.
-3. Check configurations with and without front ballast and the available rear wheel-weight variants.
-4. Check C-330M as well.
-5. Drive through the gearbox in manual and automatic modes if available.
-6. Send `log.txt`; the useful lines can be found by searching for `TRACTORDBG`.
-
-The diagnostic code will be removed before a stable release.
+### Test
+Use the C-330 (`motor=1`). First drive unloaded through the full speed range, then repeat with the heavy trailer that previously stayed in road range. Send the complete `log.txt`; useful lines are `[TRACTORDBG][SHIFT]` and `[C330TRANS]`.

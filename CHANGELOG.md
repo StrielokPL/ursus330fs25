@@ -1,5 +1,39 @@
 # Changelog
 
+## 0.0.0.4 - C-330 gearbox test prerelease
+
+First dedicated transmission correction for the standard **C-330**. C-330M is deliberately unchanged in this test.
+
+### C-330 factory gearing
+- Range reduction changed from the imported `0.36` speed factor to `0.24691358`, corresponding to the factory 4.050 reduction.
+- High-range forward speeds set to **7.389 / 14.324 / 22.878 km/h**.
+- Low range therefore targets approximately **1.825 / 3.537 / 5.649 km/h**.
+- High-range reverse set to **6.207 km/h**; low reverse follows the 4.050 reduction (~1.533 km/h).
+- C-330 motor speed caps set to 22.878 km/h forward and 6.207 km/h reverse.
+
+### Automatic range controller
+- Added `Scripts/C330TransmissionFix.lua`, active only for the C-330 motor configuration in forward automatic mode.
+- GIANTS automatic group optimization is disabled for C-330 forward automatic driving.
+- Intended sequence is `I/1 -> I/2 -> I/3 -> II/1 -> II/2 -> II/3`, and the reverse order when downshifting.
+- Vanilla still decides normal shifts inside each range, but multi-gear jumps are clamped to one mechanical gear at a time.
+- Added explicit `II/1 -> I/3` load downshift before the tractor nearly stalls.
+- Added explicit `I/3 -> II/1` range upshift only after RPM recovers and load is moderate.
+- Added hysteresis/cooldowns to prevent immediate range hunting.
+- ADS `dynamicMotorLoad` is used when valid; otherwise the native GIANTS smoothed motor load is used. ADS remains optional.
+- Manual modes are unchanged. Reverse remains under GIANTS control in this first test.
+
+### Diagnostics
+- `TractorDebugKit` remains enabled.
+- New controller messages use prefix `[C330TRANS]`.
+
+### Explicitly unchanged
+- C-330 engine torque curve and fuel use.
+- C-330M drivetrain.
+- Mass/COM, ballast, tyres and suspension.
+
+### Test goal
+Verify that a heavily loaded C-330 uses range I before losing almost all road speed, and that unloaded/light-load acceleration follows the real six-step order without rapid I/II oscillation.
+
 ## 0.0.0.3 - diagnostic prerelease
 
 Cleanup and read-only runtime diagnostic build. **No drivetrain, mass, tyre or engine tuning is included in this version.**
