@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.0.2.1 - base mass / COM / axle-load diagnostic
+
+First isolated mass-analysis prerelease after stable 0.0.2.0. **No physical values are changed in this build.**
+
+### Change
+- Temporarily restored the validated read-only `TractorDebugKit` for static mass measurements.
+- Diagnostics are restricted to configuration, total mass, component mass/COM, wheel mass and settled front/rear tire loads.
+- Transmission-change tracing, periodic engine tracing and ADS-load reading are disabled for this test.
+- Snapshot settle delay increased to 3.5 s to give the suspension more time to stabilize.
+
+### Test target
+- Use the basic wheel configuration as the common baseline.
+- Record the naked/base tractor first, then cabin variants and ballast variants/combinations.
+- The log records selected configuration indices, so each spawned/reconfigured tractor can be identified from the log.
+- Primary factory target for the unballasted ready-to-work C-330: about 1675 kg total, 635 kg front / 1040 kg rear, approximately 38/62 axle split.
+
+### Explicitly unchanged
+- 0.0.2.0 production transmission controller and all gearbox behavior.
+- S-312C torque curve and engine parameters.
+- Component masses, center of mass, ballast values, wheels, tyres, suspension and differential.
+- C-330M drivetrain.
+
 ## 0.0.2.0 - stable C-330 drivetrain milestone
 
 First full stable release of the rebuilt standard C-330 drivetrain phase. **No engine or transmission behavior is changed from 0.0.1.8.**
