@@ -51,80 +51,80 @@
             <wheelConfiguration name="$l10n_BackWeights" price="0" brand="Polowe" saveId="LIZARD_DEFAULT">
                 <wheels autoRotateBackSpeed="2.3">
                     <wheel filename="Wheels/LizardFront.xml" isLeft="true" hasTireTracks="true" hasParticles="true">
-                        <physics rotSpeed="1" restLoad="0.6" repr="1&gt;1|0" driveNode="1&gt;1|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="15" damper="25" yOffset="0.0358" brakeFactor="0"/>
+                        <physics rotSpeed="1" restLoad="0.6" repr="1&gt;1|0" driveNode="1&gt;1|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="12" damper="25" yOffset="0.0358" brakeFactor="0"/>
                     </wheel>
                     <wheel filename="Wheels/LizardFront.xml" isLeft="false" hasTireTracks="true" hasParticles="true">
-                        <physics rotSpeed="1" restLoad="0.6" repr="1&gt;2|0" driveNode="1&gt;2|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="15" damper="25" yOffset="0.0358" brakeFactor="0"/>
+                        <physics rotSpeed="1" restLoad="0.6" repr="1&gt;2|0" driveNode="1&gt;2|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="12" damper="25" yOffset="0.0358" brakeFactor="0"/>
                     </wheel>
                     <wheel filename="Wheels/LizardBack.xml" isLeft="true" hasTireTracks="true" hasParticles="true">
-                        <physics rotSpeed="0" restLoad="0.5" repr="0&gt;0|1" forcePointRatio="0.2" initialCompression="20" suspTravel="0.07" spring="15" damper="25"/>
+                        <physics rotSpeed="0" restLoad="0.5" repr="0&gt;0|1" forcePointRatio="0.2" initialCompression="20" suspTravel="0.07" spring="12" damper="25"/>
                     </wheel>
                     <wheel filename="Wheels/LizardBack.xml" isLeft="false" hasTireTracks="true" hasParticles="true">
-                        <physics rotSpeed="0" restLoad="0.5" repr="0&gt;0|0" forcePointRatio="0.2" initialCompression="20" suspTravel="0.07" spring="15" damper="25"/>
+                        <physics rotSpeed="0" restLoad="0.5" repr="0&gt;0|0" forcePointRatio="0.2" initialCompression="20" suspTravel="0.07" spring="12" damper="25"/>
                     </wheel>
                 </wheels>
             </wheelConfiguration>
             <wheelConfiguration name="$l10n_Small" price="100" brand="Polowe" saveId="LIZARD_WIDE">
                 <wheels autoRotateBackSpeed="2.3">
                     <wheel filename="Wheels/LizardFront.xml" isLeft="true" hasTireTracks="true" hasParticles="true">
-                        <physics rotSpeed="1" restLoad="0.6" repr="1&gt;1|0" driveNode="1&gt;1|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="15" damper="25" yOffset="0.0358" brakeFactor="0"/>
+                        <physics rotSpeed="1" restLoad="0.6" repr="1&gt;1|0" driveNode="1&gt;1|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="12" damper="25" yOffset="0.0358" brakeFactor="0"/>
                     </wheel>
                     <wheel filename="Wheels/LizardFront.xml" isLeft="false" hasTireTracks="true" hasParticles="true">
-                        <physics rotSpeed="1" restLoad="0.6" repr="1&gt;2|0" driveNode="1&gt;2|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="15" damper="25" yOffset="0.0358" brakeFactor="0"/>
+                        <physics rotSpeed="1" restLoad="0.6" repr="1&gt;2|0" driveNode="1&gt;2|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="12" damper="25" yOffset="0.0358" brakeFactor="0"/>
                     </wheel>
                     <wheel filename="Wheels/LizardBack.xml" isLeft="true" configId="wide" hasTireTracks="true" hasParticles="true">
-                        <physics rotSpeed="0" restLoad="0.5" repr="0&gt;0|1" forcePointRatio="0.2" initialCompression="20" suspTravel="0.07" spring="15" damper="25"/>
+                        <physics rotSpeed="0" restLoad="0.5" repr="0&gt;0|1" forcePointRatio="0.2" initialCompression="20" suspTravel="0.07" spring="12" damper="25"/>
                     </wheel>
                     <wheel filename="Wheels/LizardBack.xml" isLeft="false" configId="wide" hasTireTracks="true" hasParticles="true">
-                        <physics rotSpeed="0" restLoad="0.5" repr="0&gt;0|0" forcePointRatio="0.2" initialCompression="20" suspTravel="0.07" spring="15" damper="25"/>
+                        <physics rotSpeed="0" restLoad="0.5" repr="0&gt;0|0" forcePointRatio="0.2" initialCompression="20" suspTravel="0.07" spring="12" damper="25"/>
                     </wheel>
                 </wheels>
             </wheelConfiguration>
             <wheelConfiguration name="$l10n_Big" price="100" brand="Polowe" saveId="LIZARD_WEIGHTS">
                 <wheels autoRotateBackSpeed="2.3">
                     <wheel filename="Wheels/LizardFront.xml" isLeft="true" hasTireTracks="true" hasParticles="true">
-                        <physics rotSpeed="1" restLoad="0.6" repr="1&gt;1|0" driveNode="1&gt;1|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="15" damper="25" yOffset="0.0358" brakeFactor="0"/>
+                        <physics rotSpeed="1" restLoad="0.6" repr="1&gt;1|0" driveNode="1&gt;1|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="12" damper="25" yOffset="0.0358" brakeFactor="0"/>
                     </wheel>
                     <wheel filename="Wheels/LizardFront.xml" isLeft="false" hasTireTracks="true" hasParticles="true">
-                        <physics rotSpeed="1" restLoad="0.6" repr="1&gt;2|0" driveNode="1&gt;2|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="15" damper="25" yOffset="0.0358" brakeFactor="0"/>
+                        <physics rotSpeed="1" restLoad="0.6" repr="1&gt;2|0" driveNode="1&gt;2|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="12" damper="25" yOffset="0.0358" brakeFactor="0"/>
                     </wheel>
                     <wheel filename="Wheels/LizardBack.xml" isLeft="true" configId="weight" hasTireTracks="true" hasParticles="true">
-                        <physics rotSpeed="0" restLoad="0.5" repr="0&gt;0|1" forcePointRatio="0.2" initialCompression="20" suspTravel="0.07" spring="15" damper="25"/>
+                        <physics rotSpeed="0" restLoad="0.5" repr="0&gt;0|1" forcePointRatio="0.2" initialCompression="20" suspTravel="0.07" spring="12" damper="25"/>
                     </wheel>
                     <wheel filename="Wheels/LizardBack.xml" isLeft="false" configId="weight" hasTireTracks="true" hasParticles="true">
-                        <physics rotSpeed="0" restLoad="0.5" repr="0&gt;0|0" forcePointRatio="0.2" initialCompression="20" suspTravel="0.07" spring="15" damper="25"/>
+                        <physics rotSpeed="0" restLoad="0.5" repr="0&gt;0|0" forcePointRatio="0.2" initialCompression="20" suspTravel="0.07" spring="12" damper="25"/>
                     </wheel>
                 </wheels>
             </wheelConfiguration>
             <wheelConfiguration name="$l10n_Both" price="100" brand="Polowe" saveId="LIZARD_WIDEWEIGHT">
                 <wheels autoRotateBackSpeed="2.3">
                     <wheel filename="Wheels/LizardFront.xml" isLeft="true" hasTireTracks="true" hasParticles="true">
-                        <physics rotSpeed="1" restLoad="0.6" repr="1&gt;1|0" driveNode="1&gt;1|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="15" damper="25" yOffset="0.0358" brakeFactor="0"/>
+                        <physics rotSpeed="1" restLoad="0.6" repr="1&gt;1|0" driveNode="1&gt;1|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="12" damper="25" yOffset="0.0358" brakeFactor="0"/>
                     </wheel>
                     <wheel filename="Wheels/LizardFront.xml" isLeft="false" hasTireTracks="true" hasParticles="true">
-                        <physics rotSpeed="1" restLoad="0.6" repr="1&gt;2|0" driveNode="1&gt;2|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="15" damper="25" yOffset="0.0358" brakeFactor="0"/>
+                        <physics rotSpeed="1" restLoad="0.6" repr="1&gt;2|0" driveNode="1&gt;2|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="12" damper="25" yOffset="0.0358" brakeFactor="0"/>
                     </wheel>
                     <wheel filename="Wheels/LizardBack.xml" isLeft="true" configId="wideWeight" hasTireTracks="true" hasParticles="true">
-                        <physics rotSpeed="0" restLoad="0.5" repr="0&gt;0|1" forcePointRatio="0.2" initialCompression="20" suspTravel="0.07" spring="15" damper="25"/>
+                        <physics rotSpeed="0" restLoad="0.5" repr="0&gt;0|1" forcePointRatio="0.2" initialCompression="20" suspTravel="0.07" spring="12" damper="25"/>
                     </wheel>
                     <wheel filename="Wheels/LizardBack.xml" isLeft="false" configId="wideWeight" hasTireTracks="true" hasParticles="true">
-                        <physics rotSpeed="0" restLoad="0.5" repr="0&gt;0|0" forcePointRatio="0.2" initialCompression="20" suspTravel="0.07" spring="15" damper="25"/>
+                        <physics rotSpeed="0" restLoad="0.5" repr="0&gt;0|0" forcePointRatio="0.2" initialCompression="20" suspTravel="0.07" spring="12" damper="25"/>
                     </wheel>
                 </wheels>
             </wheelConfiguration>
             <wheelConfiguration name="$l10n_Big" price="100" brand="Polowe" saveId="LIZARD_WIDEWEIGHTS">
                 <wheels autoRotateBackSpeed="2.3">
                     <wheel filename="Wheels/LizardFront.xml" isLeft="true" hasTireTracks="true" hasParticles="true">
-                        <physics rotSpeed="1" restLoad="0.6" repr="1&gt;1|0" driveNode="1&gt;1|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="15" damper="25" yOffset="0.0358" brakeFactor="0"/>
+                        <physics rotSpeed="1" restLoad="0.6" repr="1&gt;1|0" driveNode="1&gt;1|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="12" damper="25" yOffset="0.0358" brakeFactor="0"/>
                     </wheel>
                     <wheel filename="Wheels/LizardFront.xml" isLeft="false" hasTireTracks="true" hasParticles="true">
-                        <physics rotSpeed="1" restLoad="0.6" repr="1&gt;2|0" driveNode="1&gt;2|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="15" damper="25" yOffset="0.0358" brakeFactor="0"/>
+                        <physics rotSpeed="1" restLoad="0.6" repr="1&gt;2|0" driveNode="1&gt;2|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="12" damper="25" yOffset="0.0358" brakeFactor="0"/>
                     </wheel>
                     <wheel filename="Wheels/LizardBack.xml" isLeft="true" configId="wideWeight2" hasTireTracks="true" hasParticles="true">
-                        <physics rotSpeed="0" restLoad="0.5" repr="0&gt;0|1" forcePointRatio="0.2" initialCompression="20" suspTravel="0.07" spring="15" damper="25"/>
+                        <physics rotSpeed="0" restLoad="0.5" repr="0&gt;0|1" forcePointRatio="0.2" initialCompression="20" suspTravel="0.07" spring="12" damper="25"/>
                     </wheel>
                     <wheel filename="Wheels/LizardBack.xml" isLeft="false" configId="wideWeight2" hasTireTracks="true" hasParticles="true">
-                        <physics rotSpeed="0" restLoad="0.5" repr="0&gt;0|0" forcePointRatio="0.2" initialCompression="20" suspTravel="0.07" spring="15" damper="25"/>
+                        <physics rotSpeed="0" restLoad="0.5" repr="0&gt;0|0" forcePointRatio="0.2" initialCompression="20" suspTravel="0.07" spring="12" damper="25"/>
                     </wheel>
                 </wheels>
             </wheelConfiguration>			
@@ -133,80 +133,80 @@
             <wheelConfiguration name="$l10n_BackWeights" price="0" brand="Szosowe" saveId="LIZARD2_DEFAULT">
                 <wheels autoRotateBackSpeed="2.3">
                     <wheel filename="Wheels/LizardFront2.xml" isLeft="true" hasTireTracks="true" hasParticles="true">
-                        <physics rotSpeed="1" restLoad="0.6" repr="1&gt;1|0" driveNode="1&gt;1|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="15" damper="25" yOffset="0.0358" brakeFactor="0"/>
+                        <physics rotSpeed="1" restLoad="0.6" repr="1&gt;1|0" driveNode="1&gt;1|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="12" damper="25" yOffset="0.0358" brakeFactor="0"/>
                     </wheel>
                     <wheel filename="Wheels/LizardFront2.xml" isLeft="false" hasTireTracks="true" hasParticles="true">
-                        <physics rotSpeed="1" restLoad="0.6" repr="1&gt;2|0" driveNode="1&gt;2|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="15" damper="25" yOffset="0.0358" brakeFactor="0"/>
+                        <physics rotSpeed="1" restLoad="0.6" repr="1&gt;2|0" driveNode="1&gt;2|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="12" damper="25" yOffset="0.0358" brakeFactor="0"/>
                     </wheel>
                     <wheel filename="Wheels/LizardBack.xml" isLeft="true" hasTireTracks="true" hasParticles="true">
-                        <physics rotSpeed="0" restLoad="0.5" repr="0&gt;0|1" forcePointRatio="0.2" initialCompression="20" suspTravel="0.07" spring="15" damper="25"/>
+                        <physics rotSpeed="0" restLoad="0.5" repr="0&gt;0|1" forcePointRatio="0.2" initialCompression="20" suspTravel="0.07" spring="12" damper="25"/>
                     </wheel>
                     <wheel filename="Wheels/LizardBack.xml" isLeft="false" hasTireTracks="true" hasParticles="true">
-                        <physics rotSpeed="0" restLoad="0.5" repr="0&gt;0|0" forcePointRatio="0.2" initialCompression="20" suspTravel="0.07" spring="15" damper="25"/>
+                        <physics rotSpeed="0" restLoad="0.5" repr="0&gt;0|0" forcePointRatio="0.2" initialCompression="20" suspTravel="0.07" spring="12" damper="25"/>
                     </wheel>
                 </wheels>
             </wheelConfiguration>
             <wheelConfiguration name="$l10n_Small" price="100" brand="Szosowe" saveId="LIZARD2_WIDE">
                 <wheels autoRotateBackSpeed="2.3">
                     <wheel filename="Wheels/LizardFront2.xml" isLeft="true" hasTireTracks="true" hasParticles="true">
-                        <physics rotSpeed="1" restLoad="0.6" repr="1&gt;1|0" driveNode="1&gt;1|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="15" damper="25" yOffset="0.0358" brakeFactor="0"/>
+                        <physics rotSpeed="1" restLoad="0.6" repr="1&gt;1|0" driveNode="1&gt;1|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="12" damper="25" yOffset="0.0358" brakeFactor="0"/>
                     </wheel>
                     <wheel filename="Wheels/LizardFront2.xml" isLeft="false" hasTireTracks="true" hasParticles="true">
-                        <physics rotSpeed="1" restLoad="0.6" repr="1&gt;2|0" driveNode="1&gt;2|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="15" damper="25" yOffset="0.0358" brakeFactor="0"/>
+                        <physics rotSpeed="1" restLoad="0.6" repr="1&gt;2|0" driveNode="1&gt;2|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="12" damper="25" yOffset="0.0358" brakeFactor="0"/>
                     </wheel>
                     <wheel filename="Wheels/LizardBack.xml" isLeft="true" configId="wide" hasTireTracks="true" hasParticles="true">
-                        <physics rotSpeed="0" restLoad="0.5" repr="0&gt;0|1" forcePointRatio="0.2" initialCompression="20" suspTravel="0.07" spring="15" damper="25"/>
+                        <physics rotSpeed="0" restLoad="0.5" repr="0&gt;0|1" forcePointRatio="0.2" initialCompression="20" suspTravel="0.07" spring="12" damper="25"/>
                     </wheel>
                     <wheel filename="Wheels/LizardBack.xml" isLeft="false" configId="wide" hasTireTracks="true" hasParticles="true">
-                        <physics rotSpeed="0" restLoad="0.5" repr="0&gt;0|0" forcePointRatio="0.2" initialCompression="20" suspTravel="0.07" spring="15" damper="25"/>
+                        <physics rotSpeed="0" restLoad="0.5" repr="0&gt;0|0" forcePointRatio="0.2" initialCompression="20" suspTravel="0.07" spring="12" damper="25"/>
                     </wheel>
                 </wheels>
             </wheelConfiguration>
             <wheelConfiguration name="$l10n_Big" price="100" brand="Szosowe" saveId="LIZARD2_WEIGHTS">
                 <wheels autoRotateBackSpeed="2.3">
                     <wheel filename="Wheels/LizardFront2.xml" isLeft="true" hasTireTracks="true" hasParticles="true">
-                        <physics rotSpeed="1" restLoad="0.6" repr="1&gt;1|0" driveNode="1&gt;1|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="15" damper="25" yOffset="0.0358" brakeFactor="0"/>
+                        <physics rotSpeed="1" restLoad="0.6" repr="1&gt;1|0" driveNode="1&gt;1|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="12" damper="25" yOffset="0.0358" brakeFactor="0"/>
                     </wheel>
                     <wheel filename="Wheels/LizardFront2.xml" isLeft="false" hasTireTracks="true" hasParticles="true">
-                        <physics rotSpeed="1" restLoad="0.6" repr="1&gt;2|0" driveNode="1&gt;2|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="15" damper="25" yOffset="0.0358" brakeFactor="0"/>
+                        <physics rotSpeed="1" restLoad="0.6" repr="1&gt;2|0" driveNode="1&gt;2|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="12" damper="25" yOffset="0.0358" brakeFactor="0"/>
                     </wheel>
                     <wheel filename="Wheels/LizardBack.xml" isLeft="true" configId="weight" hasTireTracks="true" hasParticles="true">
-                        <physics rotSpeed="0" restLoad="0.5" repr="0&gt;0|1" forcePointRatio="0.2" initialCompression="20" suspTravel="0.07" spring="15" damper="25"/>
+                        <physics rotSpeed="0" restLoad="0.5" repr="0&gt;0|1" forcePointRatio="0.2" initialCompression="20" suspTravel="0.07" spring="12" damper="25"/>
                     </wheel>
                     <wheel filename="Wheels/LizardBack.xml" isLeft="false" configId="weight" hasTireTracks="true" hasParticles="true">
-                        <physics rotSpeed="0" restLoad="0.5" repr="0&gt;0|0" forcePointRatio="0.2" initialCompression="20" suspTravel="0.07" spring="15" damper="25"/>
+                        <physics rotSpeed="0" restLoad="0.5" repr="0&gt;0|0" forcePointRatio="0.2" initialCompression="20" suspTravel="0.07" spring="12" damper="25"/>
                     </wheel>
                 </wheels>
             </wheelConfiguration>
             <wheelConfiguration name="$l10n_Both" price="100" brand="Szosowe" saveId="LIZARD2_WIDEWEIGHT">
                 <wheels autoRotateBackSpeed="2.3">
                     <wheel filename="Wheels/LizardFront2.xml" isLeft="true" hasTireTracks="true" hasParticles="true">
-                        <physics rotSpeed="1" restLoad="0.6" repr="1&gt;1|0" driveNode="1&gt;1|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="15" damper="25" yOffset="0.0358" brakeFactor="0"/>
+                        <physics rotSpeed="1" restLoad="0.6" repr="1&gt;1|0" driveNode="1&gt;1|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="12" damper="25" yOffset="0.0358" brakeFactor="0"/>
                     </wheel>
                     <wheel filename="Wheels/LizardFront2.xml" isLeft="false" hasTireTracks="true" hasParticles="true">
-                        <physics rotSpeed="1" restLoad="0.6" repr="1&gt;2|0" driveNode="1&gt;2|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="15" damper="25" yOffset="0.0358" brakeFactor="0"/>
+                        <physics rotSpeed="1" restLoad="0.6" repr="1&gt;2|0" driveNode="1&gt;2|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="12" damper="25" yOffset="0.0358" brakeFactor="0"/>
                     </wheel>
                     <wheel filename="Wheels/LizardBack.xml" isLeft="true" configId="wideWeight" hasTireTracks="true" hasParticles="true">
-                        <physics rotSpeed="0" restLoad="0.5" repr="0&gt;0|1" forcePointRatio="0.2" initialCompression="20" suspTravel="0.07" spring="15" damper="25"/>
+                        <physics rotSpeed="0" restLoad="0.5" repr="0&gt;0|1" forcePointRatio="0.2" initialCompression="20" suspTravel="0.07" spring="12" damper="25"/>
                     </wheel>
                     <wheel filename="Wheels/LizardBack.xml" isLeft="false" configId="wideWeight" hasTireTracks="true" hasParticles="true">
-                        <physics rotSpeed="0" restLoad="0.5" repr="0&gt;0|0" forcePointRatio="0.2" initialCompression="20" suspTravel="0.07" spring="15" damper="25"/>
+                        <physics rotSpeed="0" restLoad="0.5" repr="0&gt;0|0" forcePointRatio="0.2" initialCompression="20" suspTravel="0.07" spring="12" damper="25"/>
                     </wheel>
                 </wheels>
             </wheelConfiguration>
             <wheelConfiguration name="$l10n_Big" price="100" brand="Szosowe" saveId="LIZARD2_WIDEWEIGHTS">
                 <wheels autoRotateBackSpeed="2.3">
                     <wheel filename="Wheels/LizardFront2.xml" isLeft="true" hasTireTracks="true" hasParticles="true">
-                        <physics rotSpeed="1" restLoad="0.6" repr="1&gt;1|0" driveNode="1&gt;1|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="15" damper="25" yOffset="0.0358" brakeFactor="0"/>
+                        <physics rotSpeed="1" restLoad="0.6" repr="1&gt;1|0" driveNode="1&gt;1|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="12" damper="25" yOffset="0.0358" brakeFactor="0"/>
                     </wheel>
                     <wheel filename="Wheels/LizardFront2.xml" isLeft="false" hasTireTracks="true" hasParticles="true">
-                        <physics rotSpeed="1" restLoad="0.6" repr="1&gt;2|0" driveNode="1&gt;2|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="15" damper="25" yOffset="0.0358" brakeFactor="0"/>
+                        <physics rotSpeed="1" restLoad="0.6" repr="1&gt;2|0" driveNode="1&gt;2|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="12" damper="25" yOffset="0.0358" brakeFactor="0"/>
                     </wheel>
                     <wheel filename="Wheels/LizardBack.xml" isLeft="true" configId="wideWeight2" hasTireTracks="true" hasParticles="true">
-                        <physics rotSpeed="0" restLoad="0.5" repr="0&gt;0|1" forcePointRatio="0.2" initialCompression="20" suspTravel="0.07" spring="15" damper="25"/>
+                        <physics rotSpeed="0" restLoad="0.5" repr="0&gt;0|1" forcePointRatio="0.2" initialCompression="20" suspTravel="0.07" spring="12" damper="25"/>
                     </wheel>
                     <wheel filename="Wheels/LizardBack.xml" isLeft="false" configId="wideWeight2" hasTireTracks="true" hasParticles="true">
-                        <physics rotSpeed="0" restLoad="0.5" repr="0&gt;0|0" forcePointRatio="0.2" initialCompression="20" suspTravel="0.07" spring="15" damper="25"/>
+                        <physics rotSpeed="0" restLoad="0.5" repr="0&gt;0|0" forcePointRatio="0.2" initialCompression="20" suspTravel="0.07" spring="12" damper="25"/>
                     </wheel>
                 </wheels>
             </wheelConfiguration>			

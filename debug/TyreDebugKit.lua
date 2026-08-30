@@ -1,6 +1,6 @@
 -- TyreDebugKit.lua
 -- Temporary read-only tyre/suspension diagnostics for Ursus C-330 / C-330M.
--- 0.0.3.2 suspension-travel diagnostic prerelease. Remove from the next stable release.
+-- 0.0.3.3 tyre-spring physical test prerelease. Remove from the next stable release.
 -- Log prefix: [TYREDBG]
 
 TyreDebugKit = TyreDebugKit or {}
@@ -490,5 +490,5 @@ if not TyreDebugKit.installed then
         end
     end
 
-    Logging.info("[TYREDBG] TyreDebugKit 0.0.3.2 installed; read-only suspension trace; target=%s trace=%dms detail=%dms pressureScan=%dms", table.concat(CFG.targetFileSuffixes, ","), CFG.traceIntervalMs, CFG.detailIntervalMs, CFG.pressureIntervalMs)
+    Logging.info("[TYREDBG] TyreDebugKit 0.0.3.3 installed; read-only spring-test trace; target=%s trace=%dms detail=%dms pressureScan=%dms", table.concat(CFG.targetFileSuffixes, ","), CFG.traceIntervalMs, CFG.detailIntervalMs, CFG.pressureIntervalMs)
 end

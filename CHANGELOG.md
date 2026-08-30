@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.0.3.3 - C-330 softer tyre-spring physical test
+
+First physical change in the tyre compliance stage after the 0.0.3.1/0.0.3.2 read-only diagnostics.
+
+### Runtime evidence from 0.0.3.2
+- The added board obstacles of different height and ramp steepness produced a broad and repeatable vertical-load response, so they are suitable as a practical test track.
+- `lastSuspensionLength` stayed exactly **0.0400 m on all four wheels** throughout the run even during strong load impulses; it is therefore not a usable dynamic-travel signal on this vehicle.
+- The repeated first four obstacle responses gave mean single-wheel peak load of about **0.845 t at 1.00 bar** versus **1.003 t at 2.40 bar** (about **+18.7%** at road pressure). Speeds were not identical, so this is treated as directional evidence, not a calibrated stiffness measurement.
+- A later low-pressure impact reached about **1.541 t** on one rear wheel, confirming that the existing setup can still transmit a very sharp obstacle impulse even with the MudSystemPhysics low-pressure radius state.
+- No C-330/tyre Lua errors were produced.
+
+### Isolated physical change
+- Wheel XML spring: **15 -> 12** on every existing C-330/C-330M wheel physics entry that used the common value.
+- GIANTS runtime scaling therefore changes the observed spring from approximately **150 -> 120**.
+- This is a **20% reduction** intended to increase dry tyre compliance and reduce sharp wheel-load spikes without changing damping at the same time.
+
+### Explicitly unchanged
+- `damper=25` and the runtime compression/rebound split derived from it.
+- `suspTravel=0.07`, initialCompression, forcePointRatio, wheel mass, radius, width and stiffness/traction fields.
+- MudSystemPhysics and its pressure/radius/friction behavior.
+- Stable 0.0.3.0 base mass/COM and factory metal ballast.
+- Engine, transmission controller, ADS read-only protection and differential.
+
+### Test focus
+Repeat the same board sequence at **2.40 bar** and **1.00 bar**, preferably keeping the order and approximate speeds similar to the 0.0.3.2 baseline. Subjective notes about bottoming, excessive rocking, or a noticeably softer hit are useful together with the complete log.
+
 ## 0.0.3.2 - C-330 suspension-travel diagnostic prerelease
 
 Second read-only instrumentation pass. **No physical value is changed from stable 0.0.3.0 / diagnostic 0.0.3.1.**

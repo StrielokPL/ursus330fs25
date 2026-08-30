@@ -1,17 +1,20 @@
-## Ursus C-330 / C-330M 0.0.3.2
+## Ursus C-330 / C-330M 0.0.3.3
 
-**Read-only suspension-travel diagnostic prerelease. No physical values changed.**
+**First physical tyre-compliance test after the read-only diagnostics.**
 
-0.0.3.1 showed that MudSystemPhysics already handles the 2.40/1.00 bar radius/friction layer independently of the C-330 wheel spring. This build measures the missing physical suspension/tire-compliance motion directly.
+### Change
+- Common wheel spring **15 -> 12** (**-20%**, runtime about **150 -> 120**).
+- `damper=25` and `suspTravel=0.07` stay unchanged so the spring effect can be judged in isolation.
+
+### Why
+The 0.0.3.2 multi-height/multi-ramp board route produced repeatable load impulses and showed that the current setup can still deliver very sharp wheel-load peaks. The attempted `lastSuspensionLength` signal stayed fixed at 0.0400 m and is not used for the decision.
 
 ### Test
-One basic tyre family is enough; 0.0.3.1 confirmed Polowe/Szosowe share the same runtime physics.
+1. Use the same basic Polowe wheel configuration and board sequence.
+2. Run once at **2.40 bar** after pressure settles.
+3. Run once at **1.00 bar** after pressure settles.
+4. Similar obstacle order and speed are more important than an exact speed target.
+5. Note if any obstacle causes obvious bottoming, excessive rocking, or a much softer/cleaner hit.
+6. Send the complete `log.txt`.
 
-1. Set **2.40 bar**, let it settle, drive the same three-prop route.
-2. Set **1.00 bar**, let the pressure finish changing, repeat at roughly similar speeds.
-3. Keep the stone-fire and pallet-truck hits on the **right side** as before.
-4. Send the complete `log.txt`.
-
-The log now includes pressure current/target and FL/FR/RL/RR suspension length every 50 ms plus the full GIANTS compression/rebound damper split.
-
-<!-- release-trigger-0.0.3.2-suspension-trace -->
+All engine/transmission/ADS behavior, mass/COM/ballast, tire dimensions/traction and MudSystemPhysics are unchanged.
