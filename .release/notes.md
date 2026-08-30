@@ -1,23 +1,15 @@
-## Ursus C-330 / C-330M 0.0.0.4
+## Ursus C-330 / C-330M 0.0.0.5
 
-Dedicated **C-330 gearbox test** based on the 0.0.0.3 runtime log. C-330M is intentionally unchanged.
+Second **C-330 gearbox test**, focused on ADS safety and eliminating range hunting seen in the 0.0.0.4 runtime log.
 
-### What changed
-- factory C-330 3x2 speed ladder: ~1.825 / 3.537 / 5.649 / 7.389 / 14.324 / 22.878 km/h,
-- factory range reduction 4.050,
-- reverse targets ~1.533 / 6.207 km/h,
-- custom forward automatic range controller,
-- explicit heavy-load II/1 -> I/3 downshift,
-- controlled I/3 -> II/1 upshift,
-- one-mechanical-step limit inside a range,
-- cooldown and load/RPM guards against range hunting,
-- optional ADS load input with native GIANTS load fallback,
-- `[C330TRANS]` logging added; `[TRACTORDBG]` remains enabled.
-
-### Not changed
-Engine torque, mass/COM, ballast, tyres, suspension and the C-330M drivetrain are unchanged.
+### Changes
+- keeps factory C-330 gearing and successful `II/1 -> I/3` heavy-load reduction,
+- `I/3 -> II/1` now requires >=2050 rpm, <=0.55 load and 800 ms of sustained recovery,
+- post-downshift recovery hold increased to 2.5 s,
+- range cooldown increased to 0.8 s,
+- ADS `dynamicMotorLoad` is strictly read-only and accepted only when approximately within 0..1,
+- invalid/negative ADS shift samples fall back to native GIANTS smoothed load,
+- Static Cabins / dirty-flag compatibility protection remains unchanged.
 
 ### Test
-Use the C-330 (`motor=1`). First drive unloaded through the full speed range, then repeat with the heavy trailer that previously stayed in road range. Send the complete `log.txt`; useful lines are `[TRACTORDBG][SHIFT]` and `[C330TRANS]`.
-
-<!-- release-trigger-0.0.0.4 -->
+Use **C-330 (motor=1)**. Test unloaded acceleration, then the same heavy trailer. The key check is whether it now stays in range I while the load remains high instead of oscillating around `I/3 <-> II/1`. Send the complete `log.txt`.

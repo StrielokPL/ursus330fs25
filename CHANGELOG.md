@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.0.0.5 - ADS-safe gearbox hysteresis test
+
+Follow-up to the first real C-330 0.0.0.4 runtime test. Factory ratios are unchanged.
+
+### Automatic range controller
+- Kept the successful heavy-load `II/1 -> I/3` downshift behavior.
+- Raised `I/3 -> II/1` recovery RPM from 1950 to **2050 rpm**.
+- Reduced maximum load for range upshift from 0.72 to **0.55**.
+- Added **800 ms sustained recovery** requirement before leaving range I.
+- Increased range-change cooldown from 650 to **800 ms**.
+- Increased post-downshift recovery hold from 1800 to **2500 ms**.
+- Goal: prevent repeated `I/3 <-> II/1` hunting with a heavy trailer while still allowing a clean road-range transition when unloaded.
+
+### ADS protection
+- ADS remains optional and read-only; the tractor mod never writes to ADS state.
+- `dynamicMotorLoad` is accepted only as a valid approximately 0..1 sample (0..1.05 tolerance, clamped to 1.0).
+- Negative shift sentinels and out-of-range ADS values are ignored and the controller falls back to native GIANTS smoothed motor load.
+- Reduced range hunting also reduces artificial rapid load/shift cycling presented to ADS.
+- Existing Static Cabins / dirty-flag protection remains unchanged.
+
+### Explicitly unchanged
+- Factory C-330 ratios introduced in 0.0.0.4.
+- Engine torque/fuel model.
+- C-330M drivetrain.
+- Mass/COM, ballast, tyres and suspension.
+
 ## 0.0.0.4 - C-330 gearbox test prerelease
 
 First dedicated transmission correction for the standard **C-330**. C-330M is deliberately unchanged in this test.

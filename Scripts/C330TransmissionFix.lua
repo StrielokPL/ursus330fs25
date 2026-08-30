@@ -1,5 +1,5 @@
 -- Ursus C-330 FS25 automatic range controller
--- 0.0.0.4 TEST: factory 3-speed main gearbox x 2 mechanical ranges.
+-- 0.0.0.5 TEST: factory 3-speed main gearbox x 2 mechanical ranges; ADS-safe hysteresis.
 --
 -- The C-330 range box is NOT a powershift splitter. In automatic mode the
 -- intended virtual order is:
@@ -29,14 +29,15 @@ if not C330TransmissionFix.installed then
     local RANGE_DOWNSHIFT_LOAD = 0.75
     local RANGE_DOWNSHIFT_ACCEL = 0.85
 
-    local RANGE_UPSHIFT_RPM = 1950
-    local RANGE_UPSHIFT_MAX_LOAD = 0.72
+    local RANGE_UPSHIFT_RPM = 2050
+    local RANGE_UPSHIFT_MAX_LOAD = 0.55
+    local RANGE_UPSHIFT_STABLE_MS = 800
 
     local NORMAL_UPSHIFT_GUARD_LOAD = 0.80
     local NORMAL_UPSHIFT_GUARD_RPM = 1750
 
-    local RANGE_CHANGE_COOLDOWN_MS = 650
-    local LOAD_RECOVERY_HOLD_MS = 1800
+    local RANGE_CHANGE_COOLDOWN_MS = 800
+    local LOAD_RECOVERY_HOLD_MS = 2500
     local LOG_COOLDOWN_MS = 1200
 
     local function endsWith(value, suffix)
@@ -139,8 +140,12 @@ if not C330TransmissionFix.installed then
 
         -- ADS briefly reports negative values around shifts. Treat those as an
         -- unavailable sample and fall back to the native GIANTS load instead.
-        if adsLoad ~= nil and adsLoad >= 0 then
-            return math.clamp(adsLoad, 0, 1.5), "ADS"
+        -- ADS dynamicMotorLoad is treated as a read-only 0..1 signal. Values
+        -- outside that range (including the negative shift sentinels visible in
+        -- runtime logs) are never used for a shift decision. A tiny numerical
+        -- tolerance above 1.0 is accepted and clamped.
+        if adsLoad ~= nil and adsLoad >= 0 and adsLoad <= 1.05 then
+            return math.clamp(adsLoad, 0, 1.0), "ADS"
         end
 
         if motor ~= nil and motor.getSmoothLoadPercentage ~= nil then
@@ -184,6 +189,7 @@ if not C330TransmissionFix.installed then
 
         local now = g_time or 0
         motor.c330FixRangeCooldownUntil = now + RANGE_CHANGE_COOLDOWN_MS
+        motor.c330FixRangeRecoverySince = nil
         if recoveryHold then
             motor.c330FixUpshiftHoldUntil = now + LOAD_RECOVERY_HOLD_MS
         end
@@ -259,18 +265,28 @@ if not C330TransmissionFix.installed then
             )
         end
 
-        -- Crossing the other boundary is I/3 -> II/1. Do it only when the engine
-        -- is genuinely ready; a load-recovery hold prevents an immediate undo of
-        -- the protective downshift above.
-        if range == LOW_RANGE
+        -- Crossing the other boundary is I/3 -> II/1. The 0.0.0.4 log showed
+        -- that a single recovered sample was not enough: under a heavy trailer the
+        -- tractor could upshift and request I/3 again roughly a second later.
+        -- Require sustained recovery before leaving range I. This also limits
+        -- artificial shift cycling seen by ADS.
+        local rangeRecoveryReady = range == LOW_RANGE
             and curGear == maxGear
             and rpm >= RANGE_UPSHIFT_RPM
             and (load == nil or load <= RANGE_UPSHIFT_MAX_LOAD)
-            and (self.c330FixUpshiftHoldUntil == nil or now >= self.c330FixUpshiftHoldUntil) then
-            return setAutomaticRange(
-                self, HIGH_RANGE, 1, "RANGE UP",
-                rpm, load, loadSource, false
-            )
+            and (self.c330FixUpshiftHoldUntil == nil or now >= self.c330FixUpshiftHoldUntil)
+
+        if rangeRecoveryReady then
+            if self.c330FixRangeRecoverySince == nil then
+                self.c330FixRangeRecoverySince = now
+            elseif now - self.c330FixRangeRecoverySince >= RANGE_UPSHIFT_STABLE_MS then
+                return setAutomaticRange(
+                    self, HIGH_RANGE, 1, "RANGE UP",
+                    rpm, load, loadSource, false
+                )
+            end
+        else
+            self.c330FixRangeRecoverySince = nil
         end
 
         -- Keep vanilla's useful within-range prediction, but never let it skip
@@ -299,5 +315,5 @@ if not C330TransmissionFix.installed then
         return targetGear
     end
 
-    Logging.info("[C330TRANS] 0.0.0.4 C-330 3x2 range controller installed")
+    Logging.info("[C330TRANS] 0.0.0.5 C-330 3x2 range controller installed (ADS-safe hysteresis)")
 end
