@@ -16,3 +16,5 @@ Temporary `TractorDebugKit` mass diagnostics are removed. The production 0.0.2.0
 
 ### Next development stage
 Tyre spring/deformation/damping calibration. Liquid ballast will be modeled afterward as a separate rear-tyre state with both added liquid mass and altered tyre compliance/damping, rather than as mass alone.
+
+<!-- release-trigger-0.0.3.0-mass-stable -->
