@@ -1,5 +1,5 @@
 -- Ursus C-330 FS25 automatic range controller
--- 0.0.1.4 TEST: mass-aware forward start gear with 6F/2R range safety; ADS-safe.
+-- 0.0.1.5 TEST: high-load top-gear guard with mass-aware 6F/2R control; ADS-safe.
 --
 -- The C-330 range box is NOT a powershift splitter. In automatic mode the
 -- intended virtual order is:
@@ -64,6 +64,13 @@ if not C330TransmissionFix.installed then
     local TOP_GEAR_POSTSHIFT_RPM_RATIO = 14.324 / 22.878
     local TOP_GEAR_POSTSHIFT_MIN_RPM = 1200
     local TOP_GEAR_PREDICTION_GUARD_MIN_LOAD = 0.55
+    -- 0.0.1.4 hill traces showed that the ratio-only prediction is too optimistic
+    -- while the tractor is pulling hard. Examples: 1928 rpm / 0.804 load -> ~1065 rpm,
+    -- 1976 / 0.878 -> ~974 rpm and 2081 / 0.840 -> ~1167 rpm after II/3 engaged.
+    -- A 2137 rpm / 0.822 shift recovered at ~1550 rpm, so keep II/2 below 2100 rpm
+    -- whenever the current load is already at or above 0.80.
+    local TOP_GEAR_HIGH_LOAD = 0.80
+    local TOP_GEAR_HIGH_LOAD_MIN_RPM = 2100
 
     local RANGE_CHANGE_COOLDOWN_MS = 800
     local LOAD_RECOVERY_HOLD_MS = 2500
@@ -474,6 +481,16 @@ if not C330TransmissionFix.installed then
             and targetGear == 3
             and load ~= nil
             and load >= TOP_GEAR_PREDICTION_GUARD_MIN_LOAD then
+            -- On a real climb the vehicle can lose appreciable road speed during
+            -- the 0.4 s gear change, so a static ratio prediction alone can still
+            -- allow II/3 to land below the useful engine band. Under heavy load,
+            -- require the engine to be essentially at the top of II/2 first.
+            if load >= TOP_GEAR_HIGH_LOAD and rpm < TOP_GEAR_HIGH_LOAD_MIN_RPM then
+                logDecision(self, "BLOCK TOP UPSHIFT HIGH LOAD", curGear, range, curGear, range, rpm, load, loadSource)
+                self.autoGearChangeTimer = math.max(self.autoGearChangeTime or 0, 250)
+                return curGear
+            end
+
             local predictedRpm = rpm * TOP_GEAR_POSTSHIFT_RPM_RATIO
             if predictedRpm < TOP_GEAR_POSTSHIFT_MIN_RPM then
                 logDecision(self, "BLOCK TOP UPSHIFT", curGear, range, curGear, range, rpm, load, loadSource)
@@ -497,5 +514,5 @@ if not C330TransmissionFix.installed then
         return targetGear
     end
 
-    Logging.info("[C330TRANS] 0.0.1.4 C-330 6F/2R controller installed (mass-aware start gear, range safety, ADS-safe)")
+    Logging.info("[C330TRANS] 0.0.1.5 C-330 6F/2R controller installed (high-load top-gear guard, mass-aware start, ADS-safe)")
 end
