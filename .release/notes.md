@@ -1,22 +1,15 @@
-## Ursus C-330 / C-330M 0.0.3.1
+## Ursus C-330 / C-330M 0.0.3.2
 
-**Read-only tyre / MudSystemPhysics pressure diagnostic prerelease.** No physical values are changed from stable 0.0.3.0.
+**Read-only suspension-travel diagnostic prerelease. No physical values changed.**
 
-### What this build records
-- wheel configuration and mass context,
-- FL/FR/RL/RR tire load plus front/rear totals at 100 ms resolution,
-- wheel vertical movement relative to the tractor,
-- runtime spring, damper, suspension travel/compression candidates, radius, stiffness and friction every 500 ms,
-- visual maxDeformation separately,
-- pressure-like runtime fields from MudSystemPhysics/tire/wheel specializations every 250 ms and whenever the detected state changes.
+0.0.3.1 showed that MudSystemPhysics already handles the 2.40/1.00 bar radius/friction layer independently of the C-330 wheel spring. This build measures the missing physical suspension/tire-compliance motion directly.
 
-### Test plan
-Use the unballasted standard C-330 with no attachment. Test both tyre sets. For each set:
-1. let the tractor settle at the first MS pressure;
-2. keep it stationary for a few seconds;
-3. drive the same short route / bump or rough patch;
-4. change to the next clearly different MS pressure and repeat.
+### Test
+One basic tyre family is enough; 0.0.3.1 confirmed Polowe/Szosowe share the same runtime physics.
 
-Use as many pressure steps as convenient; three or more (low / medium / high) will make the spring/damping trend much easier to identify. Send the complete `log.txt`.
+1. Set **2.40 bar**, let it settle, drive the same three-prop route.
+2. Set **1.00 bar**, let the pressure finish changing, repeat at roughly similar speeds.
+3. Keep the stone-fire and pallet-truck hits on the **right side** as before.
+4. Send the complete `log.txt`.
 
-<!-- release-trigger-0.0.3.1-tyre-diagnostics -->
+The log now includes pressure current/target and FL/FR/RL/RR suspension length every 50 ms plus the full GIANTS compression/rebound damper split.

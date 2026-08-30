@@ -1,5 +1,34 @@
 # Changelog
 
+## 0.0.3.2 - C-330 suspension-travel diagnostic prerelease
+
+Second read-only instrumentation pass. **No physical value is changed from stable 0.0.3.0 / diagnostic 0.0.3.1.**
+
+### What 0.0.3.1 proved
+- MudSystemPhysics pressure switching is active and persisted: road **2.40 bar**, field **1.00 bar**.
+- At 2.40 bar the runtime physics radius settles at about **0.3892 m front / 0.6692 m rear**.
+- At 1.00 bar it settles at about **0.3760 m front / 0.6392 m rear**, i.e. the MS 6% minimum-radius clamp is reached.
+- Pressure changes radius progressively; the C-330 wheel `spring` remains **150 runtime** throughout.
+- Runtime discovery exposed `wheel.lastSuspensionLength` plus split compression/rebound damper fields that the first detail logger did not sample dynamically.
+- `wheel=1` (Polowe basic) and `wheel=6` (Szosowe basic) showed the same runtime physical values, so further suspension tests only need one basic tyre family.
+- Right-side obstacle hits produced large transient load transfer and occasional zero tire load on the opposite wheel, proving the current setup can enter a real unload/rebound phase.
+
+### Diagnostic refinement
+- High-rate trace interval **100 -> 50 ms**.
+- Trace now records direct MudSystemPhysics current/target pressure when the public system API is present.
+- Trace now records FL/FR/RL/RR `lastSuspensionLength` independently.
+- Detailed wheel lines now expose `radiusOriginal`, pressure-requested radius, `springMultiplier`, and GIANTS split compression/rebound damper values and thresholds.
+- Legacy pressure-field scanning remains as a nil-safe fallback if MudSystemPhysics is absent or changes its API.
+
+### Test focus
+Use one basic tyre family only. Compare **2.40 bar** and **1.00 bar** over the same board-stack / stone-fire / pallet-truck route. For the one-sided obstacles keep using the right wheels. Similar approach speed is more important than additional tyre configurations.
+
+### Explicitly unchanged
+- Base mass/COM and factory metal ballast.
+- Wheel XML `spring=15`, `damper=25`, `suspTravel=0.07`, initialCompression, radius/width/stiffness/friction.
+- MudSystemPhysics itself.
+- Engine, transmission controller, ADS protection and differential.
+
 ## 0.0.3.1 - C-330 tyre / pressure diagnostic prerelease
 
 Read-only instrumentation build starting the tyre spring/deformation/damping stage after stable 0.0.3.0. **No tyre, suspension, mass, drivetrain or traction value is changed in this build.**

@@ -1,6 +1,6 @@
 -- TyreDebugKit.lua
 -- Temporary read-only tyre/suspension diagnostics for Ursus C-330 / C-330M.
--- 0.0.3.1 diagnostic prerelease. Remove from the next stable release.
+-- 0.0.3.2 suspension-travel diagnostic prerelease. Remove from the next stable release.
 -- Log prefix: [TYREDBG]
 
 TyreDebugKit = TyreDebugKit or {}
@@ -16,7 +16,7 @@ if not TyreDebugKit.installed then
         frontWheelIndices = {1, 2},
         rearWheelIndices = {3, 4},
         settleDelayMs = 2500,
-        traceIntervalMs = 100,
+        traceIntervalMs = 50,
         detailIntervalMs = 500,
         pressureIntervalMs = 250
     }
@@ -244,7 +244,32 @@ if not TyreDebugKit.installed then
         return table.concat(fields, "|")
     end
 
+    local function getMudSystemPressure(vehicle)
+        local system = rawget(_G, "TirePressureSystem")
+        if system ~= nil and system.getVehicleWheelPressureAverage ~= nil then
+            local ok, current, target, count = pcall(system.getVehicleWheelPressureAverage, system, vehicle)
+            if ok then
+                return tonumber(current), tonumber(target), tonumber(count)
+            end
+        end
+        return nil, nil, nil
+    end
+
     local function logPressureState(vehicle, force)
+        local current, target, count = getMudSystemPressure(vehicle)
+        if current ~= nil and target ~= nil then
+            local signature = string.format("direct:%.2f:%.2f:%s", current, target, tostring(count or 0))
+            if not force and vehicle.tyreDbgPressureSignature == signature then
+                return
+            end
+            vehicle.tyreDbgPressureSignature = signature
+            Logging.info(
+                "[TYREDBG][PRESSURE] current=%.3f target=%.3f wheels=%s source=TirePressureSystem",
+                current, target, tostring(count or 0)
+            )
+            return
+        end
+
         local fields = collectPressureFields(vehicle)
         local signature = pressureSignature(fields)
 
@@ -254,11 +279,11 @@ if not TyreDebugKit.installed then
         vehicle.tyreDbgPressureSignature = signature
 
         if #fields == 0 then
-            Logging.info("[TYREDBG][PRESSURE] no pressure-like runtime fields discovered; MS HUD setting must be correlated with effective wheel physics below")
+            Logging.info("[TYREDBG][PRESSURE] no pressure-like runtime fields discovered; MS unavailable or not exposing pressure state")
             return
         end
 
-        Logging.info("[TYREDBG][PRESSURE] %s", table.concat(fields, " ; "))
+        Logging.info("[TYREDBG][PRESSURE] fallback %s", table.concat(fields, " ; "))
     end
 
     local function scalarDiscoveryLine(wheel, index)
@@ -301,6 +326,7 @@ if not TyreDebugKit.installed then
             wheel.compression
         )
         local suspensionLength = firstValue(
+            wheel.lastSuspensionLength,
             physics.suspensionLength,
             physics.suspLength,
             wheel.suspensionLength,
@@ -308,7 +334,7 @@ if not TyreDebugKit.installed then
         )
 
         Logging.info(
-            "[TYREDBG][WHEEL] axle=%s index=%d cfg=%s xml=%s load=%s rest=%s ratio=%s wheelMass=%s addMass=%s physicsMass=%s radiusWheel=%s radiusPhysics=%s width=%s maxDef=%s suspTravel=%s compression=%s suspLength=%s spring=%s damper=%s initialCompression=%s forcePointRatio=%s maxLong=%s maxLat=%s maxLatLoad=%s friction=%s localXYZ=%s/%s/%s",
+            "[TYREDBG][WHEEL] axle=%s index=%d cfg=%s xml=%s load=%s rest=%s ratio=%s wheelMass=%s addMass=%s physicsMass=%s radiusWheel=%s radiusPhysics=%s radiusOriginal=%s tpRadius=%s width=%s maxDef=%s suspTravel=%s compression=%s suspLength=%s spring=%s springMul=%s damperCompLS=%s damperCompHS=%s damperCompThr=%s damperRelaxLS=%s damperRelaxHS=%s damperRelaxThr=%s initialCompression=%s forcePointRatio=%s maxLong=%s maxLat=%s maxLatLoad=%s friction=%s localXYZ=%s/%s/%s",
             axle,
             index,
             tostring(getConfig(vehicle, "wheel")),
@@ -321,13 +347,21 @@ if not TyreDebugKit.installed then
             fmt(physics.mass, 3),
             fmt(wheel.radius, 4),
             fmt(physics.radius, 4),
+            fmt(physics.radiusOriginal, 4),
+            fmt(physics.__tpDesiredRadius, 4),
             fmt(firstValue(wheel.width, physics.width), 4),
             fmt(getVisualMaxDeformation(wheel), 4),
             fmt(physics.suspTravel, 4),
             fmt(compression, 4),
             fmt(suspensionLength, 4),
             fmt(physics.spring, 3),
-            fmt(physics.damper, 3),
+            fmt(physics.springMultiplier, 3),
+            fmt(physics.damperCompressionLowSpeed, 3),
+            fmt(physics.damperCompressionHighSpeed, 3),
+            fmt(physics.damperCompressionLowSpeedThreshold, 4),
+            fmt(physics.damperRelaxationLowSpeed, 3),
+            fmt(physics.damperRelaxationHighSpeed, 3),
+            fmt(physics.damperRelaxationLowSpeedThreshold, 4),
             fmt(physics.initialCompression, 3),
             fmt(physics.forcePointRatio, 3),
             fmt(physics.maxLongStiffness, 3),
@@ -373,14 +407,21 @@ if not TyreDebugKit.installed then
         local ry1, ry2 = getWheelY(vehicle, 3), getWheelY(vehicle, 4)
         local frontY = fy1 ~= nil and fy2 ~= nil and (fy1 + fy2) * 0.5 or nil
         local rearY = ry1 ~= nil and ry2 ~= nil and (ry1 + ry2) * 0.5 or nil
+        local w1, w2, w3, w4 = getWheel(vehicle, 1), getWheel(vehicle, 2), getWheel(vehicle, 3), getWheel(vehicle, 4)
+        local pCurrent, pTarget = getMudSystemPressure(vehicle)
 
         Logging.info(
-            "[TYREDBG][TRACE] t=%d wheelCfg=%s speed=%s FL=%s FR=%s RL=%s RR=%s front=%s rear=%s frontY=%s rearY=%s",
+            "[TYREDBG][TRACE] t=%d wheelCfg=%s speed=%s p=%s pTarget=%s FL=%s FR=%s RL=%s RR=%s front=%s rear=%s FLs=%s FRs=%s RLs=%s RRs=%s frontY=%s rearY=%s",
             g_time or 0,
             tostring(getConfig(vehicle, "wheel")),
             fmt(getSpeed(vehicle), 2),
+            fmt(pCurrent, 3), fmt(pTarget, 3),
             fmt(fl, 3), fmt(fr, 3), fmt(rl, 3), fmt(rr, 3),
             fmt(fl + fr, 3), fmt(rl + rr, 3),
+            fmt(w1 ~= nil and w1.lastSuspensionLength or nil, 4),
+            fmt(w2 ~= nil and w2.lastSuspensionLength or nil, 4),
+            fmt(w3 ~= nil and w3.lastSuspensionLength or nil, 4),
+            fmt(w4 ~= nil and w4.lastSuspensionLength or nil, 4),
             fmt(frontY, 4), fmt(rearY, 4)
         )
     end
@@ -449,5 +490,5 @@ if not TyreDebugKit.installed then
         end
     end
 
-    Logging.info("[TYREDBG] TyreDebugKit 0.0.3.1 installed; read-only; target=%s trace=%dms detail=%dms pressureScan=%dms", table.concat(CFG.targetFileSuffixes, ","), CFG.traceIntervalMs, CFG.detailIntervalMs, CFG.pressureIntervalMs)
+    Logging.info("[TYREDBG] TyreDebugKit 0.0.3.2 installed; read-only suspension trace; target=%s trace=%dms detail=%dms pressureScan=%dms", table.concat(CFG.targetFileSuffixes, ","), CFG.traceIntervalMs, CFG.detailIntervalMs, CFG.pressureIntervalMs)
 end
