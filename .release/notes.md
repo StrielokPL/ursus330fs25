@@ -15,3 +15,5 @@ Mass-aware starting, range-boundary logic, reverse controller, 100 Nm S-312C cur
 
 ### Test focus
 Repeat one pass without a trailer and one with the same trailer. With the trailer, expect `BLOCK TOP UPSHIFT HEAVY SET` and/or `BLOCK TOP UPSHIFT STABILIZE` until load has stayed below 0.70 for 600 ms. Check that II/3 no longer lands near 1100-1250 rpm under ~0.85-0.90 load. Send the complete `log.txt`.
+
+<!-- release-trigger-0.0.1.7 -->
