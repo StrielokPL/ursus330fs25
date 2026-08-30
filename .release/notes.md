@@ -20,3 +20,5 @@ The calculated target with a full tank is approximately **1675 kg and 635/1040 k
 Use basic wheels, no ballast and preferably the simplest/no-cabin configuration first. Leave the tractor stationary on level ground for at least 4-5 seconds. One clean base snapshot is enough to judge the correction; additional cabin/ballast snapshots are welcome but not required for this iteration.
 
 Transmission, engine, ADS behavior, tyres and ballast masses are unchanged.
+
+<!-- release-trigger-0.0.2.2-mass-com -->
