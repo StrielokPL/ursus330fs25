@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.0.1.0 - C-330 gearbox milestone
+
+Milestone release closing the dedicated standard C-330 transmission phase. **No gearbox code, ratios or shift thresholds are changed from 0.0.0.7.**
+
+### Runtime validation of 0.0.0.7
+- C-330 automatic range control covered the complete 6F/2R layout.
+- All recorded I/II range changes were attributed to `C330TRANS`; no remaining `EXTERNAL/GIANTS` group changes were observed in the test.
+- Forward `I/3 -> II/1` transitions remained stable at high RPM and moderate/low load.
+- Reverse `R-I -> R-II` occurred only after R-I reached roughly 1.53 km/h at about 2170-2200 rpm and low ADS load (~0.30), instead of the earlier GIANTS high-load upshift.
+- No `SHIFT_OSCILLATION`, C-330 Lua error, ADS error or controller error was observed.
+- Active `R-II -> R-I` load reduction was not forced in the final runtime trace, but start/reset handling reliably returned to range I and no reverse hunting was observed.
+
+### ADS / compatibility status
+- ADS remains optional and strictly read-only.
+- Invalid/negative ADS samples are rejected and fall back to native GIANTS smoothed load.
+- Static Cabins / dirty-flag protection remains unchanged.
+
+### Next subsystem
+- Begin isolated S-312C engine calibration.
+- Imported peak torque (~138 Nm) and fuel-use model remain untouched in this milestone and are the next tuning target.
+
+### Explicitly unchanged
+- `Scripts/C330TransmissionFix.lua` behavior from 0.0.0.7.
+- C-330M drivetrain.
+- Mass/COM, ballast, tyres and suspension.
+
 ## 0.0.0.7 - full C-330 6F/2R automatic gearbox test
 
 Completes the automatic range controller after 0.0.0.6 proved that remaining external I/II changes were GIANTS reverse/start behavior. Factory ratios and established forward thresholds are unchanged.
