@@ -11,3 +11,5 @@ The 100 Nm S-312C curve, the 0.0.1.2 top-gear predicted-RPM guard, gearbox ratio
 
 ### Test focus
 Repeat loaded acceleration/deceleration with C-330 motor=1. Confirm that II/1 no longer changes to I/3 above 6.0 km/h and that a near-stop in range II produces `LOW SPEED RANGE RESET` before re-acceleration. The existing `BLOCK TOP UPSHIFT` behavior should remain unchanged. Send the complete `log.txt`.
+
+<!-- release-trigger-0.0.1.3 -->
