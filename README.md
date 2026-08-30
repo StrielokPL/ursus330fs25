@@ -6,7 +6,7 @@ Working repository for analysis, correction and further development of the FS25 
 **StrielokPL**, Speedy, Miziuu
 
 ## Current development version
-**0.0.3.5 – C-330 damper=22 tyre test prerelease**
+**0.0.4.0 – C-330 dry tyre physics milestone**
 
 The repository was imported from mod package version **1.1.2.0**, but the project versioning was reset for the rebuild. Version `0.0.0.2` is the first documented development baseline in this repository.
 

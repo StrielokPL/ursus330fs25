@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.0.4.0 - C-330 dry tyre physics milestone
+
+Stable milestone closing the first dry-tyre spring/damper tuning phase.
+
+### Selected dry-tyre baseline
+- Common wheel spring: **12** (runtime ~120), selected after standardized A/B against the original spring 15.
+- Common wheel damper: **22**, selected after direct comparison against damper 25 on the spring=12 baseline.
+- `suspTravel=0.07` unchanged.
+
+### Runtime validation
+- Standardized route: board set + pallet truck + campfire at cruise control 10 km/h; single board at Vmax.
+- Tested at settled 2.40 bar and 1.00 bar using MudSystemPhysics.
+- Damper 22 reduced the maximum single-wheel load on the 10 km/h route at both pressures and reduced zero-contact samples compared with damper 25.
+- No C-330 errors, Lua call stacks or transmission oscillation markers were observed in the validation log.
+
+### Diagnostic cleanup
+- Temporary `debug/TyreDebugKit.lua` source reference removed from `modDesc.xml` for the stable package.
+- Production `Scripts/C330TransmissionFix.lua` retained.
+
+### Explicitly unchanged
+- Mass/COM and factory metal ballast.
+- Wheel geometry, tyre widths/radii, friction/stiffness values and MudSystemPhysics pressure behavior.
+- Engine, transmission logic, differential and ADS protection.
+
+### Next phase
+Liquid ballast in rear tyres will be developed separately, including both physical added mass and a distinct filled-tyre spring/damping response.
+
 ## 0.0.3.5 - C-330 damper=22 tyre test
 
 First isolated damping test after the standardized spring A/B comparison selected **spring=12** as the new tyre-spring baseline.
