@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.0.0.6 - range-source diagnostic test
+
+Diagnostic follow-up to the 0.0.0.5 runtime log. **No transmission ratios, thresholds, engine values or ADS-facing behavior are changed.**
+
+### Findings from 0.0.0.5
+- ADS-safe range-up hysteresis worked: observed `I/3 -> II/1` transitions occurred around 2180-2220 rpm at moderate ADS load.
+- No C-330/ADS/AIASF Lua error was observed.
+- `activeGearIndex=0` is a normal disengaged phase during shifts; the old debugger incorrectly flagged many such sequences as oscillations.
+- Several low-speed range changes occurred without a matching `[C330TRANS] RANGE UP/DOWN` message and need source attribution before changing gearbox logic.
+
+### Diagnostics
+- `SHIFT_OSCILLATION` now ignores transitions involving gear index 0.
+- Every shift log now includes raw active/target/current gear fields, current direction and auto gear timer.
+- Every actual gear-group change gets a `[TRACTORDBG][RANGE_CHANGE]` line.
+- Range changes are labelled `source=C330TRANS` when they match a recent controller request, otherwise `source=EXTERNAL/GIANTS`.
+- `C330TransmissionFix` writes only an internal diagnostic breadcrumb for its own requested range; it still never writes to ADS state.
+
+### ADS protection
+- 0.0.0.5 load validation and fallback remain unchanged.
+- ADS remains optional and read-only.
+- Static Cabins / dirty-flag protection remains unchanged.
+
+### Explicitly unchanged
+- C-330 factory ratios and range thresholds.
+- Engine torque/fuel model.
+- C-330M drivetrain.
+- Mass/COM, ballast, tyres and suspension.
+
 ## 0.0.0.5 - ADS-safe gearbox hysteresis test
 
 Follow-up to the first real C-330 0.0.0.4 runtime test. Factory ratios are unchanged.

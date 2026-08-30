@@ -1,17 +1,14 @@
-## Ursus C-330 / C-330M 0.0.0.5
+## Ursus C-330 / C-330M 0.0.0.6
 
-Second **C-330 gearbox test**, focused on ADS safety and eliminating range hunting seen in the 0.0.0.4 runtime log.
+Diagnostic-only follow-up to the 0.0.0.5 gearbox test. **Gear ratios and shift thresholds are unchanged.**
 
 ### Changes
-- keeps factory C-330 gearing and successful `II/1 -> I/3` heavy-load reduction,
-- `I/3 -> II/1` now requires >=2050 rpm, <=0.55 load and 800 ms of sustained recovery,
-- post-downshift recovery hold increased to 2.5 s,
-- range cooldown increased to 0.8 s,
-- ADS `dynamicMotorLoad` is strictly read-only and accepted only when approximately within 0..1,
-- invalid/negative ADS shift samples fall back to native GIANTS smoothed load,
-- Static Cabins / dirty-flag compatibility protection remains unchanged.
+- suppresses false `SHIFT_OSCILLATION` warnings caused by the normal `activeGearIndex=0` disengaged phase,
+- adds raw active/target/current gear and direction fields to shift traces,
+- adds `[TRACTORDBG][RANGE_CHANGE]` for every actual I/II group change,
+- labels a range change as `C330TRANS` when requested by our controller, otherwise `EXTERNAL/GIANTS`,
+- keeps ADS strictly read-only and retains the 0.0.0.5 invalid-load fallback,
+- keeps Static Cabins / dirty-flag protection unchanged.
 
 ### Test
-Use **C-330 (motor=1)**. Test unloaded acceleration, then the same heavy trailer. The key check is whether it now stays in range I while the load remains high instead of oscillating around `I/3 <-> II/1`. Send the complete `log.txt`.
-
-<!-- release-trigger-0.0.0.5 -->
+Use **C-330 (motor=1)** with the same heavy trailer. Drive from standstill through both ranges, then deliberately slow it under load and accelerate again. Send the complete `log.txt`; the key lines are `[TRACTORDBG][RANGE_CHANGE]`, `[TRACTORDBG][SHIFT]` and `[C330TRANS]`.

@@ -338,6 +338,16 @@ if not TractorDebugKit.installed then
         return string.format("%d:%d", getGear(motor), getGroup(motor))
     end
 
+    local function gearFromSignature(signature)
+        local gear = string.match(signature or "", "^(-?%d+):")
+        return tonumber(gear) or 0
+    end
+
+    local function groupFromSignature(signature)
+        local group = string.match(signature or "", ":(-?%d+)$")
+        return tonumber(group) or 0
+    end
+
     local function traceTransmission(vehicle)
         if not CFG.traceTransmissionChanges then
             return
@@ -351,6 +361,7 @@ if not TractorDebugKit.installed then
         local signature = gearSignature(motor)
         if vehicle.tractorDbgLastGearSignature == nil then
             vehicle.tractorDbgLastGearSignature = signature
+            vehicle.tractorDbgLastGroup = getGroup(motor)
             return
         end
 
@@ -363,16 +374,53 @@ if not TractorDebugKit.installed then
         local load = getAdsLoad(vehicle)
 
         Logging.info(
-            "[TRACTORDBG][SHIFT] %s -> %s speed=%.2f rpm=%.0f adsLoad=%s dtSinceLast=%s",
+            "[TRACTORDBG][SHIFT] %s -> %s speed=%.2f rpm=%.0f adsLoad=%s dtSinceLast=%s rawActive=%s rawTarget=%s rawGear=%s rawCurrent=%s direction=%s autoTimer=%s",
             previous,
             signature,
             getSpeed(vehicle),
             getMotorRpm(motor),
             load ~= nil and string.format("%.3f", load) or "n/a",
-            vehicle.tractorDbgLastShiftTime ~= nil and tostring(now - vehicle.tractorDbgLastShiftTime) or "n/a"
+            vehicle.tractorDbgLastShiftTime ~= nil and tostring(now - vehicle.tractorDbgLastShiftTime) or "n/a",
+            tostring(motor.activeGearIndex),
+            tostring(motor.targetGear),
+            tostring(motor.gear),
+            tostring(motor.currentGear),
+            tostring(motor.currentDirection),
+            tostring(motor.autoGearChangeTimer)
         )
 
-        if vehicle.tractorDbgPreviousShiftFrom ~= nil
+        local previousGroup = groupFromSignature(previous)
+        local currentGroup = getGroup(motor)
+        if currentGroup ~= previousGroup then
+            local requestAt = tonumber(motor.c330FixRequestedRangeAt)
+            local requestRange = tonumber(motor.c330FixRequestedRange)
+            local requestAge = requestAt ~= nil and (now - requestAt) or nil
+            local requestedHere = requestRange == currentGroup
+                and requestAge ~= nil
+                and requestAge >= 0
+                and requestAge <= 1500
+
+            Logging.info(
+                "[TRACTORDBG][RANGE_CHANGE] %d -> %d source=%s requestAge=%s requestGear=%s reason=%s speed=%.2f rpm=%.0f adsLoad=%s",
+                previousGroup,
+                currentGroup,
+                requestedHere and "C330TRANS" or "EXTERNAL/GIANTS",
+                requestAge ~= nil and tostring(requestAge) or "n/a",
+                tostring(motor.c330FixRequestedGear),
+                tostring(motor.c330FixRequestedRangeReason),
+                getSpeed(vehicle),
+                getMotorRpm(motor),
+                load ~= nil and string.format("%.3f", load) or "n/a"
+            )
+        end
+
+        -- activeGearIndex==0 is the normal disengaged phase between mechanical
+        -- gears. Do not report 0->N->0 or N->0->N as a real oscillation.
+        local currentGear = gearFromSignature(signature)
+        local previousGear = gearFromSignature(previous)
+        if currentGear > 0
+            and previousGear > 0
+            and vehicle.tractorDbgPreviousShiftFrom ~= nil
             and vehicle.tractorDbgPreviousShiftTo ~= nil
             and vehicle.tractorDbgPreviousShiftFrom == signature
             and vehicle.tractorDbgPreviousShiftTo == previous
@@ -384,6 +432,7 @@ if not TractorDebugKit.installed then
             )
         end
 
+        vehicle.tractorDbgLastGroup = currentGroup
         vehicle.tractorDbgPreviousShiftFrom = previous
         vehicle.tractorDbgPreviousShiftTo = signature
         vehicle.tractorDbgLastShiftTime = now

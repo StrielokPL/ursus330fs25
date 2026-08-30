@@ -1,5 +1,5 @@
 -- Ursus C-330 FS25 automatic range controller
--- 0.0.0.5 TEST: factory 3-speed main gearbox x 2 mechanical ranges; ADS-safe hysteresis.
+-- 0.0.0.6 TEST: 0.0.0.5 gearbox logic unchanged; extended range-source diagnostics.
 --
 -- The C-330 range box is NOT a powershift splitter. In automatic mode the
 -- intended virtual order is:
@@ -182,12 +182,20 @@ if not C330TransmissionFix.installed then
     local function setAutomaticRange(motor, targetRange, targetGear, reason, rpm, load, loadSource, recoveryHold)
         local currentRange = motor.activeGearGroupIndex or LOW_RANGE
         local currentGear = motor.targetGear or motor.gear or 0
+        local now = g_time or 0
+
+        -- Diagnostic breadcrumb only. TractorDebugKit uses this to tell a range
+        -- change explicitly requested here from one performed elsewhere by the
+        -- GIANTS transmission state machine. No ADS state is written.
+        motor.c330FixRequestedRange = targetRange
+        motor.c330FixRequestedGear = targetGear
+        motor.c330FixRequestedRangeAt = now
+        motor.c330FixRequestedRangeReason = reason
 
         if targetRange ~= currentRange then
             motor:setGearGroup(targetRange)
         end
 
-        local now = g_time or 0
         motor.c330FixRangeCooldownUntil = now + RANGE_CHANGE_COOLDOWN_MS
         motor.c330FixRangeRecoverySince = nil
         if recoveryHold then
@@ -315,5 +323,5 @@ if not C330TransmissionFix.installed then
         return targetGear
     end
 
-    Logging.info("[C330TRANS] 0.0.0.5 C-330 3x2 range controller installed (ADS-safe hysteresis)")
+    Logging.info("[C330TRANS] 0.0.0.6 C-330 3x2 range controller installed (0.0.0.5 logic + range diagnostics)")
 end

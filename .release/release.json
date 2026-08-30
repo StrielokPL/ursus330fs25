@@ -1,7 +1,7 @@
 {
-  "version": "0.0.0.5",
-  "tag": "0.0.0.5",
-  "title": "0.0.0.5 - C-330 ADS-safe gearbox test",
+  "version": "0.0.0.6",
+  "tag": "0.0.0.6",
+  "title": "0.0.0.6 - C-330 range-source diagnostic test",
   "prerelease": true,
   "zipName": "FS25_UrsusC330_330M_4x2.zip"
 }
