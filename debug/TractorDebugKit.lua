@@ -401,13 +401,14 @@ if not TractorDebugKit.installed then
                 and requestAge <= 1500
 
             Logging.info(
-                "[TRACTORDBG][RANGE_CHANGE] %d -> %d source=%s requestAge=%s requestGear=%s reason=%s speed=%.2f rpm=%.0f adsLoad=%s",
+                "[TRACTORDBG][RANGE_CHANGE] %d -> %d source=%s requestAge=%s requestGear=%s reason=%s direction=%s speed=%.2f rpm=%.0f adsLoad=%s",
                 previousGroup,
                 currentGroup,
                 requestedHere and "C330TRANS" or "EXTERNAL/GIANTS",
                 requestAge ~= nil and tostring(requestAge) or "n/a",
                 tostring(motor.c330FixRequestedGear),
                 tostring(motor.c330FixRequestedRangeReason),
+                tostring(motor.currentDirection),
                 getSpeed(vehicle),
                 getMotorRpm(motor),
                 load ~= nil and string.format("%.3f", load) or "n/a"

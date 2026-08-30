@@ -1,13 +1,13 @@
 -- Ursus C-330 FS25 automatic range controller
--- 0.0.0.6 TEST: 0.0.0.5 gearbox logic unchanged; extended range-source diagnostics.
+-- 0.0.0.7 TEST: complete automatic 6F/2R range control; ADS-safe forward and reverse.
 --
 -- The C-330 range box is NOT a powershift splitter. In automatic mode the
 -- intended virtual order is:
 --   I/1 -> I/2 -> I/3 -> II/1 -> II/2 -> II/3
 -- and the reverse order while downshifting.
 --
--- Manual modes are left to GIANTS unchanged. C-330M is intentionally excluded
--- from this test until its own gearing is calibrated.
+-- Manual modes are left to GIANTS unchanged. Automatic forward and reverse use
+-- explicit C-330 range logic. C-330M remains intentionally excluded.
 
 C330TransmissionFix = C330TransmissionFix or {}
 
@@ -103,11 +103,20 @@ if not C330TransmissionFix.installed then
             and motor.gearGroups[HIGH_RANGE] ~= nil
     end
 
-    local function isAutomaticForward(motor)
+    local function isAutomaticC330(motor)
         return isC330Motor(motor)
             and hasFactoryRanges(motor)
             and motor.gearShiftMode == VehicleMotor.SHIFT_MODE_AUTOMATIC
+    end
+
+    local function isAutomaticForward(motor)
+        return isAutomaticC330(motor)
             and (motor.currentDirection or 1) >= 0
+    end
+
+    local function isAutomaticReverse(motor)
+        return isAutomaticC330(motor)
+            and (motor.currentDirection or 1) < 0
     end
 
     local function getRpm(motor)
@@ -207,11 +216,11 @@ if not C330TransmissionFix.installed then
         return targetGear
     end
 
-    -- GIANTS automatic group selection treats the two C-330 ranges as unrelated
-    -- optimization choices. Disable that only while driving forward in automatic
-    -- mode; reverse and all manual modes keep the base-game behavior for now.
+    -- GIANTS automatic group selection treats the two mechanical C-330 ranges as
+    -- unrelated optimization choices. Disable it for the complete automatic 6F/2R
+    -- gearbox. Manual modes still keep base-game group handling.
     function VehicleMotor:getUseAutomaticGroupShifting()
-        if isAutomaticForward(self) then
+        if isAutomaticC330(self) then
             return false
         end
 
@@ -221,13 +230,22 @@ if not C330TransmissionFix.installed then
     function VehicleMotor:getBestStartGear(gears)
         local gear, group = originalGetBestStartGear(self, gears)
 
-        if isAutomaticForward(self) then
+        if isAutomaticC330(self) then
             group = LOW_RANGE
             gear = math.max(1, math.min(gear or 1, math.min(#gears, 3)))
 
+            -- A real C-330 starts/restarts from range I. Mark this request so the
+            -- diagnostic kit does not misattribute the reset to GIANTS.
             if self.activeGearGroupIndex ~= LOW_RANGE then
+                local now = g_time or 0
+                self.c330FixRequestedRange = LOW_RANGE
+                self.c330FixRequestedGear = gear
+                self.c330FixRequestedRangeAt = now
+                self.c330FixRequestedRangeReason = "START RANGE RESET"
                 self:setGearGroup(LOW_RANGE)
             end
+
+            self.c330FixRangeRecoverySince = nil
         end
 
         return gear, group
@@ -238,7 +256,7 @@ if not C330TransmissionFix.installed then
             self, curGear, gears, gearSign, gearChangeTimer, acceleratorPedal, dt
         )
 
-        if not isAutomaticForward(self)
+        if not isAutomaticC330(self)
             or vanillaTarget == nil
             or curGear == nil
             or curGear <= 0
@@ -258,6 +276,47 @@ if not C330TransmissionFix.installed then
         local speed = getSpeed(self)
         local accel = math.abs(tonumber(acceleratorPedal) or 0)
         local maxGear = math.min(#gears, 3)
+
+        -- Reverse has one mechanical reverse gear passing through the same I/II
+        -- range box: R-I ~= 1.53 km/h, R-II ~= 6.21 km/h. GIANTS previously
+        -- selected range II around 1.5 km/h even at ~0.8 ADS load. Treat reverse
+        -- as a two-step gearbox and only leave range I after sustained recovery.
+        if isAutomaticReverse(self) then
+            if range == HIGH_RANGE
+                and curGear == 1
+                and speed > 0.3
+                and rpm <= RANGE_DOWNSHIFT_RPM
+                and ((load ~= nil and load >= RANGE_DOWNSHIFT_LOAD) or accel >= RANGE_DOWNSHIFT_ACCEL) then
+                return setAutomaticRange(
+                    self, LOW_RANGE, 1, "REVERSE RANGE DOWN",
+                    rpm, load, loadSource, true
+                )
+            end
+
+            local reverseRecoveryReady = range == LOW_RANGE
+                and curGear == 1
+                and rpm >= RANGE_UPSHIFT_RPM
+                and (load == nil or load <= RANGE_UPSHIFT_MAX_LOAD)
+                and (self.c330FixUpshiftHoldUntil == nil or now >= self.c330FixUpshiftHoldUntil)
+
+            if reverseRecoveryReady then
+                if self.c330FixRangeRecoverySince == nil then
+                    self.c330FixRangeRecoverySince = now
+                elseif now - self.c330FixRangeRecoverySince >= RANGE_UPSHIFT_STABLE_MS then
+                    return setAutomaticRange(
+                        self, HIGH_RANGE, 1, "REVERSE RANGE UP",
+                        rpm, load, loadSource, false
+                    )
+                end
+            else
+                self.c330FixRangeRecoverySince = nil
+            end
+
+            -- There is only one backwardGear. Range selection above is therefore
+            -- the complete reverse automatic logic; never hand group choice back
+            -- to vanilla while reversing.
+            return 1
+        end
 
         -- The critical missing behavior in vanilla: II/1 must be allowed to fall
         -- back to I/3 BEFORE the tractor nearly stops. This is the real next lower
@@ -323,5 +382,5 @@ if not C330TransmissionFix.installed then
         return targetGear
     end
 
-    Logging.info("[C330TRANS] 0.0.0.6 C-330 3x2 range controller installed (0.0.0.5 logic + range diagnostics)")
+    Logging.info("[C330TRANS] 0.0.0.7 C-330 full 6F/2R automatic range controller installed (ADS-safe)")
 end

@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.0.0.7 - full C-330 6F/2R automatic gearbox test
+
+Completes the automatic range controller after 0.0.0.6 proved that remaining external I/II changes were GIANTS reverse/start behavior. Factory ratios and established forward thresholds are unchanged.
+
+### Reverse automatic control
+- GIANTS automatic group selection is now disabled for C-330 automatic mode in both directions.
+- Reverse is treated as the real two-step range gearbox: `R-I` (~1.53 km/h) and `R-II` (~6.21 km/h).
+- `R-I -> R-II` requires the same ADS-safe sustained recovery used at the forward range boundary: >=2050 rpm, load <=0.55, held for 800 ms, and no active recovery hold.
+- `R-II -> R-I` occurs under the established protection threshold: <=1500 rpm with load >=0.75 or strong accelerator demand.
+- Automatic start/restart forces range I; manual transmission modes remain unchanged.
+
+### ADS protection
+- ADS remains optional and strictly read-only.
+- Invalid/negative ADS shift samples are still rejected and replaced with native GIANTS smoothed load.
+- Reverse range changes now use the same filtered load path as forward changes.
+- Existing Static Cabins / dirty-flag protection remains unchanged.
+
+### Diagnostics
+- `[TRACTORDBG][RANGE_CHANGE]` now includes current direction.
+- Controller-generated reverse changes use reasons `REVERSE RANGE UP` / `REVERSE RANGE DOWN`.
+- Start/reset range changes are marked as `START RANGE RESET` for source attribution.
+
+### Explicitly unchanged
+- C-330 factory ratios and forward shift thresholds from 0.0.0.5.
+- Engine torque/fuel model.
+- C-330M drivetrain.
+- Mass/COM, ballast, tyres and suspension.
+
 ## 0.0.0.6 - range-source diagnostic test
 
 Diagnostic follow-up to the 0.0.0.5 runtime log. **No transmission ratios, thresholds, engine values or ADS-facing behavior are changed.**
