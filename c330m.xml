@@ -530,13 +530,16 @@
 
         <motorConfigurations>
             <motorConfiguration name="C-330" hp="30" price="0">
-                <motor torqueScale="0.138" minRpm="600" maxRpm="2200" accelerationLimit="1.0" maxForwardSpeed="22.878" maxBackwardSpeed="6.207" brakeForce="1.3" lowBrakeForceScale="0.1" dampingRateScale="0.1">
-                    <torque normRpm="0.45" torque="0.9"/>
-                    <torque normRpm="0.50" torque="0.97"/>
-                    <torque normRpm="0.59" torque="1"/>
-                    <torque normRpm="0.72" torque="1"/>
-                    <torque normRpm="0.86" torque="0.88"/>
-                    <torque normRpm="1.00" torque="0.72"/>
+                <motor torqueScale="0.100" minRpm="600" maxRpm="2200" accelerationLimit="1.0" maxForwardSpeed="22.878" maxBackwardSpeed="6.207" brakeForce="1.3" lowBrakeForceScale="0.1" dampingRateScale="0.1">
+                    <!-- S-312C test curve. Confirmed anchors: 100 Nm @1600-1800 rpm,
+                         22.4 kW @2200 rpm => ~97.24 Nm. Low-rpm points are
+                         conservative interpolation pending runtime validation. -->
+                    <torque normRpm="0.45" torque="0.88"/>      <!-- 990 rpm: 88 Nm (test interpolation) -->
+                    <torque normRpm="0.50" torque="0.92"/>      <!-- 1100 rpm: 92 Nm (test interpolation) -->
+                    <torque normRpm="0.59" torque="0.96"/>      <!-- 1298 rpm: 96 Nm (test interpolation) -->
+                    <torque normRpm="0.727273" torque="1.00"/>  <!-- 1600 rpm: 100 Nm -->
+                    <torque normRpm="0.818182" torque="1.00"/>  <!-- 1800 rpm: 100 Nm -->
+                    <torque normRpm="1.00" torque="0.972364"/>  <!-- 2200 rpm: 97.24 Nm ~= 22.4 kW -->
                 </motor>
                 <transmission autoGearChangeTime="0.3" gearChangeTime="0.4" name="$l10n_info_transmission_manual">
                     <directionChange useGear="true" reverseGearIndex="1" changeTime="0.5"/>

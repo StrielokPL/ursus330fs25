@@ -1,18 +1,16 @@
-## Ursus C-330 / C-330M 0.0.1.0
+## Ursus C-330 / C-330M 0.0.1.1
 
-Milestone release closing the dedicated **C-330 6F/2R gearbox** phase.
+First isolated **S-312C engine torque-curve** test for the standard C-330.
 
-### Validated gearbox state
-- factory C-330 range reduction and nominal 6F/2R speeds retained,
-- complete automatic forward sequence `I/1 -> I/2 -> I/3 -> II/1 -> II/2 -> II/3`,
-- reverse automatic handled as `R-I -> R-II`,
-- GIANTS automatic I/II group selection is suppressed for the C-330 automatic mode,
-- ADS-aware load protection remains optional, filtered and read-only,
-- manual transmission modes and C-330M remain untouched.
+### Changed
+- peak torque corrected from the imported ~138 Nm to **100 Nm**,
+- maximum torque placed at **1600-1800 rpm**,
+- 2200-rpm torque set to **~97.24 Nm** for the factory **22.4 kW** rated power,
+- conservative low-rpm interpolation added for testing,
+- read-only engine trace added for RPM/load analysis.
 
-The final 0.0.0.7 runtime test showed no external/GIANTS range changes, no shift-oscillation warnings and no C-330/ADS/controller Lua errors.
+### Not changed
+Fuel use, idle/max RPM, gearbox, ADS behavior, C-330M and chassis physics are unchanged.
 
-### Next phase
-Temporary diagnostics remain enabled. The next isolated subsystem is the **S-312C engine torque/power/fuel calibration**.
-
-<!-- release-trigger-0.0.1.0 -->
+### Test
+Use **C-330 (motor=1)**. Compare unloaded acceleration with the previous build, then use the same heavy trailer on level ground and, if possible, on an incline/high-resistance pull. Let the engine work below 1800 rpm instead of immediately lifting off. Send the complete `log.txt`; `[ENGINE_TRACE]` will show how the real 100 Nm curve interacts with ADS and the completed gearbox.

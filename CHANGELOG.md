@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.0.1.1 - S-312C torque-curve test
+
+First isolated engine calibration for the standard **C-330**. Gearbox behavior from 0.0.1.0 is deliberately unchanged. C-330M keeps the old imported engine as a comparison/control configuration.
+
+### Problem
+- Imported `torqueScale=0.138` gives about 138 Nm peak torque.
+- The old curve produces roughly 22.9 kW already near 1580 rpm and about 24.1 kW near 1890 rpm, creating an unrealistically large low/mid-RPM torque reserve.
+- Factory target is 100 Nm maximum at 1600-1800 rpm and 22.4 kW at 2200 rpm.
+
+### Change
+- C-330 `torqueScale`: **0.138 -> 0.100**.
+- Confirmed torque anchors: **100 Nm at 1600 and 1800 rpm**.
+- Rated point: **~97.24 Nm at 2200 rpm**, corresponding to **22.4 kW**.
+- Low-RPM test interpolation: 88 Nm @990, 92 Nm @1100, 96 Nm @1298. These values are not claimed as factory measurements and are subject to runtime tuning.
+
+### Diagnostics
+- Added read-only `[TRACTORDBG][ENGINE_TRACE]` every 750 ms while the tractor is actually moving/loaded.
+- Trace records RPM, speed, gear/group, direction, raw ADS load and native GIANTS smoothed load.
+- `[TRACTORDBG][MOTOR]` also reports runtime min/max RPM and torqueScale fields when exposed by `VehicleMotor`.
+
+### Explicitly unchanged
+- Fuel consumer remains **4.2 l/h** for this test.
+- `minRpm=600`, `maxRpm=2200`, acceleration/braking parameters.
+- Complete C-330 6F/2R gearbox/controller.
+- ADS integration remains read-only and filtered.
+- C-330M engine/drivetrain.
+- Mass/COM, ballast, tyres and suspension.
+
 ## 0.0.1.0 - C-330 gearbox milestone
 
 Milestone release closing the dedicated standard C-330 transmission phase. **No gearbox code, ratios or shift thresholds are changed from 0.0.0.7.**

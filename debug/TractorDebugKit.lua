@@ -21,6 +21,8 @@ if not TractorDebugKit.installed then
         oscillationWindowMs = 1800,
         periodicWheelTrace = false,
         periodicWheelTraceMs = 500,
+        periodicEngineTrace = true,
+        periodicEngineTraceMs = 750,
         readAdsDynamicLoad = true
     }
 
@@ -275,14 +277,16 @@ if not TractorDebugKit.installed then
         local load = getAdsLoad(vehicle)
 
         Logging.info(
-            "[TRACTORDBG][MOTOR] gear=%d group=%d gears=%d groups=%d shiftMode=%s rpm=%.0f maxRpm=%s speed=%.2f adsLoad=%s",
+            "[TRACTORDBG][MOTOR] gear=%d group=%d gears=%d groups=%d shiftMode=%s rpm=%.0f minRpm=%s maxRpm=%s torqueScale=%s speed=%.2f adsLoad=%s",
             getGear(motor),
             getGroup(motor),
             gearCount,
             groupCount,
             tostring(motor.gearShiftMode),
             getMotorRpm(motor),
+            tostring(motor.minRpm),
             tostring(motor.maxRpm),
+            tostring(motor.torqueScale),
             getSpeed(vehicle),
             load ~= nil and string.format("%.3f", load) or "n/a"
         )
@@ -440,6 +444,56 @@ if not TractorDebugKit.installed then
         vehicle.tractorDbgLastGearSignature = signature
     end
 
+    local function getNativeMotorLoad(motor)
+        if motor ~= nil and motor.getSmoothLoadPercentage ~= nil then
+            local value = tonumber(motor:getSmoothLoadPercentage())
+            if value ~= nil then
+                return value
+            end
+        end
+        return nil
+    end
+
+    local function periodicEngineTrace(vehicle)
+        if not CFG.periodicEngineTrace then
+            return
+        end
+
+        local motor = getMotor(vehicle)
+        if motor == nil then
+            return
+        end
+
+        local now = g_time or 0
+        if vehicle.tractorDbgNextEngineTrace ~= nil and now < vehicle.tractorDbgNextEngineTrace then
+            return
+        end
+        vehicle.tractorDbgNextEngineTrace = now + CFG.periodicEngineTraceMs
+
+        local speed = getSpeed(vehicle)
+        local adsLoad = getAdsLoad(vehicle)
+        local nativeLoad = getNativeMotorLoad(motor)
+
+        -- Avoid filling the log while the tractor simply idles parked. The trace
+        -- is read-only and is intended to capture real pull/acceleration states.
+        if speed < 0.20
+            and (adsLoad == nil or adsLoad < 0.10)
+            and (nativeLoad == nil or nativeLoad < 0.10) then
+            return
+        end
+
+        Logging.info(
+            "[TRACTORDBG][ENGINE_TRACE] speed=%.2f rpm=%.0f gear=%d group=%d direction=%s adsLoad=%s giantsLoad=%s",
+            speed,
+            getMotorRpm(motor),
+            getGear(motor),
+            getGroup(motor),
+            tostring(motor.currentDirection),
+            adsLoad ~= nil and string.format("%.3f", adsLoad) or "n/a",
+            nativeLoad ~= nil and string.format("%.3f", nativeLoad) or "n/a"
+        )
+    end
+
     local function periodicWheelTrace(vehicle)
         if not CFG.periodicWheelTrace then
             return
@@ -484,6 +538,7 @@ if not TractorDebugKit.installed then
         end
 
         traceTransmission(vehicle)
+        periodicEngineTrace(vehicle)
         periodicWheelTrace(vehicle)
     end
 
