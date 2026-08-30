@@ -15,3 +15,5 @@ Mass-aware starting, the 3.175 t threshold, range-boundary logic, reverse contro
 
 ### Test focus
 Repeat one pass without a trailer and one with the same trailer. The loaded run should log `BLOCK TOP UPSHIFT HIGH LOAD` when II/2 requests II/3 below 2100 rpm at load >=0.70, and should no longer land close to 1100 rpm under ~0.9 load. Send the complete `log.txt`.
+
+<!-- release-trigger-0.0.1.6 -->
