@@ -1,5 +1,45 @@
 # Changelog
 
+## 0.0.2.3 - C-330 factory ballast mass test
+
+Isolated ballast-mass correction after 0.0.2.2 closed the base mass/COM calibration.
+
+### Runtime evidence from 0.0.2.2
+- Settled basic C-330: **1.675 t**, **0.634 t front / 1.041 t rear = 37.86/62.14**.
+- Factory target: **1.675 t**, **0.635 / 1.040 t = 37.9/62.1**; residual error is about 1 kg per axle.
+- Component 1 runtime mass is **0.827 t** from nominal 0.792 t, confirming the same +35 kg fuel/runtime contribution observed before.
+- Base mass and longitudinal COM are therefore accepted as a safe point: component 1 stays at **792 kg, Z=-0.125 m**.
+
+### Factory ballast mapping
+- Front metal ballast: **2 x 21 kg = 42 kg total**.
+- Rear small/inner set: **2 x 20 kg = 40 kg total**.
+- Rear big/outer set: **6 x 24 kg = 144 kg total**.
+- Rear both: **184 kg total**.
+- Full factory metal ballast: **226 kg**, giving **1901 kg** total tractor mass.
+
+### Change
+- Front `design3=2`: component 2 active mass **400 -> 342 kg**, changing front ballast from +100 kg to **+42 kg**.
+- Rear `Small` remains **+40 kg** because it already matches the factory inner pair.
+- Rear `Big` (`weight`): **+80 -> +144 kg** total.
+- Rear `Both` (`wideWeight`): **+120 -> +184 kg** total.
+- Alternate rear `Big` (`wideWeight2`): **+120 -> +144 kg** total while preserving its composed visual geometry.
+
+### Expected runtime targets
+Starting from the measured 0.0.2.2 base (1675 / 634 / 1041 kg):
+- front ballast only: about **1717 kg**, **676 / 1041 kg**;
+- rear Small only: about **1715 kg**, **634 / 1081 kg**;
+- rear Big only: about **1819 kg**, **634 / 1185 kg**;
+- rear Both only: about **1859 kg**, **634 / 1225 kg**;
+- full factory metal ballast (front + rear Both): about **1901 kg**, **676 / 1225 kg**.
+Factory documentation for full metal ballast gives **1901 kg, 677 / 1224 kg**, so the predicted residual is again only about 1 kg per axle.
+
+### Explicitly unchanged
+- Accepted 0.0.2.2 base mass and COM.
+- Cabin masses (still neutral).
+- Wheel/tyre dimensions, suspension and traction physics.
+- Engine, gearbox and ADS integration.
+- C-330M drivetrain/controller scope.
+
 ## 0.0.2.2 - C-330 base mass / COM correction test
 
 First measured mass/COM correction based on the complete 0.0.2.1 static diagnostic matrix.

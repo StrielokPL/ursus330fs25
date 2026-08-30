@@ -11,15 +11,15 @@
             <innerRim filename="Wheels/Wheels.i3d" nodeLeft="2|0" nodeRight="2|1" offset="0.01" scale="1 1 1" mass="0.02" />
         </configuration>
         <configuration id="weight" >
-            <additional filename="Wheels/Wheels.i3d" nodeLeft="2|2" nodeRight="2|3" offset="0.01" scale="1 1 1" mass="0.04" />
+            <additional filename="Wheels/Wheels.i3d" nodeLeft="2|2" nodeRight="2|3" offset="0.01" scale="1 1 1" mass="0.072" />
         </configuration>
         <configuration id="wideWeight" >
             <innerRim   filename="Wheels/Wheels.i3d" nodeLeft="2|0" nodeRight="2|1" offset="0.01" scale="1 1 1" mass="0.02" />
-            <additional filename="Wheels/Wheels.i3d" nodeLeft="2|2" nodeRight="2|3" offset="0.01" scale="1 1 1" mass="0.04" />
+            <additional filename="Wheels/Wheels.i3d" nodeLeft="2|2" nodeRight="2|3" offset="0.01" scale="1 1 1" mass="0.072" />
         </configuration>
         <configuration id="wideWeight2" >
             <innerRim   filename="Wheels/Wheels.i3d" nodeLeft="2|0" nodeRight="2|1" offset="0.01" scale="1 1 1" mass="0.02" />
-            <additional filename="Wheels/Wheels.i3d" nodeLeft="2|4" nodeRight="2|5" offset="0.01" scale="1 1 1" mass="0.04" />
+            <additional filename="Wheels/Wheels.i3d" nodeLeft="2|4" nodeRight="2|5" offset="0.01" scale="1 1 1" mass="0.052" />
         </configuration>		
 		
     </configurations>

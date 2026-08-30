@@ -1,24 +1,27 @@
-## Ursus C-330 / C-330M 0.0.2.2
+## Ursus C-330 / C-330M 0.0.2.3
 
-**Base mass / COM correction prerelease.** This is the first physics change after the 0.0.2.1 measurement pass.
+**Factory ballast mass prerelease.** The 0.0.2.2 base mass/COM result is accepted and remains unchanged.
 
-### Measured 0.0.2.1 baseline
-- basic wheels, no ballast: 1683 kg,
-- front/rear: about 605 / 1078 kg (35.97 / 64.03%),
-- factory target: 1675 kg and 635 / 1040 kg (37.9 / 62.1%).
+### 0.0.2.2 confirmed safe point
+- base mass: **1675 kg**,
+- front/rear: **634 / 1041 kg (37.86 / 62.14%)**,
+- factory target: **1675 kg, 635 / 1040 kg**.
 
-All tested cabin `vehicleType` variants were mass-neutral. Rear wheel options added +40/+80/+120 kg at the rear, and the current front ballast added +100 kg at the front.
+### 0.0.2.3 ballast changes
+- front ballast: **100 -> 42 kg** total,
+- rear Small: stays **40 kg** total,
+- rear Big: **80/120 -> 144 kg** total depending visual variant,
+- rear Both: **120 -> 184 kg** total.
 
-### 0.0.2.2 change
-Only base component 1 changes:
-- nominal mass **800 -> 792 kg**,
-- longitudinal COM **Z -0.200 -> -0.125 m**.
+The visual configurations and ballast locations are unchanged; only their physical masses are corrected.
 
-The calculated target with a full tank is approximately **1675 kg and 635/1040 kg**. Temporary static mass diagnostics remain enabled to verify the result in runtime.
+### Test matrix
+Please use the standard C-330 (`motor=1`) and let each configuration settle stationary on level ground for at least 4-5 seconds:
+1. base, `wheel=1`, no front ballast — should repeat about **1675 / 634 / 1041 kg**;
+2. front ballast only (`design3=2`) — about **1717 / 676 / 1041 kg**;
+3. rear Small — about **1715 / 634 / 1081 kg**;
+4. rear Big variants — about **1819 / 634 / 1185 kg**;
+5. rear Both — about **1859 / 634 / 1225 kg**;
+6. front + rear Both — about **1901 / 676 / 1225 kg** (factory full-metal target 1901 / 677 / 1224 kg).
 
-### Test
-Use basic wheels, no ballast and preferably the simplest/no-cabin configuration first. Leave the tractor stationary on level ground for at least 4-5 seconds. One clean base snapshot is enough to judge the correction; additional cabin/ballast snapshots are welcome but not required for this iteration.
-
-Transmission, engine, ADS behavior, tyres and ballast masses are unchanged.
-
-<!-- release-trigger-0.0.2.2-mass-com -->
+A full `log.txt` is preferred. Engine, transmission, ADS behavior, tyre geometry and accepted base COM are unchanged.

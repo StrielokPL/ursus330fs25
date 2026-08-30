@@ -1310,7 +1310,7 @@
         </design3Configuration>
 		<design3Configuration name="$l10n_configuration_valueYes" price="100">
 			<objectChange node="0&gt;6|1|0" visibilityActive="true"/>
-			<objectChange node="1&gt;" massActive="400"/>
+			<objectChange node="1&gt;" massActive="342"/>
         </design3Configuration>
     </design3Configurations>
 <!-- Chlapacze -->
