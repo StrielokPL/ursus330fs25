@@ -18,3 +18,5 @@ The test method changed after spring had already been reduced in 0.0.3.3. The 0.
 6. Keep the same line/order as closely as practical and send the complete `log.txt`.
 
 `damper=25`, `suspTravel=0.07`, tyre dimensions/traction, MudSystemPhysics, mass/COM/ballast, engine/transmission/ADS and differential are unchanged.
+
+<!-- release-trigger-0.0.3.4-spring-control -->
