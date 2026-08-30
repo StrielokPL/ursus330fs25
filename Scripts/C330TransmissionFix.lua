@@ -1,5 +1,5 @@
 -- Ursus C-330 FS25 automatic range controller
--- 0.0.0.7 TEST: complete automatic 6F/2R range control; ADS-safe forward and reverse.
+-- 0.0.1.2 TEST: 6F/2R range control with 100 Nm engine compatibility guards; ADS-safe.
 --
 -- The C-330 range box is NOT a powershift splitter. In automatic mode the
 -- intended virtual order is:
@@ -28,6 +28,9 @@ if not C330TransmissionFix.installed then
     local RANGE_DOWNSHIFT_RPM = 1500
     local RANGE_DOWNSHIFT_LOAD = 0.75
     local RANGE_DOWNSHIFT_ACCEL = 0.85
+    -- Full throttle alone must not force II/1 -> I/3 when the engine is lightly loaded.
+    -- 0.0.1.1 runtime trace showed an unnecessary reduction at ~1499 rpm, load 0.335.
+    local RANGE_DOWNSHIFT_ACCEL_MIN_LOAD = 0.55
 
     local RANGE_UPSHIFT_RPM = 2050
     local RANGE_UPSHIFT_MAX_LOAD = 0.55
@@ -35,6 +38,15 @@ if not C330TransmissionFix.installed then
 
     local NORMAL_UPSHIFT_GUARD_LOAD = 0.80
     local NORMAL_UPSHIFT_GUARD_RPM = 1750
+
+    -- II/2 -> II/3 is the largest within-range step. With the factory speed ladder,
+    -- engine rpm after the shift is approximately currentRpm * (14.324 / 22.878).
+    -- The 0.0.1.1 test allowed a shift at 1695 rpm / load 0.789 and the engine fell
+    -- to ~960-980 rpm at ~0.9 load. Keep vanilla freedom at light load, but under
+    -- meaningful load require a predicted post-shift speed of at least ~1200 rpm.
+    local TOP_GEAR_POSTSHIFT_RPM_RATIO = 14.324 / 22.878
+    local TOP_GEAR_POSTSHIFT_MIN_RPM = 1200
+    local TOP_GEAR_PREDICTION_GUARD_MIN_LOAD = 0.55
 
     local RANGE_CHANGE_COOLDOWN_MS = 800
     local LOAD_RECOVERY_HOLD_MS = 2500
@@ -285,7 +297,10 @@ if not C330TransmissionFix.installed then
                 and curGear == 1
                 and speed > 0.3
                 and rpm <= RANGE_DOWNSHIFT_RPM
-                and ((load ~= nil and load >= RANGE_DOWNSHIFT_LOAD) or accel >= RANGE_DOWNSHIFT_ACCEL) then
+                and (
+                    (load ~= nil and load >= RANGE_DOWNSHIFT_LOAD)
+                    or (accel >= RANGE_DOWNSHIFT_ACCEL and load ~= nil and load >= RANGE_DOWNSHIFT_ACCEL_MIN_LOAD)
+                ) then
                 return setAutomaticRange(
                     self, LOW_RANGE, 1, "REVERSE RANGE DOWN",
                     rpm, load, loadSource, true
@@ -324,7 +339,10 @@ if not C330TransmissionFix.installed then
             and curGear == 1
             and speed > 0.5
             and rpm <= RANGE_DOWNSHIFT_RPM
-            and ((load ~= nil and load >= RANGE_DOWNSHIFT_LOAD) or accel >= RANGE_DOWNSHIFT_ACCEL) then
+            and (
+                (load ~= nil and load >= RANGE_DOWNSHIFT_LOAD)
+                or (accel >= RANGE_DOWNSHIFT_ACCEL and load ~= nil and load >= RANGE_DOWNSHIFT_ACCEL_MIN_LOAD)
+            ) then
             return setAutomaticRange(
                 self, LOW_RANGE, maxGear, "RANGE DOWN",
                 rpm, load, loadSource, true
@@ -366,6 +384,22 @@ if not C330TransmissionFix.installed then
 
         targetGear = math.max(1, math.min(targetGear, maxGear))
 
+        -- Special protection for II/2 -> II/3 with the calibrated 100 Nm engine.
+        -- Do not blindly follow vanilla if the factory ratio step would drop the
+        -- engine far below its useful band while it is already carrying real load.
+        if range == HIGH_RANGE
+            and curGear == 2
+            and targetGear == 3
+            and load ~= nil
+            and load >= TOP_GEAR_PREDICTION_GUARD_MIN_LOAD then
+            local predictedRpm = rpm * TOP_GEAR_POSTSHIFT_RPM_RATIO
+            if predictedRpm < TOP_GEAR_POSTSHIFT_MIN_RPM then
+                logDecision(self, "BLOCK TOP UPSHIFT", curGear, range, curGear, range, rpm, load, loadSource)
+                self.autoGearChangeTimer = math.max(self.autoGearChangeTime or 0, 250)
+                return curGear
+            end
+        end
+
         -- Do not allow a normal upshift when the engine is already heavily loaded
         -- below the useful upper-RPM band. ADS is preferred when present; native
         -- GIANTS smooth load is used otherwise.
@@ -381,5 +415,5 @@ if not C330TransmissionFix.installed then
         return targetGear
     end
 
-    Logging.info("[C330TRANS] 0.0.0.7 C-330 full 6F/2R automatic range controller installed (ADS-safe)")
+    Logging.info("[C330TRANS] 0.0.1.2 C-330 6F/2R controller installed (100Nm compatibility guards, ADS-safe)")
 end

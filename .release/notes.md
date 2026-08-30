@@ -1,18 +1,14 @@
-## Ursus C-330 / C-330M 0.0.1.1
+## Ursus C-330 / C-330M 0.0.1.2
 
-First isolated **S-312C engine torque-curve** test for the standard C-330.
+Small compatibility correction between the completed C-330 gearbox controller and the calibrated **100 Nm S-312C** test curve.
 
 ### Changed
-- peak torque corrected from the imported ~138 Nm to **100 Nm**,
-- maximum torque placed at **1600-1800 rpm**,
-- 2200-rpm torque set to **~97.24 Nm** for the factory **22.4 kW** rated power,
-- conservative low-rpm interpolation added for testing,
-- read-only engine trace added for RPM/load analysis.
+- prevents full throttle alone from forcing II/1 -> I/3 while engine load is low,
+- adds a load-aware predicted-RPM guard for II/2 -> II/3,
+- under meaningful load, top gear is blocked if the factory ratio step predicts <1200 rpm after the shift.
 
-### Not changed
-Fuel use, idle/max RPM, gearbox, ADS behavior, C-330M and chassis physics are unchanged.
+### Unchanged
+The 0.0.1.1 engine curve, fuel use, gearbox ratios, ADS read-only handling, C-330M and chassis physics are unchanged.
 
-### Test
-Use **C-330 (motor=1)**. Compare unloaded acceleration with the previous build, then use the same heavy trailer on level ground and, if possible, on an incline/high-resistance pull. Let the engine work below 1800 rpm instead of immediately lifting off. Send the complete `log.txt`; `[ENGINE_TRACE]` will show how the real 100 Nm curve interacts with ADS and the completed gearbox.
-
-<!-- release-trigger-0.0.1.1 -->
+### Test focus
+Use C-330 motor=1 with the same heavy trailer. Watch II/2 under load: the controller should log `BLOCK TOP UPSHIFT` instead of dropping II/3 to ~1000 rpm. Also reproduce sustained full throttle in II/1 with moderate/low load; it should no longer unnecessarily reduce to I/3. Send the complete `log.txt`.

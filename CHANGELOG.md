@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.0.1.2 - S-312C / gearbox compatibility fix
+
+Small isolated transmission-controller correction based on the 0.0.1.1 100 Nm engine runtime trace. **The S-312C torque curve itself is unchanged.**
+
+### Runtime evidence
+- II/2 -> II/3 was allowed at about **1695 rpm / ADS load 0.789**; after engagement the engine fell to about **960-980 rpm at ~0.89-0.93 load** before recovering.
+- II/1 -> I/3 could be requested at about **1499 rpm / load 0.335** only because the accelerator was near full; the engine was not actually overloaded.
+
+### Change
+- Full throttle is no longer enough by itself to force a range downshift. The accelerator path additionally requires load >= **0.55**; the original high-load path (>=0.75) remains unchanged.
+- Added a dedicated II/2 -> II/3 prediction guard. At load >= **0.55**, the controller estimates post-shift RPM using the factory 14.324/22.878 speed ratio and blocks the shift if predicted RPM would be below **1200 rpm**.
+- Light-load top-gear shifts remain available to vanilla prediction, so unloaded road acceleration is not artificially forced to wait for a fixed high RPM.
+
+### Explicitly unchanged
+- C-330 S-312C curve from 0.0.1.1: 100 Nm peak, 1600-1800 rpm plateau, ~97.24 Nm at 2200 rpm.
+- Fuel use, min/max RPM and engine acceleration/braking parameters.
+- Factory 6F/2R ratios and range thresholds.
+- ADS remains optional, filtered and read-only.
+- C-330M and chassis physics.
+
 ## 0.0.1.1 - S-312C torque-curve test
 
 First isolated engine calibration for the standard **C-330**. Gearbox behavior from 0.0.1.0 is deliberately unchanged. C-330M keeps the old imported engine as a comparison/control configuration.
