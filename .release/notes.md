@@ -12,3 +12,5 @@ These values were selected from standardized obstacle tests at 10 km/h plus a si
 Temporary tyre diagnostics are removed from the stable package. Mass/COM, metal ballast, wheel geometry/traction, engine, transmission, differential, MudSystemPhysics behavior and ADS protection are unchanged.
 
 Next development phase: rear tyre liquid ballast with physical mass plus a dedicated filled-tyre response.
+
+<!-- release-trigger-0.0.4.0-dry-tyres -->
