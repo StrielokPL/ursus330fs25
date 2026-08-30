@@ -13,3 +13,5 @@ Isolated mass-aware automatic start-gear test.
 
 ### Test focus
 Test at least: (1) bare/light C-330 below 3.175 t, which should log `START GEAR I/3 ... mode=LIGHT_I3`; (2) a set clearly above 3.175 t, which should log `mode=NATIVE_LOW_RANGE` and must not be forced to I/3. Check standing starts, stop/restart, forward/reverse changes and one loaded acceleration/deceleration cycle. Send the complete `log.txt`.
+
+<!-- release-trigger-0.0.1.4 -->
