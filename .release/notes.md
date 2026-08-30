@@ -17,3 +17,5 @@ The damper step is intentionally small. After reducing spring from 15 to 12, a s
 6. Keep obstacle order and line as consistent as practical and send the complete `log.txt`.
 
 `suspTravel=0.07`, wheel geometry/traction, MudSystemPhysics, mass/COM/ballast, engine/transmission/ADS and differential are unchanged.
+
+<!-- release-trigger-0.0.3.5-damper22 -->
