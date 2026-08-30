@@ -1,22 +1,20 @@
-## Ursus C-330 / C-330M 0.0.3.3
+## Ursus C-330 / C-330M 0.0.3.4
 
-**First physical tyre-compliance test after the read-only diagnostics.**
+**A/B control for the new stabilized obstacle-test protocol.**
 
 ### Change
-- Common wheel spring **15 -> 12** (**-20%**, runtime about **150 -> 120**).
-- `damper=25` and `suspTravel=0.07` stay unchanged so the spring effect can be judged in isolation.
+- Common wheel spring **12 -> 15** (runtime expected about **120 -> 150**).
+- This deliberately restores the pre-0.0.3.3 spring for one controlled comparison. It is not yet a final tuning decision.
 
 ### Why
-The 0.0.3.2 multi-height/multi-ramp board route produced repeatable load impulses and showed that the current setup can still deliver very sharp wheel-load peaks. The attempted `lastSuspensionLength` signal stayed fixed at 0.0400 m and is not used for the decision.
+The test method changed after spring had already been reduced in 0.0.3.3. The 0.0.3.3 log is therefore the first clean baseline for the new route, but there is no spring=15 run under exactly the same conditions. 0.0.3.4 supplies that missing control.
 
-### Test
-1. Use the same basic Polowe wheel configuration and board sequence.
-2. Run once at **2.40 bar** after pressure settles.
-3. Run once at **1.00 bar** after pressure settles.
-4. Similar obstacle order and speed are more important than an exact speed target.
-5. Note if any obstacle causes obvious bottoming, excessive rocking, or a much softer/cleaner hit.
-6. Send the complete `log.txt`.
+### Repeat exactly
+1. Basic Polowe C-330, same configuration.
+2. Let **2.40 bar** settle.
+3. Board set + pallet truck + campfire on cruise control **10 km/h**.
+4. Single board at **Vmax**.
+5. Let **1.00 bar** settle and repeat the same two tests.
+6. Keep the same line/order as closely as practical and send the complete `log.txt`.
 
-All engine/transmission/ADS behavior, mass/COM/ballast, tire dimensions/traction and MudSystemPhysics are unchanged.
-
-<!-- release-trigger-0.0.3.3-spring-test -->
+`damper=25`, `suspTravel=0.07`, tyre dimensions/traction, MudSystemPhysics, mass/COM/ballast, engine/transmission/ADS and differential are unchanged.

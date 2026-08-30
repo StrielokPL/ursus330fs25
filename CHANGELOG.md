@@ -1,5 +1,38 @@
 # Changelog
 
+## 0.0.3.4 - C-330 spring=15 standardized A/B control
+
+Control build for the stabilized obstacle-test protocol introduced during the 0.0.3.3 runtime test. This intentionally restores the pre-0.0.3.3 common spring so the spring change can be compared under the same driving conditions.
+
+### New standardized test protocol
+- Basic C-330 / Polowe wheel configuration, no ballast or attachment changes.
+- Board set, pallet truck and campfire at cruise control **10 km/h**.
+- One single board at tractor **Vmax**.
+- Repeat the sequence at settled MudSystemPhysics **2.40 bar** and **1.00 bar**.
+- Keep obstacle order and line as consistent as practical.
+
+### 0.0.3.3 spring=12 reference
+- Runtime spring was confirmed at **120** with `suspTravel=0.07`.
+- The controlled 10 km/h portions averaged about **9.90 km/h at 2.40 bar** and **9.92 km/h at 1.00 bar**.
+- Peak single-wheel load in those standardized portions was **1.551 t at 2.40 bar** and **1.562 t at 1.00 bar**.
+- The Vmax board runs reached **23.05 km/h** and **22.97 km/h** respectively; observed single-wheel peaks were **1.650 t** and **1.987 t**. These peaks are treated as comparative runtime indicators because the logger samples at finite intervals.
+- The 0.0.3.3 run had **0 `Error:`**, **0 Lua stack errors** and **0 `SHIFT_OSCILLATION`**.
+
+### Isolated control change
+- Common wheel XML spring: **12 -> 15** on all entries changed by 0.0.3.3.
+- Expected GIANTS runtime spring: approximately **120 -> 150**.
+- This is an A/B control, not an assertion that 15 is the final value.
+
+### Explicitly unchanged
+- `damper=25`, `suspTravel=0.07`, initialCompression and forcePointRatio.
+- Wheel mass, dimensions, stiffness and traction fields.
+- MudSystemPhysics pressure/radius/friction behavior.
+- Stable mass/COM/factory ballast.
+- Engine, transmission controller, ADS read-only protection and differential.
+
+### Decision after test
+Compare 0.0.3.4 directly with the standardized 0.0.3.3 run. Only then choose whether the next spring should stay at 15, return to 12, or use an intermediate value.
+
 ## 0.0.3.3 - C-330 softer tyre-spring physical test
 
 First physical change in the tyre compliance stage after the 0.0.3.1/0.0.3.2 read-only diagnostics.
