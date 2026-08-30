@@ -1,7 +1,7 @@
 {
-  "version": "0.0.3.0",
-  "tag": "0.0.3.0",
-  "title": "0.0.3.0 - stable C-330 mass / balance milestone",
-  "prerelease": false,
+  "version": "0.0.3.1",
+  "tag": "0.0.3.1",
+  "title": "0.0.3.1 - C-330 tyre / pressure diagnostic test",
+  "prerelease": true,
   "zipName": "FS25_UrsusC330_330M_4x2.zip"
 }

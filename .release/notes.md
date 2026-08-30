@@ -1,20 +1,20 @@
-## Ursus C-330 / C-330M 0.0.3.0
+## Ursus C-330 / C-330M 0.0.3.1
 
-**Stable mass / balance milestone.** No physics values changed from validated 0.0.2.3; this release promotes the tested state and removes temporary mass diagnostics.
+**Read-only tyre / MudSystemPhysics pressure diagnostic prerelease.** No physical values are changed from stable 0.0.3.0.
 
-### Validated C-330 mass state
-- base ready-to-work mass: **1675 kg**;
-- base axle loads: **634 / 1041 kg (37.86 / 62.14%)**;
-- factory front metal ballast: **42 kg**;
-- rear metal ballast: **40 kg Small / 144 kg Big / 184 kg Both**;
-- full factory metal ballast: **226 kg**, giving **1901 kg** total.
+### What this build records
+- wheel configuration and mass context,
+- FL/FR/RL/RR tire load plus front/rear totals at 100 ms resolution,
+- wheel vertical movement relative to the tractor,
+- runtime spring, damper, suspension travel/compression candidates, radius, stiffness and friction every 500 ms,
+- visual maxDeformation separately,
+- pressure-like runtime fields from MudSystemPhysics/tire/wheel specializations every 250 ms and whenever the detected state changes.
 
-The 0.0.2.3 test matrix reproduced each configured mass exactly and confirmed additive front/rear behavior. The complete runtime log had no C-330 Lua/game errors or oscillation warnings.
+### Test plan
+Use the unballasted standard C-330 with no attachment. Test both tyre sets. For each set:
+1. let the tractor settle at the first MS pressure;
+2. keep it stationary for a few seconds;
+3. drive the same short route / bump or rough patch;
+4. change to the next clearly different MS pressure and repeat.
 
-### Stable cleanup
-Temporary `TractorDebugKit` mass diagnostics are removed. The production 0.0.2.0 drivetrain controller remains unchanged.
-
-### Next development stage
-Tyre spring/deformation/damping calibration. Liquid ballast will be modeled afterward as a separate rear-tyre state with both added liquid mass and altered tyre compliance/damping, rather than as mass alone.
-
-<!-- release-trigger-0.0.3.0-mass-stable -->
+Use as many pressure steps as convenient; three or more (low / medium / high) will make the spring/damping trend much easier to identify. Send the complete `log.txt`.

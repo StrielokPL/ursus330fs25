@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.0.3.1 - C-330 tyre / pressure diagnostic prerelease
+
+Read-only instrumentation build starting the tyre spring/deformation/damping stage after stable 0.0.3.0. **No tyre, suspension, mass, drivetrain or traction value is changed in this build.**
+
+### Diagnostic scope
+- Targets the C-330/C-330M `c330m.xml` vehicle only.
+- Records the selected wheel configuration and total mass.
+- Samples individual FL/FR/RL/RR tire loads and front/rear axle totals every **100 ms**.
+- Records wheel-node vertical position relative to the tractor root to expose physical wheel/suspension movement.
+- Every **500 ms** records runtime wheel/physics fields including mass, radius, width, `restLoad`, load ratio, `suspTravel`, compression/length candidates, spring, damper, initialCompression, forcePointRatio, longitudinal/lateral stiffness and friction.
+- Records visual `maxDeformation` separately so visual tire deformation is not confused with physical suspension compliance.
+- Every **250 ms** searches read-only runtime structures for pressure/inflation/PSI/bar fields in MudSystemPhysics/tire/wheel-related specializations and logs a breadcrumb whenever the pressure state changes.
+- On each settled wheel configuration it emits a one-time scalar discovery dump for pressure/suspension/deformation/stiffness fields, allowing unknown GIANTS/MS runtime field names to be identified from the log.
+
+### Intended test
+Use the basic standard C-330 without ballast or attachments. Test both available tyre sets/configurations. For each tyre set, change pressure through MudSystemPhysics across several clearly separated settings, let the tractor stand briefly at each setting, then drive the same short route / disturbance so load and wheel movement can be compared.
+
+### Explicitly unchanged
+- Stable 0.0.3.0 mass, COM and factory metal ballast values.
+- Tyre XML radius, width, mass, maxDeformation, frictionScale and stiffness values.
+- Wheel suspension spring/damper/travel values.
+- MudSystemPhysics itself; the bridge is diagnostic/read-only and nil-safe.
+- Engine, 6F/2R transmission controller, ADS integration, differential and C-330M drivetrain scope.
+
 ## 0.0.3.0 - stable C-330 mass / balance milestone
 
 Full release closing the isolated base-mass, longitudinal COM and factory metal-ballast calibration stage. **No physical values are changed from 0.0.2.3.**

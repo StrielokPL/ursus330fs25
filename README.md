@@ -6,14 +6,14 @@ Working repository for analysis, correction and further development of the FS25 
 **StrielokPL**, Speedy, Miziuu
 
 ## Current development version
-**0.0.3.0 – stable C-330 mass / balance milestone**
+**0.0.3.1 – C-330 tyre / pressure diagnostic prerelease**
 
 The repository was imported from mod package version **1.1.2.0**, but the project versioning was reset for the rebuild. Version `0.0.0.2` is the first documented development baseline in this repository.
 
 ### Runtime diagnostics
 Development builds `0.0.0.3` through `0.0.1.8` used a temporary **read-only** `TractorDebugKit` adapted from `strojenieciagnikowfs25` to validate mass, drivetrain, shift behavior and optional ADS load. The kit did not tune or overwrite vehicle physics.
 
-The temporary diagnostic kit was removed for stable **0.0.2.0**. It can be restored in a later development branch when another subsystem needs runtime instrumentation.
+The mass diagnostic kit was removed again for stable **0.0.3.0**. Version **0.0.3.1** temporarily adds a separate read-only `TyreDebugKit` to measure wheel load, spring/damper state, wheel movement and MudSystemPhysics pressure-related runtime fields without changing tyre physics.
 
 ### Changes already present in the imported package
 The uploaded source package already contained the previously tested **Static Cabins** compatibility fix from `Farming25fixnmix`, so the patch was **not applied again**.

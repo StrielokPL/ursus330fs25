@@ -195,7 +195,7 @@ if not TyreDebugKit.installed then
                 table.insert(out, childPath .. "=" .. tostring(value))
             elseif type(value) == "table" and depth > 0 then
                 local descend = containsAny(keyText, tokens)
-                    or containsAny(path, {"pressure", "tire", "tyre", "wheel", "mud"})
+                    or containsAny(path, {"pressure", "tire", "tyre", "mud"})
                 if descend then
                     scanRelevantScalars(value, childPath, tokens, depth - 1, seen, out, maxEntries)
                 end
