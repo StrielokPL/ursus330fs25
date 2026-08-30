@@ -12,3 +12,5 @@ Diagnostic-only follow-up to the 0.0.0.5 gearbox test. **Gear ratios and shift t
 
 ### Test
 Use **C-330 (motor=1)** with the same heavy trailer. Drive from standstill through both ranges, then deliberately slow it under load and accelerate again. Send the complete `log.txt`; the key lines are `[TRACTORDBG][RANGE_CHANGE]`, `[TRACTORDBG][SHIFT]` and `[C330TRANS]`.
+
+<!-- release-trigger-0.0.0.6 -->
