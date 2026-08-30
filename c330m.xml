@@ -33,7 +33,7 @@
         <sounds filename="sounds/c330m.xml"/>
         <size width="2.5" length="3.5" height="2.5" lengthOffset="-0.3"/>
         <components>
-            <component centerOfMass="0 0.1 -0.2" solverIterationCount="20" mass="800"/>
+            <component centerOfMass="0 0.1 -0.125" solverIterationCount="20" mass="792"/>
             <component centerOfMass="0 0.04 0" solverIterationCount="28" mass="300"/>
             <component centerOfMass="0 -0.5 0" solverIterationCount="15" mass="2"/>
             <component centerOfMass="0 -0.5 0" solverIterationCount="15" mass="2"/>

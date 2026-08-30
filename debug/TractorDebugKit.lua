@@ -2,7 +2,7 @@
 -- Standardized read-only diagnostic toolkit for FS25 tractor tuning.
 -- Temporary debug code: remove from stable release.
 -- Adapted for Ursus C-330 / C-330M.
--- 0.0.2.1 MASS TEST: static configuration/mass/COM/axle-load snapshot only.
+-- 0.0.2.2 MASS/COM TEST: validate calculated base component mass and longitudinal COM correction.
 -- Log prefix: [TRACTORDBG]
 
 TractorDebugKit = TractorDebugKit or {}

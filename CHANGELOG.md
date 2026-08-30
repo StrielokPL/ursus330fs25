@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.0.2.2 - C-330 base mass / COM correction test
+
+First measured mass/COM correction based on the complete 0.0.2.1 static diagnostic matrix.
+
+### Runtime evidence from 0.0.2.1
+- Settled unballasted/basic-wheel C-330: **1.683 t**, about **0.605 t front / 1.078 t rear = 35.97/64.03**.
+- Factory target: **1.675 t**, **0.635 t front / 1.040 t rear = 37.9/62.1**.
+- `vehicleType=1..10` cabin variants did not alter runtime mass or axle loads; current cabin choices are physics-mass-neutral.
+- Rear wheel options added regular rear-only mass: +40, +80 and +120 kg; the two heaviest variants were both +120 kg.
+- `design3=2` added exactly +100 kg through component 2 and effectively placed it on the front axle.
+- Combined configurations were additive and stable.
+
+### Change
+- Base component 1 nominal mass: **800 -> 792 kg**. With the observed +35 kg runtime fuel mass this is expected to reduce the settled tractor from 1.683 t to approximately **1.675 t**.
+- Component 1 longitudinal COM: **Z -0.200 -> -0.125 m**, a 75 mm forward correction.
+- Using the 1.920 m factory wheelbase and measured component/runtime masses, this is predicted to move roughly 30-33 kg of axle reaction from rear to front and land close to **635/1040 kg**.
+
+### Explicitly unchanged
+- Cabin configuration masses (still neutral pending separate evidence for individual cabin weights).
+- Front and rear ballast configuration masses.
+- Wheel/tyre dimensions and traction physics.
+- Engine, gearbox, ADS integration and all 0.0.2.0 drivetrain behavior.
+- C-330M drivetrain/controller scope.
+
 ## 0.0.2.1 - base mass / COM / axle-load diagnostic
 
 First isolated mass-analysis prerelease after stable 0.0.2.0. **No physical values are changed in this build.**
