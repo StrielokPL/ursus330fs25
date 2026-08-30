@@ -1,22 +1,19 @@
-## Ursus C-330 / C-330M 0.0.3.4
+## Ursus C-330 / C-330M 0.0.3.5
 
-**A/B control for the new stabilized obstacle-test protocol.**
+**First isolated damper test on the selected spring=12 tyre baseline.**
 
-### Change
-- Common wheel spring **12 -> 15** (runtime expected about **120 -> 150**).
-- This deliberately restores the pre-0.0.3.3 spring for one controlled comparison. It is not yet a final tuning decision.
+### Changes
+- Restore selected spring baseline: **15 -> 12** (runtime expected ~150 -> 120).
+- New test variable only: common wheel damper **25 -> 22**.
 
-### Why
-The test method changed after spring had already been reduced in 0.0.3.3. The 0.0.3.3 log is therefore the first clean baseline for the new route, but there is no spring=15 run under exactly the same conditions. 0.0.3.4 supplies that missing control.
+The damper step is intentionally small. After reducing spring from 15 to 12, a simple constant-damping-ratio estimate gives 25 × sqrt(12/15) ≈ 22.36, so 22 is a useful first measured point rather than an arbitrary large change.
 
-### Repeat exactly
-1. Basic Polowe C-330, same configuration.
-2. Let **2.40 bar** settle.
-3. Board set + pallet truck + campfire on cruise control **10 km/h**.
+### Repeat the standardized route
+1. Basic Polowe C-330, no ballast/attachment changes.
+2. Settle at **2.40 bar**.
+3. Board set + pallet truck + campfire at cruise control **10 km/h**.
 4. Single board at **Vmax**.
-5. Let **1.00 bar** settle and repeat the same two tests.
-6. Keep the same line/order as closely as practical and send the complete `log.txt`.
+5. Settle at **1.00 bar** and repeat.
+6. Keep obstacle order and line as consistent as practical and send the complete `log.txt`.
 
-`damper=25`, `suspTravel=0.07`, tyre dimensions/traction, MudSystemPhysics, mass/COM/ballast, engine/transmission/ADS and differential are unchanged.
-
-<!-- release-trigger-0.0.3.4-spring-control -->
+`suspTravel=0.07`, wheel geometry/traction, MudSystemPhysics, mass/COM/ballast, engine/transmission/ADS and differential are unchanged.

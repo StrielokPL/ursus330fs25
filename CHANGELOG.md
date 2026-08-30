@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.0.3.5 - C-330 damper=22 tyre test
+
+First isolated damping test after the standardized spring A/B comparison selected **spring=12** as the new tyre-spring baseline.
+
+### Baseline restoration
+- Common wheel spring **15 -> 12** on all 40 wheel physics entries.
+- This is not a new spring experiment; it restores the selected 0.0.3.3 baseline after the 0.0.3.4 control run.
+
+### Isolated damping change
+- Common wheel damper **25 -> 22** on all 40 wheel physics entries.
+- The value is intentionally conservative. With spring reduced from 15 to 12, maintaining approximately the same classical damping ratio would scale damping by sqrt(12/15), giving about 22.36 from the previous 25.
+- Expected runtime damper components should decrease proportionally from the 0.0.3.3 baseline.
+
+### Explicitly unchanged
+- `suspTravel=0.07`, initialCompression, forcePointRatio and wheel geometry.
+- MudSystemPhysics pressure/radius/friction behavior.
+- Wheel masses, factory ballast, tractor mass/COM.
+- Engine, transmission controller, ADS protection and differential.
+
+### Test protocol
+Use the established standardized route: board set + pallet truck + campfire at cruise control **10 km/h**, then the single board at **Vmax**, at settled **2.40 bar** and **1.00 bar**. Compare directly against the 0.0.3.3 spring=12 / damper=25 log.
+
+### Decision target
+Prefer damper=22 only if it preserves or improves peak wheel loads/contact time while avoiding additional secondary bounce after obstacles. Otherwise return to 25 or test an intermediate value.
+
 ## 0.0.3.4 - C-330 spring=15 standardized A/B control
 
 Control build for the stabilized obstacle-test protocol introduced during the 0.0.3.3 runtime test. This intentionally restores the pre-0.0.3.3 common spring so the spring change can be compared under the same driving conditions.
