@@ -14,3 +14,5 @@ Final dedicated C-330 gearbox test: automatic range control now covers the compl
 
 ### Test
 Use **C-330 (motor=1)**. Test forward as before, then reverse both unloaded and with the heavy trailer. In particular verify that a loaded tractor does not jump to R-II around 1.5 km/h, while an unloaded/lightly loaded tractor can reach R-II after R-I tops out. Send the complete `log.txt`.
+
+<!-- release-trigger-0.0.0.7 -->
