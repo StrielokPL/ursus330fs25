@@ -1,5 +1,5 @@
 -- Ursus C-330 FS25 automatic range controller
--- 0.0.1.8 TEST: 2 s upshift failsafe, heavy-set top-gear recovery and mass-aware reverse start; ADS-safe.
+-- 0.0.2.0 STABLE: validated 2 s upshift failsafe, mass-aware 6F/2R control and ADS-safe operation.
 --
 -- The C-330 range box is NOT a powershift splitter. In automatic mode the
 -- intended virtual order is:
@@ -620,5 +620,5 @@ if not C330TransmissionFix.installed then
         return targetGear
     end
 
-    Logging.info("[C330TRANS] 0.0.1.8 C-330 6F/2R controller installed (2s upshift failsafe, mass-aware reverse start, ADS-safe)")
+    Logging.info("[C330TRANS] 0.0.2.0 C-330 6F/2R controller installed (stable, 2s upshift failsafe, mass-aware reverse start, ADS-safe)")
 end

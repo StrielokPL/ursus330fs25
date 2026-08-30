@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.0.2.0 - stable C-330 drivetrain milestone
+
+First full stable release of the rebuilt standard C-330 drivetrain phase. **No engine or transmission behavior is changed from 0.0.1.8.**
+
+### Final 0.0.1.8 validation
+- Complete runtime log contained **0 Lua/game errors** and **0 `SHIFT_OSCILLATION` warnings**.
+- The generic 2.0 s upshift dwell was observed blocking premature automatic upshifts.
+- Light 1.683 t forward starts selected `LIGHT_I3`; light reverse starts selected `LIGHT_RII` / R-II.
+- A light R-II start may still fall back to R-I immediately when actual low-rpm load crosses the existing reverse downshift protection; this is intentional safety behavior, not hunting.
+- All warnings in the validation log were unrelated to this mod (other-mod l10n/texture warnings, savegame/render warnings).
+
+### Stable drivetrain state
+- Factory-style C-330 6F/2R speed ladder with explicit I/II automatic range sequencing.
+- 2.0 s minimum automatic upshift dwell and heavy-set II/3 recovery protection.
+- Mass-aware starts: <3.175 t -> I/3 forward and R-II reverse; >=3.175 t keeps conservative low-range starts.
+- S-312C calibration: 100 Nm maximum at 1600-1800 rpm and ~22.4 kW at 2200 rpm.
+- ADS compatibility remains optional, filtered and strictly read-only.
+- Static Cabins dirty-flag compatibility fix remains in place.
+- C-330M remains outside the custom C-330 drivetrain controller and is reserved for separate calibration.
+
+### Release cleanup
+- Removed temporary `debug/TractorDebugKit.lua` from the stable package and `modDesc.xml`.
+- Kept `Scripts/C330TransmissionFix.lua` as the production transmission controller.
+
+### Next development subsystem
+- Base mass and center-of-mass / axle-load calibration against the 1675 kg and ~38/62 factory target, isolated from tyres, ballast and drivetrain tuning.
+
 ## 0.0.1.8 - 2 s upshift failsafe and mass-aware R-II start
 
 Transmission follow-up based on the complete 0.0.1.7 runtime log.

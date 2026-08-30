@@ -6,14 +6,14 @@ Working repository for analysis, correction and further development of the FS25 
 **StrielokPL**, Speedy, Miziuu
 
 ## Current development version
-**0.0.1.8 – C-330 2 s upshift failsafe + mass-aware R-II start prerelease**
+**0.0.2.0 – stable C-330 drivetrain milestone**
 
 The repository was imported from mod package version **1.1.2.0**, but the project versioning was reset for the rebuild. Version `0.0.0.2` is the first documented development baseline in this repository.
 
-### Runtime diagnostics in 0.0.0.3
-Version `0.0.0.3` adds a temporary **read-only** `TractorDebugKit` adapted from `strojenieciagnikowfs25`. It does not tune or overwrite vehicle physics. It records the runtime mass/axle-load baseline, component COM, wheel masses and loads, active configurations, motor/gear-group state, differential graph, real shift transitions and optional ADS `dynamicMotorLoad` when ADS is present.
+### Runtime diagnostics
+Development builds `0.0.0.3` through `0.0.1.8` used a temporary **read-only** `TractorDebugKit` adapted from `strojenieciagnikowfs25` to validate mass, drivetrain, shift behavior and optional ADS load. The kit did not tune or overwrite vehicle physics.
 
-The diagnostic code is temporary and remains enabled for the engine/physics tuning phase; it must be removed before a stable release.
+The temporary diagnostic kit was removed for stable **0.0.2.0**. It can be restored in a later development branch when another subsystem needs runtime instrumentation.
 
 ### Changes already present in the imported package
 The uploaded source package already contained the previously tested **Static Cabins** compatibility fix from `Farming25fixnmix`, so the patch was **not applied again**.
