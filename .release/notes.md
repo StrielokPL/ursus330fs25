@@ -16,3 +16,5 @@ Factory ratios, 100 Nm S-312C curve, forward/downshift thresholds, fuel, chassis
 
 ### Test focus
 Test four starts if practical: forward light, forward >=3.175 t, reverse light, reverse >=3.175 t. Confirm light reverse logs `START REVERSE R-II`, heavy reverse logs `START REVERSE R-I`, and automatic upshifts show at least 2 s settled-gear dwell. With the heavy trailer, verify II/3 only follows 2 s continuous load below 0.70 and does not create hunting. Send the complete `log.txt`.
+
+<!-- release-trigger-0.0.1.8 -->
