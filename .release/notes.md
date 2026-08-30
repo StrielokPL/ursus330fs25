@@ -22,3 +22,5 @@ Keep **basic wheels** for every sample. Start with the plain/unballasted tractor
 Unballasted ready-to-work C-330: **1675 kg**, approximately **635 kg front / 1040 kg rear**, or about **38/62**.
 
 Send the complete `log.txt`; the configuration numbers in the log will let us reconstruct the tested combinations.
+
+<!-- release-trigger-0.0.2.1-mass -->
