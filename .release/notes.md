@@ -14,3 +14,5 @@ Fuel use, idle/max RPM, gearbox, ADS behavior, C-330M and chassis physics are un
 
 ### Test
 Use **C-330 (motor=1)**. Compare unloaded acceleration with the previous build, then use the same heavy trailer on level ground and, if possible, on an incline/high-resistance pull. Let the engine work below 1800 rpm instead of immediately lifting off. Send the complete `log.txt`; `[ENGINE_TRACE]` will show how the real 100 Nm curve interacts with ADS and the completed gearbox.
+
+<!-- release-trigger-0.0.1.1 -->
