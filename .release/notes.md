@@ -13,3 +13,5 @@ One basic tyre family is enough; 0.0.3.1 confirmed Polowe/Szosowe share the same
 4. Send the complete `log.txt`.
 
 The log now includes pressure current/target and FL/FR/RL/RR suspension length every 50 ms plus the full GIANTS compression/rebound damper split.
+
+<!-- release-trigger-0.0.3.2-suspension-trace -->
