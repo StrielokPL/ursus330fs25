@@ -13,3 +13,5 @@ Second **C-330 gearbox test**, focused on ADS safety and eliminating range hunti
 
 ### Test
 Use **C-330 (motor=1)**. Test unloaded acceleration, then the same heavy trailer. The key check is whether it now stays in range I while the load remains high instead of oscillating around `I/3 <-> II/1`. Send the complete `log.txt`.
+
+<!-- release-trigger-0.0.0.5 -->
