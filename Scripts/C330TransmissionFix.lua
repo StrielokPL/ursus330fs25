@@ -1,5 +1,5 @@
 -- Ursus C-330 FS25 automatic range controller
--- 0.0.1.6 TEST: refined high-load top-gear guard with mass-aware 6F/2R control; ADS-safe.
+-- 0.0.1.7 TEST: heavy-set top-gear stability guard with mass-aware 6F/2R control; ADS-safe.
 --
 -- The C-330 range box is NOT a powershift splitter. In automatic mode the
 -- intended virtual order is:
@@ -64,14 +64,16 @@ if not C330TransmissionFix.installed then
     local TOP_GEAR_POSTSHIFT_RPM_RATIO = 14.324 / 22.878
     local TOP_GEAR_POSTSHIFT_MIN_RPM = 1200
     local TOP_GEAR_PREDICTION_GUARD_MIN_LOAD = 0.55
-    -- Hill traces show that the ratio-only prediction is too optimistic while
-    -- the tractor is pulling hard. 0.0.1.5 proved that 0.80 is too high as an
-    -- instantaneous ADS threshold: a shift at 2088 rpm / 0.757 load was allowed
-    -- and the engine then landed near 1112 rpm / 0.908 load in II/3. Keep the
-    -- 2100 rpm boundary, but classify >=0.70 as high load to add enough margin
-    -- for the short ADS/load dip visible at the exact prediction sample.
+    -- 0.0.1.6 proved that the instantaneous load threshold itself is not enough:
+    -- on a heavy set ADS can fall below 0.70 for a fraction of a second just before
+    -- GIANTS requests II/3, then rise back above ~0.85 after the shift. Runtime
+    -- evidence separated bad transient windows (~0.15-0.27 s) from acceptable
+    -- recovery windows (~0.75-0.82 s). For a set at or above the same 3.175 t
+    -- threshold used by mass-aware starting, require 600 ms of continuous load
+    -- below 0.70 before top gear is allowed. Light sets keep the current behavior.
     local TOP_GEAR_HIGH_LOAD = 0.70
     local TOP_GEAR_HIGH_LOAD_MIN_RPM = 2100
+    local TOP_GEAR_HEAVY_SET_STABLE_MS = 600
 
     local RANGE_CHANGE_COOLDOWN_MS = 800
     local LOAD_RECOVERY_HOLD_MS = 2500
@@ -359,6 +361,7 @@ if not C330TransmissionFix.installed then
         local rpm = getRpm(self)
         local load, loadSource = getLoad(self)
         local speed = getSpeed(self)
+        local totalMass = getTotalMassTons(self)
         local accel = math.abs(tonumber(acceleratorPedal) or 0)
         local maxGear = math.min(#gears, 3)
 
@@ -475,29 +478,53 @@ if not C330TransmissionFix.installed then
         targetGear = math.max(1, math.min(targetGear, maxGear))
 
         -- Special protection for II/2 -> II/3 with the calibrated 100 Nm engine.
-        -- Do not blindly follow vanilla if the factory ratio step would drop the
-        -- engine far below its useful band while it is already carrying real load.
+        -- Heavy sets use a short recovery hold so a transient ADS dip cannot open
+        -- top gear while the tractor is still pulling hard. ADS remains read-only.
         if range == HIGH_RANGE
             and curGear == 2
             and targetGear == 3
-            and load ~= nil
-            and load >= TOP_GEAR_PREDICTION_GUARD_MIN_LOAD then
-            -- On a real climb the vehicle can lose appreciable road speed during
-            -- the 0.4 s gear change, so a static ratio prediction alone can still
-            -- allow II/3 to land below the useful engine band. Under heavy load,
-            -- require the engine to be essentially at the top of II/2 first.
-            if load >= TOP_GEAR_HIGH_LOAD and rpm < TOP_GEAR_HIGH_LOAD_MIN_RPM then
-                logDecision(self, "BLOCK TOP UPSHIFT HIGH LOAD", curGear, range, curGear, range, rpm, load, loadSource)
-                self.autoGearChangeTimer = math.max(self.autoGearChangeTime or 0, 250)
-                return curGear
+            and load ~= nil then
+            local heavySet = totalMass ~= nil and totalMass >= LIGHT_START_MAX_TOTAL_MASS_T
+
+            if heavySet then
+                if load >= TOP_GEAR_HIGH_LOAD then
+                    self.c330FixTopGearLowLoadSince = nil
+                    logDecision(self, "BLOCK TOP UPSHIFT HEAVY SET", curGear, range, curGear, range, rpm, load, loadSource)
+                    self.autoGearChangeTimer = math.max(self.autoGearChangeTime or 0, 250)
+                    return curGear
+                end
+
+                if self.c330FixTopGearLowLoadSince == nil then
+                    self.c330FixTopGearLowLoadSince = now
+                    logDecision(self, "BLOCK TOP UPSHIFT STABILIZE", curGear, range, curGear, range, rpm, load, loadSource)
+                    self.autoGearChangeTimer = math.max(self.autoGearChangeTime or 0, 250)
+                    return curGear
+                elseif now - self.c330FixTopGearLowLoadSince < TOP_GEAR_HEAVY_SET_STABLE_MS then
+                    logDecision(self, "BLOCK TOP UPSHIFT STABILIZE", curGear, range, curGear, range, rpm, load, loadSource)
+                    self.autoGearChangeTimer = math.max(self.autoGearChangeTime or 0, 250)
+                    return curGear
+                end
+            else
+                self.c330FixTopGearLowLoadSince = nil
+
+                -- Preserve the 0.0.1.6 light-set high-load safeguard.
+                if load >= TOP_GEAR_HIGH_LOAD and rpm < TOP_GEAR_HIGH_LOAD_MIN_RPM then
+                    logDecision(self, "BLOCK TOP UPSHIFT HIGH LOAD", curGear, range, curGear, range, rpm, load, loadSource)
+                    self.autoGearChangeTimer = math.max(self.autoGearChangeTime or 0, 250)
+                    return curGear
+                end
             end
 
-            local predictedRpm = rpm * TOP_GEAR_POSTSHIFT_RPM_RATIO
-            if predictedRpm < TOP_GEAR_POSTSHIFT_MIN_RPM then
-                logDecision(self, "BLOCK TOP UPSHIFT", curGear, range, curGear, range, rpm, load, loadSource)
-                self.autoGearChangeTimer = math.max(self.autoGearChangeTime or 0, 250)
-                return curGear
+            if load >= TOP_GEAR_PREDICTION_GUARD_MIN_LOAD then
+                local predictedRpm = rpm * TOP_GEAR_POSTSHIFT_RPM_RATIO
+                if predictedRpm < TOP_GEAR_POSTSHIFT_MIN_RPM then
+                    logDecision(self, "BLOCK TOP UPSHIFT", curGear, range, curGear, range, rpm, load, loadSource)
+                    self.autoGearChangeTimer = math.max(self.autoGearChangeTime or 0, 250)
+                    return curGear
+                end
             end
+        else
+            self.c330FixTopGearLowLoadSince = nil
         end
 
         -- Do not allow a normal upshift when the engine is already heavily loaded
@@ -515,5 +542,5 @@ if not C330TransmissionFix.installed then
         return targetGear
     end
 
-    Logging.info("[C330TRANS] 0.0.1.6 C-330 6F/2R controller installed (refined high-load top-gear guard, mass-aware start, ADS-safe)")
+    Logging.info("[C330TRANS] 0.0.1.7 C-330 6F/2R controller installed (heavy-set top-gear stability guard, mass-aware start, ADS-safe)")
 end

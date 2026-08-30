@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.0.1.7 - C-330 heavy-set II/3 stability guard
+
+Isolated follow-up to the 0.0.1.6 trailer/no-trailer runtime test. **Only II/3 admission for heavy sets is refined.**
+
+### Runtime evidence from 0.0.1.6
+- The 0.70 threshold started working: `BLOCK TOP UPSHIFT HIGH LOAD` appeared twice with the 3.469 t trailer set.
+- No-trailer behavior remained clean at 1.683 t.
+- Two loaded shifts still slipped through after short ADS dips below 0.70: the low-load window before the decision was only about 0.15 s and 0.27 s, and post-shift load climbed back to roughly 0.77-0.88.
+- Two more acceptable loaded cases had load below 0.70 for about 0.75-0.82 s before II/3 and recovered without the same severe bog.
+- All 13 range changes were `source=C330TRANS`; no `SHIFT_OSCILLATION` or Lua error occurred.
+
+### Change
+- For total mass **>= 3.175 t**, II/2 -> II/3 now requires filtered load **< 0.70 continuously for 600 ms**.
+- If load returns to >=0.70, the 600 ms timer resets.
+- Light sets below 3.175 t keep the 0.0.1.6 behavior.
+- The existing predicted post-shift RPM guard remains active after stabilization.
+
+### Explicitly unchanged
+- Mass-aware start rule and 3.175 t threshold.
+- Forward I/3 <-> II/1 and reverse range logic.
+- 100 Nm S-312C engine curve, factory gearbox ratios, fuel use and chassis physics.
+- C-330M remains excluded.
+- ADS remains optional, filtered and strictly read-only.
+
 ## 0.0.1.6 - C-330 refined high-load II/3 guard
 
 Isolated follow-up to the 0.0.1.5 trailer/no-trailer runtime test. **Only the high-load classification threshold for II/2 -> II/3 changes.**
