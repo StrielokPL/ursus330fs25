@@ -1,29 +1,18 @@
-## Ursus C-330 / C-330M 0.0.2.3
+## Ursus C-330 / C-330M 0.0.3.0
 
-**Factory ballast mass prerelease.** The 0.0.2.2 base mass/COM result is accepted and remains unchanged.
+**Stable mass / balance milestone.** No physics values changed from validated 0.0.2.3; this release promotes the tested state and removes temporary mass diagnostics.
 
-### 0.0.2.2 confirmed safe point
-- base mass: **1675 kg**,
-- front/rear: **634 / 1041 kg (37.86 / 62.14%)**,
-- factory target: **1675 kg, 635 / 1040 kg**.
+### Validated C-330 mass state
+- base ready-to-work mass: **1675 kg**;
+- base axle loads: **634 / 1041 kg (37.86 / 62.14%)**;
+- factory front metal ballast: **42 kg**;
+- rear metal ballast: **40 kg Small / 144 kg Big / 184 kg Both**;
+- full factory metal ballast: **226 kg**, giving **1901 kg** total.
 
-### 0.0.2.3 ballast changes
-- front ballast: **100 -> 42 kg** total,
-- rear Small: stays **40 kg** total,
-- rear Big: **80/120 -> 144 kg** total depending visual variant,
-- rear Both: **120 -> 184 kg** total.
+The 0.0.2.3 test matrix reproduced each configured mass exactly and confirmed additive front/rear behavior. The complete runtime log had no C-330 Lua/game errors or oscillation warnings.
 
-The visual configurations and ballast locations are unchanged; only their physical masses are corrected.
+### Stable cleanup
+Temporary `TractorDebugKit` mass diagnostics are removed. The production 0.0.2.0 drivetrain controller remains unchanged.
 
-### Test matrix
-Please use the standard C-330 (`motor=1`) and let each configuration settle stationary on level ground for at least 4-5 seconds:
-1. base, `wheel=1`, no front ballast — should repeat about **1675 / 634 / 1041 kg**;
-2. front ballast only (`design3=2`) — about **1717 / 676 / 1041 kg**;
-3. rear Small — about **1715 / 634 / 1081 kg**;
-4. rear Big variants — about **1819 / 634 / 1185 kg**;
-5. rear Both — about **1859 / 634 / 1225 kg**;
-6. front + rear Both — about **1901 / 676 / 1225 kg** (factory full-metal target 1901 / 677 / 1224 kg).
-
-A full `log.txt` is preferred. Engine, transmission, ADS behavior, tyre geometry and accepted base COM are unchanged.
-
-<!-- release-trigger-0.0.2.3-factory-ballast -->
+### Next development stage
+Tyre spring/deformation/damping calibration. Liquid ballast will be modeled afterward as a separate rear-tyre state with both added liquid mass and altered tyre compliance/damping, rather than as mass alone.

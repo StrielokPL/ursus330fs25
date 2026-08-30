@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="100">
     <author>StrielokPL, Speedy, Miziuu</author>
-    <version>0.0.2.3</version>
+    <version>0.0.3.0</version>
     <title>
         <en>Ursus C-330/330M</en>
     </title>
@@ -66,9 +66,7 @@ Configurations:
     <iconFilename>icon_c330m.dds</iconFilename>
     <multiplayer supported="true" />
 
-    <!-- Temporary read-only mass diagnostics for 0.0.2.3 ballast prerelease. -->
     <extraSourceFiles>
-        <sourceFile filename="debug/TractorDebugKit.lua" />
         <sourceFile filename="Scripts/C330TransmissionFix.lua" />
     </extraSourceFiles>
 

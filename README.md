@@ -6,7 +6,7 @@ Working repository for analysis, correction and further development of the FS25 
 **StrielokPL**, Speedy, Miziuu
 
 ## Current development version
-**0.0.2.3 – C-330 factory ballast mass test**
+**0.0.3.0 – stable C-330 mass / balance milestone**
 
 The repository was imported from mod package version **1.1.2.0**, but the project versioning was reset for the rebuild. Version `0.0.0.2` is the first documented development baseline in this repository.
 
@@ -32,10 +32,9 @@ The original compatibility patch was tested with Advanced Damage System 0.9.2.4 
 Technical reference for the C-330 rebuild: [`docs/FS25_C330_TECHNICAL_BASELINE.md`](docs/FS25_C330_TECHNICAL_BASELINE.md).
 
 ## Current priority
-The initial physics rebuild will focus on:
-- correct 1675 kg base working mass and 38/62 axle load split,
-- real 100 Nm S-312C torque characteristic and 22.4 kW rated power,
-- historically correct 6F/2R gearing and ~23 km/h C-330 top speed,
-- correct factory ballast masses,
-- tyre-radius and traction calibration,
-- 35 l fuel tank, 540 rpm PTO and 700 kg rear linkage target.
+Validated milestones now include the standard C-330 drivetrain and the base mass / balance / factory ballast stage.
+
+Next isolated subsystem:
+- tyre spring/deformation and damping calibration on the basic tyres,
+- then liquid rear-tyre ballast as a separate tyre state, including both its mass and its changed tyre compliance/damping,
+- followed by tyre traction/radius refinement and later PTO/hydraulics/fuel work.

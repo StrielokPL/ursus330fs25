@@ -1,7 +1,7 @@
 {
-  "version": "0.0.2.3",
-  "tag": "0.0.2.3",
-  "title": "0.0.2.3 - C-330 factory ballast mass test",
-  "prerelease": true,
+  "version": "0.0.3.0",
+  "tag": "0.0.3.0",
+  "title": "0.0.3.0 - stable C-330 mass / balance milestone",
+  "prerelease": false,
   "zipName": "FS25_UrsusC330_330M_4x2.zip"
 }

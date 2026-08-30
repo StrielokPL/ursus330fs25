@@ -1,5 +1,43 @@
 # Changelog
 
+## 0.0.3.0 - stable C-330 mass / balance milestone
+
+Full release closing the isolated base-mass, longitudinal COM and factory metal-ballast calibration stage. **No physical values are changed from 0.0.2.3.**
+
+### Final 0.0.2.3 runtime validation
+- Base/basic-wheel C-330 repeated at **1.675 t**, **0.634 t front / 1.041 t rear = 37.86/62.14**.
+- Rear `Small` (`wheel=2`) measured **1.715 t**, exactly **+40 kg**, all on the rear axle.
+- Rear `Big` (`wheel=3`) measured **1.819 t**, exactly **+144 kg**, all on the rear axle.
+- Rear `Both` (`wheel=4`) measured **1.859 t**, exactly **+184 kg**, all on the rear axle.
+- Alternate rear `Big` (`wheel=5`) also measured **1.819 t**, exactly **+144 kg**.
+- Front ballast (`design3=2`) measured **1.717 t**, exactly **+42 kg**, effectively all on the front axle: **0.676 / 1.041 t**.
+- Front + alternate `Big` measured **1.861 t**, **0.676 / 1.185 t**, confirming additive behavior.
+- The validated full factory-metal combination is therefore **1.901 t** with approximately **0.676 / 1.225 t** axle load; factory reference is about **0.677 / 1.224 t**.
+- Complete test log contained **0 `Error:`**, **0 Lua stack errors**, **0 `SHIFT_OSCILLATION`** and no C330/TRACTORDBG warnings. Generic warnings were unrelated mods/map/rendering.
+
+### Accepted safe points
+- Base ready-to-work mass: **1675 kg**.
+- Component 1 nominal mass: **792 kg**; longitudinal COM **Z=-0.125 m**.
+- Unballasted axle split: approximately **38/62**.
+- Front factory metal ballast: **42 kg total**.
+- Rear factory metal ballast: **40 kg small / 144 kg big / 184 kg both**.
+- Full factory metal ballast: **226 kg**, giving **1901 kg** tractor mass.
+
+### Release cleanup
+- Removed temporary `debug/TractorDebugKit.lua` from the stable package and `modDesc.xml`.
+- Production `Scripts/C330TransmissionFix.lua` remains unchanged.
+
+### Next subsystem
+- Tyre spring/deformation and damping calibration on the basic tyres.
+- Liquid rear-tyre ballast will follow as a distinct tyre configuration/state, because adding liquid changes not only rear unsprung/rotating mass but also effective tyre compliance and damping.
+
+### Explicitly unchanged
+- Engine and factory-style 6F/2R transmission behavior.
+- ADS integration (optional, filtered, read-only).
+- Cabin mass neutrality.
+- Tyre radius, tyre stiffness/traction parameters, suspension and differential.
+- C-330M drivetrain/controller scope.
+
 ## 0.0.2.3 - C-330 factory ballast mass test
 
 Isolated ballast-mass correction after 0.0.2.2 closed the base mass/COM calibration.
