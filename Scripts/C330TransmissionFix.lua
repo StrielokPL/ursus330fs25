@@ -1,5 +1,5 @@
 -- Ursus C-330 FS25 automatic range controller
--- 0.0.1.5 TEST: high-load top-gear guard with mass-aware 6F/2R control; ADS-safe.
+-- 0.0.1.6 TEST: refined high-load top-gear guard with mass-aware 6F/2R control; ADS-safe.
 --
 -- The C-330 range box is NOT a powershift splitter. In automatic mode the
 -- intended virtual order is:
@@ -64,12 +64,13 @@ if not C330TransmissionFix.installed then
     local TOP_GEAR_POSTSHIFT_RPM_RATIO = 14.324 / 22.878
     local TOP_GEAR_POSTSHIFT_MIN_RPM = 1200
     local TOP_GEAR_PREDICTION_GUARD_MIN_LOAD = 0.55
-    -- 0.0.1.4 hill traces showed that the ratio-only prediction is too optimistic
-    -- while the tractor is pulling hard. Examples: 1928 rpm / 0.804 load -> ~1065 rpm,
-    -- 1976 / 0.878 -> ~974 rpm and 2081 / 0.840 -> ~1167 rpm after II/3 engaged.
-    -- A 2137 rpm / 0.822 shift recovered at ~1550 rpm, so keep II/2 below 2100 rpm
-    -- whenever the current load is already at or above 0.80.
-    local TOP_GEAR_HIGH_LOAD = 0.80
+    -- Hill traces show that the ratio-only prediction is too optimistic while
+    -- the tractor is pulling hard. 0.0.1.5 proved that 0.80 is too high as an
+    -- instantaneous ADS threshold: a shift at 2088 rpm / 0.757 load was allowed
+    -- and the engine then landed near 1112 rpm / 0.908 load in II/3. Keep the
+    -- 2100 rpm boundary, but classify >=0.70 as high load to add enough margin
+    -- for the short ADS/load dip visible at the exact prediction sample.
+    local TOP_GEAR_HIGH_LOAD = 0.70
     local TOP_GEAR_HIGH_LOAD_MIN_RPM = 2100
 
     local RANGE_CHANGE_COOLDOWN_MS = 800
@@ -514,5 +515,5 @@ if not C330TransmissionFix.installed then
         return targetGear
     end
 
-    Logging.info("[C330TRANS] 0.0.1.5 C-330 6F/2R controller installed (high-load top-gear guard, mass-aware start, ADS-safe)")
+    Logging.info("[C330TRANS] 0.0.1.6 C-330 6F/2R controller installed (refined high-load top-gear guard, mass-aware start, ADS-safe)")
 end

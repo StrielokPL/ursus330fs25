@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.0.1.6 - C-330 refined high-load II/3 guard
+
+Isolated follow-up to the 0.0.1.5 trailer/no-trailer runtime test. **Only the high-load classification threshold for II/2 -> II/3 changes.**
+
+### Runtime evidence from 0.0.1.5
+- Without the trailer, top-gear shifts were acceptable and the mass-aware 1.683 t start remained `LIGHT_I3`.
+- With the trailer, total mass 3.469 t correctly selected `NATIVE_LOW_RANGE`.
+- One loaded II/2 -> II/3 shift was still too aggressive: 2088 rpm / 0.757 ADS at the decision, followed by about 1112 rpm / 0.908 load in II/3.
+- The new `>=0.80` high-load gate did not trigger because the instantaneous ADS sample dipped below 0.80 at the decision point.
+- All 11 observed range changes were attributed to `C330TRANS`; no `SHIFT_OSCILLATION`, Lua error or C330TRANS warning was present.
+
+### Change
+- `TOP_GEAR_HIGH_LOAD` reduced from **0.80** to **0.70**.
+- `TOP_GEAR_HIGH_LOAD_MIN_RPM` remains **2100 rpm**.
+- Therefore II/2 -> II/3 is held until 2100 rpm whenever the current filtered load is >=0.70.
+
+### Explicitly unchanged
+- 0.0.1.4 mass-aware start rule and 3.175 t threshold.
+- Forward I/3 <-> II/1 and reverse range logic.
+- Moderate-load predicted post-shift RPM guard.
+- S-312C 100 Nm engine curve, factory gearbox ratios, fuel use and chassis physics.
+- C-330M remains excluded.
+- ADS remains optional, filtered and read-only.
+
 ## 0.0.1.5 - C-330 high-load II/3 guard
 
 Isolated automatic transmission test based on the 0.0.1.4 flat + slope runtime trace. **Mass-aware starting, range logic, engine calibration and ADS handling are unchanged.**
