@@ -19,3 +19,5 @@ Temporary `TractorDebugKit` instrumentation has been removed from the stable pac
 
 ### Next
 The next isolated development step will be **base mass / COM / axle-load distribution**, targeting 1675 kg and approximately 38/62 front/rear without touching tyres, ballast or drivetrain in the same test.
+
+<!-- release-trigger-0.0.2.0-stable -->
