@@ -14,3 +14,5 @@ The final 0.0.0.7 runtime test showed no external/GIANTS range changes, no shift
 
 ### Next phase
 Temporary diagnostics remain enabled. The next isolated subsystem is the **S-312C engine torque/power/fuel calibration**.
+
+<!-- release-trigger-0.0.1.0 -->
