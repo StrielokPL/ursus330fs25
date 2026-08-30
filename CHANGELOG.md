@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.0.1.8 - 2 s upshift failsafe and mass-aware R-II start
+
+Transmission follow-up based on the complete 0.0.1.7 runtime log.
+
+### 0.0.1.7 result
+- Controller remained stable: no `SHIFT_OSCILLATION` and no Lua errors.
+- All observed range changes were attributed to `C330TRANS`.
+- The 3.469 t heavy-set II/3 guard worked, but 600 ms was not enough: one top-gear shift still settled near 1180 rpm / 0.846 ADS load and another near 1225 rpm / 0.783. Both recovered without hunting, but the diagnostic target was not fully met.
+
+### Changes
+- Every automatic upshift now has a hard **2000 ms minimum settled-gear dwell**. Downshifts are not delayed.
+- Heavy sets (>=3.175 t) now require **2000 ms continuous load <0.70** before II/2 -> II/3, replacing the 600 ms window.
+- Reverse starting now mirrors forward mass-aware starting: **<3.175 t starts directly in R-II**, while **>=3.175 t starts in R-I**.
+- Added diagnostic breadcrumbs: `BLOCK UPSHIFT DWELL`, `BLOCK RANGE UPSHIFT DWELL`, `BLOCK REVERSE UPSHIFT DWELL`, and `START REVERSE R-II/R-I`.
+
+### Explicitly unchanged
+- Factory 6F/2R ratios and speed ladder.
+- Forward I/3 <-> II/1 downshift/load thresholds except for the new generic minimum dwell on upshifts.
+- 100 Nm S-312C engine curve, fuel use, mass/COM, tyres and chassis physics.
+- ADS remains optional, filtered and strictly read-only.
+- C-330M remains excluded.
+
 ## 0.0.1.7 - C-330 heavy-set II/3 stability guard
 
 Isolated follow-up to the 0.0.1.6 trailer/no-trailer runtime test. **Only II/3 admission for heavy sets is refined.**

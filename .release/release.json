@@ -1,7 +1,7 @@
 {
-  "version": "0.0.1.7",
-  "tag": "0.0.1.7",
-  "title": "0.0.1.7 - C-330 heavy-set II/3 stability guard test",
+  "version": "0.0.1.8",
+  "tag": "0.0.1.8",
+  "title": "0.0.1.8 - C-330 2 s upshift failsafe and R-II start test",
   "prerelease": true,
   "zipName": "FS25_UrsusC330_330M_4x2.zip"
 }

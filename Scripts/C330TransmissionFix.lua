@@ -1,5 +1,5 @@
 -- Ursus C-330 FS25 automatic range controller
--- 0.0.1.7 TEST: heavy-set top-gear stability guard with mass-aware 6F/2R control; ADS-safe.
+-- 0.0.1.8 TEST: 2 s upshift failsafe, heavy-set top-gear recovery and mass-aware reverse start; ADS-safe.
 --
 -- The C-330 range box is NOT a powershift splitter. In automatic mode the
 -- intended virtual order is:
@@ -53,6 +53,11 @@ if not C330TransmissionFix.installed then
     local RANGE_UPSHIFT_MAX_LOAD = 0.55
     local RANGE_UPSHIFT_STABLE_MS = 800
 
+    -- Final safety net requested after the 0.0.1.7 runtime test. Once a mechanical
+    -- gear/range has settled, no automatic request for a numerically/historically
+    -- higher ratio may be issued for the first 2 seconds. Downshifts remain free.
+    local UPSHIFT_MIN_DWELL_MS = 2000
+
     local NORMAL_UPSHIFT_GUARD_LOAD = 0.80
     local NORMAL_UPSHIFT_GUARD_RPM = 1750
 
@@ -64,16 +69,14 @@ if not C330TransmissionFix.installed then
     local TOP_GEAR_POSTSHIFT_RPM_RATIO = 14.324 / 22.878
     local TOP_GEAR_POSTSHIFT_MIN_RPM = 1200
     local TOP_GEAR_PREDICTION_GUARD_MIN_LOAD = 0.55
-    -- 0.0.1.6 proved that the instantaneous load threshold itself is not enough:
-    -- on a heavy set ADS can fall below 0.70 for a fraction of a second just before
-    -- GIANTS requests II/3, then rise back above ~0.85 after the shift. Runtime
-    -- evidence separated bad transient windows (~0.15-0.27 s) from acceptable
-    -- recovery windows (~0.75-0.82 s). For a set at or above the same 3.175 t
-    -- threshold used by mass-aware starting, require 600 ms of continuous load
-    -- below 0.70 before top gear is allowed. Light sets keep the current behavior.
+    -- 0.0.1.7 proved that 600 ms is still too short for the large II/2 -> II/3
+    -- step on a 3.469 t set. The guard correctly blocked the first requests, but
+    -- II/3 could still settle near 1180-1225 rpm with ~0.78-0.85 load. Require
+    -- 2 seconds of continuous load below 0.70 before a heavy set may use II/3.
+    -- This is independent of, and may overlap with, the generic 2 s gear dwell.
     local TOP_GEAR_HIGH_LOAD = 0.70
     local TOP_GEAR_HIGH_LOAD_MIN_RPM = 2100
-    local TOP_GEAR_HEAVY_SET_STABLE_MS = 600
+    local TOP_GEAR_HEAVY_SET_STABLE_MS = 2000
 
     local RANGE_CHANGE_COOLDOWN_MS = 800
     local LOAD_RECOVERY_HOLD_MS = 2500
@@ -206,6 +209,16 @@ if not C330TransmissionFix.installed then
         return gear, totalMass, "NATIVE_LOW_RANGE"
     end
 
+    local function getReverseStartRange(motor)
+        local totalMass = getTotalMassTons(motor)
+
+        if totalMass ~= nil and totalMass < LIGHT_START_MAX_TOTAL_MASS_T then
+            return HIGH_RANGE, totalMass, "LIGHT_RII"
+        end
+
+        return LOW_RANGE, totalMass, "NATIVE_RI"
+    end
+
     local function logForwardStartGear(motor, gear, totalMass, mode)
         local now = g_time or 0
         if motor.c330FixStartGearLogUntil ~= nil and now < motor.c330FixStartGearLogUntil then
@@ -216,6 +229,22 @@ if not C330TransmissionFix.installed then
         Logging.info(
             "[C330TRANS] START GEAR I/%d totalMass=%s threshold=%.3f mode=%s",
             gear or 0,
+            totalMass ~= nil and string.format("%.3f", totalMass) or "n/a",
+            LIGHT_START_MAX_TOTAL_MASS_T,
+            tostring(mode)
+        )
+    end
+
+    local function logReverseStartRange(motor, range, totalMass, mode)
+        local now = g_time or 0
+        if motor.c330FixReverseStartLogUntil ~= nil and now < motor.c330FixReverseStartLogUntil then
+            return
+        end
+        motor.c330FixReverseStartLogUntil = now + 500
+
+        Logging.info(
+            "[C330TRANS] START REVERSE R-%s totalMass=%s threshold=%.3f mode=%s",
+            range == HIGH_RANGE and "II" or "I",
             totalMass ~= nil and string.format("%.3f", totalMass) or "n/a",
             LIGHT_START_MAX_TOTAL_MASS_T,
             tostring(mode)
@@ -245,6 +274,20 @@ if not C330TransmissionFix.installed then
         end
 
         return nil, "n/a"
+    end
+
+    local function getUpshiftDwellState(motor, range, gear, now)
+        local direction = (motor.currentDirection or 1) < 0 and -1 or 1
+        local key = string.format("%d:%d:%d", direction, range or 0, gear or 0)
+
+        if motor.c330FixSettledGearKey ~= key then
+            motor.c330FixSettledGearKey = key
+            motor.c330FixSettledGearSince = now
+            return false, 0
+        end
+
+        local age = now - (motor.c330FixSettledGearSince or now)
+        return age >= UPSHIFT_MIN_DWELL_MS, age
     end
 
     local function logDecision(motor, action, fromGear, fromRange, toGear, toRange, rpm, load, loadSource)
@@ -311,26 +354,39 @@ if not C330TransmissionFix.installed then
         local gear, group = originalGetBestStartGear(self, gears)
 
         if isAutomaticC330(self) then
-            group = LOW_RANGE
+            local startRange = LOW_RANGE
             gear = math.max(1, math.min(gear or 1, math.min(#gears, 3)))
 
-            -- Forward only: a light set starts directly in I/3. Reverse still has
-            -- its single mechanical reverse gear and is intentionally unaffected.
+            -- Forward: light set starts directly in I/3. Reverse now mirrors the
+            -- same mass rule: below 3.175 t start directly in R-II, while a heavy
+            -- set starts in R-I and may later recover to R-II normally.
             if isAutomaticForward(self) and #gears >= 3 then
                 local totalMass, startMode
                 gear, totalMass, startMode = getForwardStartGear(self, gears, gear)
                 logForwardStartGear(self, gear, totalMass, startMode)
+            elseif isAutomaticReverse(self) then
+                local totalMass, startMode
+                gear = 1
+                startRange, totalMass, startMode = getReverseStartRange(self)
+                logReverseStartRange(self, startRange, totalMass, startMode)
             end
 
-            -- A real C-330 starts/restarts from range I. Mark this request so the
-            -- diagnostic kit does not misattribute the reset to GIANTS.
-            if self.activeGearGroupIndex ~= LOW_RANGE then
+            group = startRange
+
+            -- Mark every controller-forced start range so TractorDebugKit can
+            -- distinguish it from GIANTS group selection.
+            if self.activeGearGroupIndex ~= startRange then
                 local now = g_time or 0
-                self.c330FixRequestedRange = LOW_RANGE
+                self.c330FixRequestedRange = startRange
                 self.c330FixRequestedGear = gear
                 self.c330FixRequestedRangeAt = now
-                self.c330FixRequestedRangeReason = "START RANGE RESET"
-                self:setGearGroup(LOW_RANGE)
+                if isAutomaticReverse(self) then
+                    self.c330FixRequestedRangeReason = startRange == HIGH_RANGE
+                        and "START REVERSE R-II" or "START REVERSE R-I"
+                else
+                    self.c330FixRequestedRangeReason = "START RANGE RESET"
+                end
+                self:setGearGroup(startRange)
             end
 
             self.c330FixRangeRecoverySince = nil
@@ -364,6 +420,7 @@ if not C330TransmissionFix.installed then
         local totalMass = getTotalMassTons(self)
         local accel = math.abs(tonumber(acceleratorPedal) or 0)
         local maxGear = math.min(#gears, 3)
+        local upshiftDwellReady, upshiftDwellAge = getUpshiftDwellState(self, range, curGear, now)
 
         -- 0.0.1.2 showed that a near-stop can occasionally continue in range II
         -- without getBestStartGear resetting the box first. Do not allow the
@@ -399,11 +456,17 @@ if not C330TransmissionFix.installed then
                 )
             end
 
-            local reverseRecoveryReady = range == LOW_RANGE
+            local reverseRecoveryBaseReady = range == LOW_RANGE
                 and curGear == 1
                 and rpm >= RANGE_UPSHIFT_RPM
                 and (load == nil or load <= RANGE_UPSHIFT_MAX_LOAD)
                 and (self.c330FixUpshiftHoldUntil == nil or now >= self.c330FixUpshiftHoldUntil)
+
+            if reverseRecoveryBaseReady and not upshiftDwellReady then
+                logDecision(self, "BLOCK REVERSE UPSHIFT DWELL", curGear, range, curGear, range, rpm, load, loadSource)
+            end
+
+            local reverseRecoveryReady = reverseRecoveryBaseReady and upshiftDwellReady
 
             if reverseRecoveryReady then
                 if self.c330FixRangeRecoverySince == nil then
@@ -447,11 +510,17 @@ if not C330TransmissionFix.installed then
         -- tractor could upshift and request I/3 again roughly a second later.
         -- Require sustained recovery before leaving range I. This also limits
         -- artificial shift cycling seen by ADS.
-        local rangeRecoveryReady = range == LOW_RANGE
+        local rangeRecoveryBaseReady = range == LOW_RANGE
             and curGear == maxGear
             and rpm >= RANGE_UPSHIFT_RPM
             and (load == nil or load <= RANGE_UPSHIFT_MAX_LOAD)
             and (self.c330FixUpshiftHoldUntil == nil or now >= self.c330FixUpshiftHoldUntil)
+
+        if rangeRecoveryBaseReady and not upshiftDwellReady then
+            logDecision(self, "BLOCK RANGE UPSHIFT DWELL", curGear, range, curGear, range, rpm, load, loadSource)
+        end
+
+        local rangeRecoveryReady = rangeRecoveryBaseReady and upshiftDwellReady
 
         if rangeRecoveryReady then
             if self.c330FixRangeRecoverySince == nil then
@@ -527,6 +596,15 @@ if not C330TransmissionFix.installed then
             self.c330FixTopGearLowLoadSince = nil
         end
 
+        -- Generic 2-second failsafe. The top-gear load timer above may run in
+        -- parallel, but no within-range automatic upshift can actually be issued
+        -- until the current settled gear has existed for at least 2 seconds.
+        if targetGear > curGear and not upshiftDwellReady then
+            logDecision(self, "BLOCK UPSHIFT DWELL", curGear, range, curGear, range, rpm, load, loadSource)
+            self.autoGearChangeTimer = math.max(self.autoGearChangeTime or 0, 250)
+            return curGear
+        end
+
         -- Do not allow a normal upshift when the engine is already heavily loaded
         -- below the useful upper-RPM band. ADS is preferred when present; native
         -- GIANTS smooth load is used otherwise.
@@ -542,5 +620,5 @@ if not C330TransmissionFix.installed then
         return targetGear
     end
 
-    Logging.info("[C330TRANS] 0.0.1.7 C-330 6F/2R controller installed (heavy-set top-gear stability guard, mass-aware start, ADS-safe)")
+    Logging.info("[C330TRANS] 0.0.1.8 C-330 6F/2R controller installed (2s upshift failsafe, mass-aware reverse start, ADS-safe)")
 end

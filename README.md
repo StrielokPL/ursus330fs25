@@ -6,7 +6,7 @@ Working repository for analysis, correction and further development of the FS25 
 **StrielokPL**, Speedy, Miziuu
 
 ## Current development version
-**0.0.1.7 – C-330 heavy-set II/3 stability guard prerelease**
+**0.0.1.8 – C-330 2 s upshift failsafe + mass-aware R-II start prerelease**
 
 The repository was imported from mod package version **1.1.2.0**, but the project versioning was reset for the rebuild. Version `0.0.0.2` is the first documented development baseline in this repository.
 
