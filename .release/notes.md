@@ -18,3 +18,5 @@ The 0.0.3.2 multi-height/multi-ramp board route produced repeatable load impulse
 6. Send the complete `log.txt`.
 
 All engine/transmission/ADS behavior, mass/COM/ballast, tire dimensions/traction and MudSystemPhysics are unchanged.
+
+<!-- release-trigger-0.0.3.3-spring-test -->
