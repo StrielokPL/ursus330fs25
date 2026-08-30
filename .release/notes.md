@@ -15,3 +15,5 @@ The 0.0.1.4 hill test allowed II/3 at roughly 1976 rpm / 0.878 load and the engi
 
 ### Test focus
 Repeat a flat acceleration and, most importantly, the same uphill/downhill stop-and-restart sequence. On a climb, high-load II/2 should log `BLOCK TOP UPSHIFT HIGH LOAD` until about 2100 rpm instead of dropping the engine toward 1000 rpm in II/3. Send the complete `log.txt`.
+
+<!-- release-trigger-0.0.1.5 -->
