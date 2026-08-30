@@ -18,3 +18,5 @@ The filled-tyre spring/damper values are a conservative first test point, not a 
 Use basic Polowe tyres, no metal wheel weights or attachments. Compare Water **Off vs On** at settled **2.40 bar** and **1.00 bar** using the established 10 km/h obstacle route plus the single-board Vmax pass. With water On and no metal weights, static total mass should be about **1.939 t**. Send the complete `log.txt`.
 
 Temporary `TyreDebugKit` is restored for this prerelease. Engine/transmission/ADS, base mass/COM and metal ballast are unchanged.
+
+<!-- release-trigger-0.0.4.1-liquid-ballast -->
