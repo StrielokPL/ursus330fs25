@@ -1,0 +1,26 @@
+name: One-shot C-330 range boundary safety 0.0.1.3
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/setup-0013-range-boundary-safety.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Apply 0.0.1.3 range boundary safety
+        run: python3 .github/scripts/setup_0013_range_boundary_safety.py
+      - name: Commit 0.0.1.3 prerelease
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add Scripts/C330TransmissionFix.lua modDesc.xml README.md CHANGELOG.md .release/release.json .release/notes.md
+          git commit -m 'Add range-boundary safety for 0.0.1.3'
+          git push
