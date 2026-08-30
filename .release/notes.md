@@ -25,3 +25,5 @@ Please use the standard C-330 (`motor=1`) and let each configuration settle stat
 6. front + rear Both — about **1901 / 676 / 1225 kg** (factory full-metal target 1901 / 677 / 1224 kg).
 
 A full `log.txt` is preferred. Engine, transmission, ADS behavior, tyre geometry and accepted base COM are unchanged.
+
+<!-- release-trigger-0.0.2.3-factory-ballast -->
