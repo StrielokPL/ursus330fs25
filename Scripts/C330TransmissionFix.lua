@@ -1,5 +1,5 @@
 -- Ursus C-330 FS25 automatic range controller
--- 0.0.1.3 TEST: 6F/2R range-boundary safety with 100 Nm engine; ADS-safe.
+-- 0.0.1.4 TEST: mass-aware forward start gear with 6F/2R range safety; ADS-safe.
 --
 -- The C-330 range box is NOT a powershift splitter. In automatic mode the
 -- intended virtual order is:
@@ -39,6 +39,15 @@ if not C330TransmissionFix.installed then
     -- getBestStartGear is not guaranteed to be called during every near-stop.
     -- Force range I deterministically once forward speed is essentially walking pace.
     local FORWARD_LOW_SPEED_RANGE_RESET = 0.5
+
+    -- Mass-aware automatic start requested after the 0.0.1.3 test. The real C-330
+    -- base mass is 1675 kg. A complete tractor+implement/trailer set below
+    -- 1675 + 1500 = 3175 kg may start directly in I/3, avoiding two unnecessary
+    -- low-range shifts when essentially unloaded. At or above the threshold,
+    -- keep GIANTS' native start-gear choice, but always in range I.
+    local FACTORY_BASE_MASS_T = 1.675
+    local LIGHT_START_EXTRA_MASS_T = 1.500
+    local LIGHT_START_MAX_TOTAL_MASS_T = FACTORY_BASE_MASS_T + LIGHT_START_EXTRA_MASS_T
 
     local RANGE_UPSHIFT_RPM = 2050
     local RANGE_UPSHIFT_MAX_LOAD = 0.55
@@ -162,6 +171,47 @@ if not C330TransmissionFix.installed then
         return 0
     end
 
+    local function getTotalMassTons(motor)
+        local vehicle = motor ~= nil and motor.vehicle or nil
+        if vehicle ~= nil and vehicle.getTotalMass ~= nil then
+            local value = tonumber(vehicle:getTotalMass())
+            if value ~= nil and value > 0 then
+                return value
+            end
+        end
+        return nil
+    end
+
+    local function getForwardStartGear(motor, gears, fallbackGear)
+        local maxGear = math.min(#gears, 3)
+        local gear = math.max(1, math.min(fallbackGear or 1, maxGear))
+        local totalMass = getTotalMassTons(motor)
+
+        if maxGear >= 3
+            and totalMass ~= nil
+            and totalMass < LIGHT_START_MAX_TOTAL_MASS_T then
+            return 3, totalMass, "LIGHT_I3"
+        end
+
+        return gear, totalMass, "NATIVE_LOW_RANGE"
+    end
+
+    local function logForwardStartGear(motor, gear, totalMass, mode)
+        local now = g_time or 0
+        if motor.c330FixStartGearLogUntil ~= nil and now < motor.c330FixStartGearLogUntil then
+            return
+        end
+        motor.c330FixStartGearLogUntil = now + 500
+
+        Logging.info(
+            "[C330TRANS] START GEAR I/%d totalMass=%s threshold=%.3f mode=%s",
+            gear or 0,
+            totalMass ~= nil and string.format("%.3f", totalMass) or "n/a",
+            LIGHT_START_MAX_TOTAL_MASS_T,
+            tostring(mode)
+        )
+    end
+
     local function getLoad(motor)
         local vehicle = motor ~= nil and motor.vehicle or nil
         local adsSpec = vehicle ~= nil and vehicle.spec_AdvancedDamageSystem or nil
@@ -254,6 +304,14 @@ if not C330TransmissionFix.installed then
             group = LOW_RANGE
             gear = math.max(1, math.min(gear or 1, math.min(#gears, 3)))
 
+            -- Forward only: a light set starts directly in I/3. Reverse still has
+            -- its single mechanical reverse gear and is intentionally unaffected.
+            if isAutomaticForward(self) and #gears >= 3 then
+                local totalMass, startMode
+                gear, totalMass, startMode = getForwardStartGear(self, gears, gear)
+                logForwardStartGear(self, gear, totalMass, startMode)
+            end
+
             -- A real C-330 starts/restarts from range I. Mark this request so the
             -- diagnostic kit does not misattribute the reset to GIANTS.
             if self.activeGearGroupIndex ~= LOW_RANGE then
@@ -303,8 +361,10 @@ if not C330TransmissionFix.installed then
         if isAutomaticForward(self)
             and range == HIGH_RANGE
             and speed <= FORWARD_LOW_SPEED_RANGE_RESET then
+            local resetGear, totalMass, startMode = getForwardStartGear(self, gears, 1)
+            logForwardStartGear(self, resetGear, totalMass, startMode)
             return setAutomaticRange(
-                self, LOW_RANGE, 1, "LOW SPEED RANGE RESET",
+                self, LOW_RANGE, resetGear, "LOW SPEED RANGE RESET",
                 rpm, load, loadSource, false
             )
         end
@@ -437,5 +497,5 @@ if not C330TransmissionFix.installed then
         return targetGear
     end
 
-    Logging.info("[C330TRANS] 0.0.1.3 C-330 6F/2R controller installed (range-boundary safety, ADS-safe)")
+    Logging.info("[C330TRANS] 0.0.1.4 C-330 6F/2R controller installed (mass-aware start gear, range safety, ADS-safe)")
 end

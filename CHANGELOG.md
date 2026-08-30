@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.0.1.4 - C-330 mass-aware I/3 start
+
+Isolated automatic start-gear test based on the clean 0.0.1.3 range-boundary result. **Range logic, engine calibration and ADS handling are unchanged.**
+
+### Runtime evidence from 0.0.1.3
+- No II/1 -> I/3 range-down occurred above the 6.0 km/h safety ceiling; observed range-down requests were about 1.20, 1.43, 3.21 and 4.11 km/h.
+- Near-stop range-I restoration worked through the existing `START RANGE RESET`; the extra `LOW SPEED RANGE RESET` remains a fallback safety path.
+- All observed range changes were attributed to `C330TRANS`, with no `SHIFT_OSCILLATION` and no Lua errors.
+- A light forward start still walked I/1 -> I/2 -> I/3, costing roughly two unnecessary low-range shifts before reaching I/3.
+
+### Change
+- Factory base mass reference: **1.675 t**.
+- Light-start threshold: **3.175 t total set mass** (= 1.675 t + 1.500 t).
+- In automatic forward, if `vehicle:getTotalMass()` is strictly below 3.175 t, the start/restart gear is forced to **I/3**.
+- At 3.175 t or above, or if total mass cannot be read, GIANTS' native start-gear choice is retained and clamped to range I as before.
+- The <=0.5 km/h emergency range-I reset uses the same mass-aware start-gear choice.
+- Added `[C330TRANS] START GEAR` diagnostic with total mass, threshold and selection mode.
+
+### Explicitly unchanged
+- 0.0.1.3 forward II/1 -> I/3 6.0 km/h ceiling and low-speed range reset.
+- 0.0.1.2 II/2 -> II/3 predicted-RPM guard.
+- S-312C 100 Nm torque curve, gearbox ratios, reverse logic, fuel use and chassis physics.
+- C-330M remains excluded.
+- ADS remains optional, filtered and read-only; no ADS state is written.
+
 ## 0.0.1.3 - C-330 range-boundary safety
 
 Small isolated follow-up to the 0.0.1.2 gearbox/100 Nm compatibility test. **Engine and top-gear calibration are unchanged.**

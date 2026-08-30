@@ -1,7 +1,7 @@
 {
-  "version": "0.0.1.3",
-  "tag": "0.0.1.3",
-  "title": "0.0.1.3 - C-330 range-boundary safety test",
+  "version": "0.0.1.4",
+  "tag": "0.0.1.4",
+  "title": "0.0.1.4 - C-330 mass-aware I/3 start test",
   "prerelease": true,
   "zipName": "FS25_UrsusC330_330M_4x2.zip"
 }

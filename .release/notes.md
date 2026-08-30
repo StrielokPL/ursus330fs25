@@ -1,15 +1,15 @@
-## Ursus C-330 / C-330M 0.0.1.3
+## Ursus C-330 / C-330M 0.0.1.4
 
-Final small automatic-range boundary test before returning to the S-312C engine.
+Isolated mass-aware automatic start-gear test.
 
 ### Changed
-- II/1 -> I/3 is blocked above 6.0 km/h, preventing the automatic controller from selecting I/3 above its mechanical road-speed range,
-- if the tractor nearly stops while range II remains active, automatic forward now resets deterministically to range I at <=0.5 km/h.
+- automatic forward starts directly in **I/3** when total tractor+attached-equipment mass is below **3.175 t**,
+- at 3.175 t or more, the previous native low-range start-gear choice remains,
+- the emergency near-stop range-I reset follows the same mass rule,
+- `[C330TRANS] START GEAR` now reports the measured total mass and selected mode.
 
 ### Unchanged
-The 100 Nm S-312C curve, the 0.0.1.2 top-gear predicted-RPM guard, gearbox ratios, reverse logic, fuel use, ADS read-only handling, C-330M and chassis physics are unchanged.
+0.0.1.3 range-boundary safety, the 0.0.1.2 top-gear guard, the 100 Nm S-312C curve, gearbox ratios, reverse logic, fuel use, ADS read-only handling, C-330M and chassis physics are unchanged.
 
 ### Test focus
-Repeat loaded acceleration/deceleration with C-330 motor=1. Confirm that II/1 no longer changes to I/3 above 6.0 km/h and that a near-stop in range II produces `LOW SPEED RANGE RESET` before re-acceleration. The existing `BLOCK TOP UPSHIFT` behavior should remain unchanged. Send the complete `log.txt`.
-
-<!-- release-trigger-0.0.1.3 -->
+Test at least: (1) bare/light C-330 below 3.175 t, which should log `START GEAR I/3 ... mode=LIGHT_I3`; (2) a set clearly above 3.175 t, which should log `mode=NATIVE_LOW_RANGE` and must not be forced to I/3. Check standing starts, stop/restart, forward/reverse changes and one loaded acceleration/deceleration cycle. Send the complete `log.txt`.
