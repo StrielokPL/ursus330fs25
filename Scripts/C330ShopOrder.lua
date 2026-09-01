@@ -149,7 +149,6 @@ if not C330ShopOrder.installed and g_vehicleConfigurationManager ~= nil then
         g_vehicleConfigurationManager.getSortedConfigurationTypes = function(self, ...)
             local original = originalGetSorted(self, ...)
             if type(original) ~= "table" or not isC330ShopOpen() then
-                C330ShopOrder.loggedActive = false
                 return original
             end
 
@@ -175,15 +174,8 @@ if not C330ShopOrder.installed and g_vehicleConfigurationManager ~= nil then
             for _, entry in ipairs(indexed) do
                 table.insert(sorted, entry.name)
             end
-
-            if not C330ShopOrder.loggedActive then
-                C330ShopOrder.loggedActive = true
-                Logging.info("[C330SHOP] local C-330 shop order active: %s", table.concat(sorted, ","))
-            end
             return sorted
         end
-
-        Logging.info("[C330SHOP] local shop-order hook installed; global configuration priorities unchanged")
     else
         Logging.warning("[C330SHOP] getSortedConfigurationTypes unavailable; leaving default shop order")
     end
