@@ -1,58 +1,40 @@
-## Ursus C-330 / C-330M 0.0.4.3
+## Ursus C-330 / C-330M 0.0.5.0
 
-**Full career-stable release.** This promotes the validated 0.0.4.3 shop-cleanup build to a normal release without changing the calibrated physics or transmission behavior.
+**Prerelease calibration test focused on C-330M.** The stable C-330 0.0.4.3 baseline is intentionally preserved; C-330M now inherits the validated shared physics and drivetrain behavior wherever the real tractors use the same systems.
 
-### Stable status
+### C-330M inherited from the validated C-330 baseline
 
-- **Singleplayer / career:** validated and considered stable.
-- **Multiplayer for the current rebuild:** **not yet fully validated** with host + second client / dedicated server.
-- Final validation log contained no C-330 Lua errors or call stacks.
-- Temporary `TractorDebugKit` / `TyreDebugKit` tooling is not included in the release ZIP.
-- Production diagnostic `Logging.info` spam from the transmission, liquid-ballast and shop-order helpers has been removed/silenced.
+- Same S-312C calibration: **100 Nm target**, **600-2200 rpm**, approximately **22.4 kW / 30 hp** at rated speed.
+- Same calibrated torque curve as C-330.
+- Same base vehicle mass/COM and shared wheel physics.
+- Same dry tyre setup: **spring 12 / damper 22 / suspTravel 0.07**.
+- Same rear tyre water ballast: **+132 kg per rear wheel / +264 kg total**, approximately **spring 14 / damper 30** when filled.
+- Same shop ordering: **Engine -> Wheels -> Water -> Front ballast -> Cabin -> Loader console**.
+- Same automatic 6F/2R controller, including mass-aware starts, range logic, 2 s upshift dwell, RPM/load protections and optional read-only ADS load input.
 
-### Shop and configuration cleanup
+### C-330M-specific gearing
 
-Verified top sequence:
+The M variant keeps the same three gearbox-step proportions and the same low/high range ratio as the calibrated C-330, while the complete speed set is scaled to a working top-speed target of **26.290 km/h**.
 
-**Engine -> Wheels -> Water -> Front ballast -> Cabin -> Loader console**
+High range / nominal max speed at 2200 rpm:
 
-The ordering hook is local to `c330m.xml` and does not alter global GIANTS configuration priorities for other vehicles.
+- **II/1: 8.491 km/h**
+- **II/2: 16.460 km/h**
+- **II/3: 26.290 km/h**
+- **R-II: 7.133 km/h**
 
-Rear metal wheel weights remain inside **Wheels** because their meshes and physical mass are implemented as wheel sub-configurations; separating them would be a larger physics/save-format refactor.
+Low range uses the same **0.24691358** ratio:
 
-### Final calibrated state
+- **I/1: ~2.097 km/h**
+- **I/2: ~4.064 km/h**
+- **I/3: ~6.491 km/h**
+- **R-I: ~1.761 km/h**
 
-- Base C-330 mass: **1675 kg**, approximately **38/62 front/rear**.
-- Factory front ballast: **42 kg**.
-- Rear metal ballast variants: **40 / 144 / 184 kg**.
-- Dry tyres: **spring 12 / damper 22 / suspTravel 0.07**.
-- Rear tyre water ballast: **+132 kg per rear wheel / +264 kg total**.
-- Water-filled rear tyres: approximately **spring 14 / damper 30**.
-- Factory-style C-330 automatic sequence: `I/1 -> I/2 -> I/3 -> II/1 -> II/2 -> II/3` with the validated dwell/load/RPM protections.
-- Advanced Damage System integration remains optional and read-only; invalid ADS load samples fall back to the native GIANTS load signal.
+### Important test status
 
-### Last validation environment
+- **C-330 remains the 0.0.4.3 stable calibration.** Its XML speed set and torque curve were not changed.
+- **C-330M 0.0.5.0 is not yet validated in gameplay.** This prerelease needs the same staged road/load/hill checks previously used for C-330.
+- Current rebuild multiplayer remains **not yet fully validated**.
+- The shared shop-order and liquid-ballast helpers already target `c330m.xml`, so both motor variants use them without duplicate hooks.
 
-Farming Simulator 25 **1.21.1.0** with these active script/physics mods:
-
-- Advanced Damage System **0.9.2.4**,
-- MudSystemPhysics **1.3.1.0**,
-- Mud Sprayer **1.0.0.0**,
-- tireSound **1.0.0.0**,
-- toggleSuperStrength **1.1.0.0**,
-- Vehicle Years **1.0.0.6**.
-
-The extreme hill test also included heavy trailer loading and severe rear-wheel slip. One unusual range transition seen there was traced to wheel slip and trailer geometry unloading/lifting the driven rear axle; no equivalent anomaly was observed in normal career use, so no transmission retune was made for that artificial case.
-
-### Multiplayer / dirty-flag history
-
-The source package imported for this rebuild already contained the earlier **Static Cabins** dirty-flag compatibility fix. The original C-330 consumed nearly the whole 32-bit dirty-flag budget and could collide with ADS/AIAutomaticSteering in multiplayer. The fix removed 18 unnecessary cabin `movingTool` definitions and related controls/animations while preserving cabin variants as static geometry.
-
-That historical investigation led to AI Automatic Steering Fix (AIASF):
-https://github.com/StrielokPL/Farming25fixnmix
-
-The earlier Static Cabins fix was successfully tested in multiplayer with ADS 0.9.2.4 and AIASF debug. **That historical result does not replace a full multiplayer validation of the current 0.0.4.3 rebuild.**
-
-Detailed current validation status is kept in `docs/VALIDATION_STATUS.md`.
-
-<!-- release-final-tag-sync -->
+Recommended first test: buy a fresh C-330M, verify 30 hp/100 Nm behavior, manual and automatic `I/1 -> I/2 -> I/3 -> II/1 -> II/2 -> II/3`, unloaded top speed around 26.3 km/h, reverse around 7.1 km/h, then repeat with a moderate implement/trailer and ADS/MudSystemPhysics enabled.
