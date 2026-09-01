@@ -13,3 +13,5 @@
 Use the same basic Polowe tyres and standardized route. Compare water On at settled **1.00 bar** and **2.40 bar**: boards + pallet jack + firepit at cruise-control **10 km/h**, then the single board at Vmax. The key question is whether the stronger damping shortens the zero-load/rebound episodes without making impacts harsher. Send the complete `log.txt`.
 
 Temporary TyreDebugKit remains enabled for this prerelease.
+
+<!-- release-trigger-0.0.4.2-water-damper30 -->
