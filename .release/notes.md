@@ -1,22 +1,15 @@
-## Ursus C-330 / C-330M 0.0.4.1
+## Ursus C-330 / C-330M 0.0.4.2
 
-**First functional rear-tyre water ballast prototype.**
+**Water-ballast damping A/B test.**
 
-### New independent option
-- **Water in rear tyres: No / Yes**
-- Can be combined with existing metal rear wheel weights.
+0.0.4.1 confirmed that the independent water option works correctly: **+132 kg per rear wheel**, **1.939 t** total on the basic tractor, front axle essentially unchanged and the added 264 kg carried by the rear axle. MudSystemPhysics pressure/radius behavior also remains active.
 
-### Prototype physics
-- **+132 kg per rear wheel** = **+264 kg total**.
-- Dry rear tyre remains **spring 12 / damper 22**.
-- Water-filled rear tyre is approximately **spring 14 / damper 26**.
-- Suspension travel remains **0.07 m**.
+### Only physical change
+- Water-filled rear tyres: **spring 14 / damper 30** (was 14 / 26).
+- Dry tyres stay **12 / 22**.
+- `suspTravel=0.07` and liquid mass stay unchanged.
 
-The filled-tyre spring/damper values are a conservative first test point, not a final target. MudSystemPhysics pressure/radius/friction behavior is left intact.
+### Test
+Use the same basic Polowe tyres and standardized route. Compare water On at settled **1.00 bar** and **2.40 bar**: boards + pallet jack + firepit at cruise-control **10 km/h**, then the single board at Vmax. The key question is whether the stronger damping shortens the zero-load/rebound episodes without making impacts harsher. Send the complete `log.txt`.
 
-### Suggested first test
-Use basic Polowe tyres, no metal wheel weights or attachments. Compare Water **Off vs On** at settled **2.40 bar** and **1.00 bar** using the established 10 km/h obstacle route plus the single-board Vmax pass. With water On and no metal weights, static total mass should be about **1.939 t**. Send the complete `log.txt`.
-
-Temporary `TyreDebugKit` is restored for this prerelease. Engine/transmission/ADS, base mass/COM and metal ballast are unchanged.
-
-<!-- release-trigger-0.0.4.1-liquid-ballast -->
+Temporary TyreDebugKit remains enabled for this prerelease.

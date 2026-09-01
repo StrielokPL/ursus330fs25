@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.0.4.2 - C-330 water-ballast damper=30 test
+
+Second liquid-ballast prerelease. It isolates rear filled-tyre damping after 0.0.4.1 confirmed the shop option, +132 kg per rear wheel, axle distribution and MudSystemPhysics compatibility.
+
+### Changed
+- Water-filled rear tyre damping: **26 -> 30**.
+- Water-filled rear tyre spring remains **14**.
+- Liquid mass remains **+132 kg per rear wheel**.
+
+### Why
+The standardized 10 km/h water test showed full rear-axle unloading followed roughly 0.13 s later by a strong reload around 1.14 t per rear wheel at low pressure. The added rear wheel mass is about 56.9% above dry wheel mass, while 0.0.4.1 damping increased only 18.2%. A simple mass/spring damping scaling places the next useful test point near 30.
+
+### Unchanged
+- Dry tyres remain **spring 12 / damper 22 / suspTravel 0.07**.
+- Filled rear spring remains **14** and suspension travel remains **0.07**.
+- Liquid mass, wheel geometry, base mass/COM, metal ballast, MudSystemPhysics pressure logic, engine, transmission and ADS protection are unchanged.
+
 ## 0.0.4.1 - C-330 rear tyre liquid ballast prototype
 
 First functional prerelease for water ballast in the rear tyres.

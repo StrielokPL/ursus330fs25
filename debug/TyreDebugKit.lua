@@ -1,6 +1,6 @@
 -- TyreDebugKit.lua
 -- Temporary read-only tyre/suspension diagnostics for Ursus C-330 / C-330M.
--- 0.0.4.1 liquid-ballast physical test prerelease. Remove from the next stable release.
+-- 0.0.4.2 water-damper physical test prerelease. Remove from the next stable release.
 -- Log prefix: [TYREDBG]
 
 TyreDebugKit = TyreDebugKit or {}
@@ -491,5 +491,5 @@ if not TyreDebugKit.installed then
         end
     end
 
-    Logging.info("[TYREDBG] TyreDebugKit 0.0.3.5 installed; read-only liquid-ballast trace; target=%s trace=%dms detail=%dms pressureScan=%dms", table.concat(CFG.targetFileSuffixes, ","), CFG.traceIntervalMs, CFG.detailIntervalMs, CFG.pressureIntervalMs)
+    Logging.info("[TYREDBG] TyreDebugKit 0.0.4.2 installed; read-only liquid-ballast trace; target=%s trace=%dms detail=%dms pressureScan=%dms", table.concat(CFG.targetFileSuffixes, ","), CFG.traceIntervalMs, CFG.detailIntervalMs, CFG.pressureIntervalMs)
 end
