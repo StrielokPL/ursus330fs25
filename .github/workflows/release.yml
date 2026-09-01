@@ -116,6 +116,12 @@ jobs:
           ZIP='build/${{ steps.cfg.outputs.zip_name }}'
           PRE='${{ steps.cfg.outputs.prerelease }}'
 
+          # A release can be rebuilt/promoted under the same version. Keep the
+          # lightweight tag aligned with the exact commit used to build the ZIP,
+          # otherwise GitHub's "Source code" archives may point to an older test build.
+          git tag -f "$TAG" "$GITHUB_SHA"
+          git push origin "refs/tags/$TAG" --force
+
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" "$ZIP" --clobber
             gh release edit "$TAG" --title "$TITLE" --notes-file .release/notes.md
