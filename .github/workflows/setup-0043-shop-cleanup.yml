@@ -28,7 +28,8 @@ jobs:
           assert s.count('spring="12"') == 40
           assert s.count('damper="22"') == 40
           assert 'massActive="342"' in s and 'massActive="300"' in s
-          assert '<design24Configuration name="$l10n_ui_yes" price="0">' in s
+          water_section=s[s.index('<design24Configurations'):s.index('</design24Configurations>')]
+          assert re.search(r'<design24Configuration\b[^>]*name="\$l10n_ui_yes"[^>]*price="0"', water_section)
           expected={
             'LIZARD_DEFAULT':'0','LIZARD_WIDE':'100','LIZARD_WEIGHTS':'300','LIZARD_WIDEWEIGHT':'400','LIZARD_WIDEWEIGHTS':'300',
             'LIZARD2_DEFAULT':'0','LIZARD2_WIDE':'100','LIZARD2_WEIGHTS':'300','LIZARD2_WIDEWEIGHT':'400','LIZARD2_WIDEWEIGHTS':'300'}
