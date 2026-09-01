@@ -57,6 +57,7 @@ jobs:
             --exclude='.git/' \
             --exclude='.github/' \
             --exclude='.release/' \
+            --exclude='debug/' \
             --exclude='docs/' \
             --exclude='README.md' \
             --exclude='CHANGELOG.md' \
@@ -64,7 +65,48 @@ jobs:
           cd build/mod
           zip -r -9 "../${{ steps.cfg.outputs.zip_name }}" .
 
-      - name: Create or update GitHub prerelease
+      - name: Verify release ZIP has no temporary diagnostics
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import pathlib
+          import sys
+          import zipfile
+
+          zip_path = pathlib.Path('build/${{ steps.cfg.outputs.zip_name }}')
+          bad_names = (
+              'TractorDebugKit.lua',
+              'TyreDebugKit.lua',
+              'QuickMassProbe.lua',
+              'TransmissionTrace.lua',
+              'DrivetrainProbe.lua',
+              'WheelSuspensionProbe.lua',
+          )
+          bad_markers = ('[TRACTORDBG]', '[TYREDBG]')
+          text_ext = {'.lua', '.xml', '.txt', '.md'}
+          problems = []
+
+          with zipfile.ZipFile(zip_path) as zf:
+              for name in zf.namelist():
+                  if any(part in name for part in bad_names):
+                      problems.append(f'debug file present: {name}')
+                  if pathlib.Path(name).suffix.lower() not in text_ext:
+                      continue
+                  text = zf.read(name).decode('utf-8', errors='replace')
+                  for marker in bad_markers:
+                      if marker in text:
+                          problems.append(f'debug marker {marker} present in {name}')
+
+          if problems:
+              print('TEMPORARY DEBUG FOUND IN RELEASE ZIP:')
+              for problem in sorted(set(problems)):
+                  print(' -', problem)
+              sys.exit(1)
+
+          print('OK: release ZIP contains no standardized temporary diagnostics')
+          PY
+
+      - name: Create or update GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -77,13 +119,23 @@ jobs:
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" "$ZIP" --clobber
             gh release edit "$TAG" --title "$TITLE" --notes-file .release/notes.md
-            if [ "$PRE" = "true" ]; then
-              gh release edit "$TAG" --prerelease
+
+            # Explicitly set the boolean both ways. This is required when an
+            # existing prerelease is promoted to a normal release under the same tag.
+            RELEASE_ID=$(gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${TAG}" --jq '.id')
+            gh api --method PATCH \
+              "repos/${GITHUB_REPOSITORY}/releases/${RELEASE_ID}" \
+              -F prerelease="$PRE" >/dev/null
+
+            if [ "$PRE" = "false" ]; then
+              gh release edit "$TAG" --latest
             fi
           else
             ARGS=("$TAG" "$ZIP" --title "$TITLE" --notes-file .release/notes.md --target "${GITHUB_SHA}")
             if [ "$PRE" = "true" ]; then
               ARGS+=(--prerelease)
+            else
+              ARGS+=(--latest)
             fi
             gh release create "${ARGS[@]}"
           fi
