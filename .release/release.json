@@ -1,7 +1,7 @@
 {
-  "version": "0.0.4.3",
-  "tag": "0.0.4.3",
-  "title": "0.0.4.3 - C-330 career-stable release",
-  "prerelease": false,
+  "version": "0.0.5.0",
+  "tag": "0.0.5.0",
+  "title": "0.0.5.0 - C-330M inherited calibration test",
+  "prerelease": true,
   "zipName": "FS25_UrsusC330_330M_4x2.zip"
 }
