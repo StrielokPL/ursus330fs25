@@ -54,3 +54,5 @@ https://github.com/StrielokPL/Farming25fixnmix
 The earlier Static Cabins fix was successfully tested in multiplayer with ADS 0.9.2.4 and AIASF debug. **That historical result does not replace a full multiplayer validation of the current 0.0.4.3 rebuild.**
 
 Detailed current validation status is kept in `docs/VALIDATION_STATUS.md`.
+
+<!-- release-final-tag-sync -->
