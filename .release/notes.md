@@ -18,3 +18,5 @@ Known structural limitation: rear metal wheel weights are still selectable insid
 The temporary tyre diagnostic logger has been removed. Liquid ballast stays **+132 kg per rear wheel, spring 14 / damper 30**; dry tyres stay **12 / 22**.
 
 Please send either a screenshot/list of the visible selector order plus a normal `log.txt`. The important log marker is `[C330SHOP] local C-330 shop order active`; if it is absent, the ordering hook did not identify the active ShopConfigScreen and we will adjust only that helper.
+
+<!-- release-trigger-0.0.4.3-shop-cleanup -->
