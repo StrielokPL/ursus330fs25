@@ -1,6 +1,6 @@
 -- C330LiquidBallast.lua
--- Ursus C-330/C-330M rear tyre liquid ballast prototype.
--- 0.0.4.3 shop-cleanup build: +132 kg per rear wheel and a conservative filled-tyre spring/damper step.
+-- Ursus C-330/C-330M rear tyre liquid ballast.
+-- Stable layer: +132 kg per rear wheel and calibrated filled-tyre spring/damper.
 -- Dry tyre baseline stays spring=12 / damper=22.
 
 C330LiquidBallast = C330LiquidBallast or {}
@@ -70,16 +70,6 @@ if not C330LiquidBallast.installed then
             scaleNumber(physics, "damperRelaxationHighSpeed", CFG.damperRatio)
         end
 
-        Logging.info(
-            "[C330WATER] applied rear wheel=%d addMass=%.3f spring=%s damperRelaxLS=%s dryBase=12/22 targetApprox=14/30",
-            wheel.wheelIndex,
-            CFG.waterMassPerWheel,
-            physics ~= nil and tostring(physics.spring) or "n/a",
-            physics ~= nil and tostring(physics.damperRelaxationLowSpeed) or "n/a"
-        )
-
         return ok
     end
-
-    Logging.info("[C330WATER] final liquid ballast layer installed (+132 kg/rear wheel; targetApprox spring=14 damper=30)")
 end
