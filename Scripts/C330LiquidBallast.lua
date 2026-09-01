@@ -1,6 +1,6 @@
 -- C330LiquidBallast.lua
 -- Ursus C-330/C-330M rear tyre liquid ballast prototype.
--- 0.0.4.2 prerelease: +132 kg per rear wheel and a conservative filled-tyre spring/damper step.
+-- 0.0.4.3 shop-cleanup build: +132 kg per rear wheel and a conservative filled-tyre spring/damper step.
 -- Dry tyre baseline stays spring=12 / damper=22.
 
 C330LiquidBallast = C330LiquidBallast or {}
@@ -81,5 +81,5 @@ if not C330LiquidBallast.installed then
         return ok
     end
 
-    Logging.info("[C330WATER] 0.0.4.2 liquid ballast layer installed (+132 kg/rear wheel; targetApprox spring=14 damper=30)")
+    Logging.info("[C330WATER] final liquid ballast layer installed (+132 kg/rear wheel; targetApprox spring=14 damper=30)")
 end

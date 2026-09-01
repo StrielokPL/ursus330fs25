@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.0.4.3 - C-330 shop cleanup test
+
+Shop/configuration cleanup prerelease after the mass, dry-tyre and liquid-ballast physics milestones.
+
+### Shop order
+- Adds a **C-330-only** shop ordering hook. It does not alter global GIANTS configuration priorities or other mods.
+- Intended top order: **Engine -> Wheels -> Water -> Front ballast -> Cabin -> Loader console**, then remaining equipment roughly from the front of the tractor to the rear.
+- Rear metal wheel weights remain embedded in the wheel selector in this cleanup because their geometry/mass is implemented inside `LizardBack.xml`; separating them would be a physics/save-format refactor, not a safe cleanup.
+
+### Prices
+- Water in rear tyres: **0** (free, unchanged).
+- Rear metal ballast variants per tyre family: **0 / 100 / 300 / 400 / 300** for none / +40 / +144 / +184 / alternate +144 kg.
+- Front 42 kg ballast: **100** (unchanged).
+- Cabin variants: **500**; no cabin remains 0.
+- Loader console: **600**; no console remains 0.
+- Existing small-accessory prices are retained where already plausible.
+
+### Cleaning
+- Removes the temporary `TyreDebugKit` now that tyre and water tuning is complete.
+- Final liquid-ballast physics remains **+132 kg/rear wheel, spring 14, damper 30**.
+- Dry tyres remain **spring 12 / damper 22 / suspTravel 0.07**.
+- No drivetrain, mass/COM, ADS, tyre or ballast physics changes.
+
 ## 0.0.4.2 - C-330 water-ballast damper=30 test
 
 Second liquid-ballast prerelease. It isolates rear filled-tyre damping after 0.0.4.1 confirmed the shop option, +132 kg per rear wheel, axle distribution and MudSystemPhysics compatibility.

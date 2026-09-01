@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="100">
     <author>StrielokPL, Speedy, Miziuu</author>
-    <version>0.0.4.2</version>
+    <version>0.0.4.3</version>
     <title>
         <en>Ursus C-330/330M</en>
     </title>
@@ -66,10 +66,10 @@ Configurations:
     <iconFilename>icon_c330m.dds</iconFilename>
     <multiplayer supported="true" />
 
-    <!-- 0.0.4.1 liquid-ballast prototype + temporary read-only tyre diagnostics. -->
+    <!-- Stable drivetrain + final liquid ballast + local C-330 shop ordering. -->
     <extraSourceFiles>
         <sourceFile filename="Scripts/C330LiquidBallast.lua" />
-        <sourceFile filename="debug/TyreDebugKit.lua" />
+        <sourceFile filename="Scripts/C330ShopOrder.lua" />
         <sourceFile filename="Scripts/C330TransmissionFix.lua" />
     </extraSourceFiles>
 

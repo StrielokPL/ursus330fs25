@@ -80,7 +80,7 @@
                     </wheel>
                 </wheels>
             </wheelConfiguration>
-            <wheelConfiguration name="$l10n_Big" price="100" brand="Polowe" saveId="LIZARD_WEIGHTS">
+            <wheelConfiguration name="$l10n_Big" price="300" brand="Polowe" saveId="LIZARD_WEIGHTS">
                 <wheels autoRotateBackSpeed="2.3">
                     <wheel filename="Wheels/LizardFront.xml" isLeft="true" hasTireTracks="true" hasParticles="true">
                         <physics rotSpeed="1" restLoad="0.6" repr="1&gt;1|0" driveNode="1&gt;1|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="12" damper="22" yOffset="0.0358" brakeFactor="0"/>
@@ -96,7 +96,7 @@
                     </wheel>
                 </wheels>
             </wheelConfiguration>
-            <wheelConfiguration name="$l10n_Both" price="100" brand="Polowe" saveId="LIZARD_WIDEWEIGHT">
+            <wheelConfiguration name="$l10n_Both" price="400" brand="Polowe" saveId="LIZARD_WIDEWEIGHT">
                 <wheels autoRotateBackSpeed="2.3">
                     <wheel filename="Wheels/LizardFront.xml" isLeft="true" hasTireTracks="true" hasParticles="true">
                         <physics rotSpeed="1" restLoad="0.6" repr="1&gt;1|0" driveNode="1&gt;1|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="12" damper="22" yOffset="0.0358" brakeFactor="0"/>
@@ -112,7 +112,7 @@
                     </wheel>
                 </wheels>
             </wheelConfiguration>
-            <wheelConfiguration name="$l10n_Big" price="100" brand="Polowe" saveId="LIZARD_WIDEWEIGHTS">
+            <wheelConfiguration name="$l10n_Big" price="300" brand="Polowe" saveId="LIZARD_WIDEWEIGHTS">
                 <wheels autoRotateBackSpeed="2.3">
                     <wheel filename="Wheels/LizardFront.xml" isLeft="true" hasTireTracks="true" hasParticles="true">
                         <physics rotSpeed="1" restLoad="0.6" repr="1&gt;1|0" driveNode="1&gt;1|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="12" damper="22" yOffset="0.0358" brakeFactor="0"/>
@@ -162,7 +162,7 @@
                     </wheel>
                 </wheels>
             </wheelConfiguration>
-            <wheelConfiguration name="$l10n_Big" price="100" brand="Szosowe" saveId="LIZARD2_WEIGHTS">
+            <wheelConfiguration name="$l10n_Big" price="300" brand="Szosowe" saveId="LIZARD2_WEIGHTS">
                 <wheels autoRotateBackSpeed="2.3">
                     <wheel filename="Wheels/LizardFront2.xml" isLeft="true" hasTireTracks="true" hasParticles="true">
                         <physics rotSpeed="1" restLoad="0.6" repr="1&gt;1|0" driveNode="1&gt;1|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="12" damper="22" yOffset="0.0358" brakeFactor="0"/>
@@ -178,7 +178,7 @@
                     </wheel>
                 </wheels>
             </wheelConfiguration>
-            <wheelConfiguration name="$l10n_Both" price="100" brand="Szosowe" saveId="LIZARD2_WIDEWEIGHT">
+            <wheelConfiguration name="$l10n_Both" price="400" brand="Szosowe" saveId="LIZARD2_WIDEWEIGHT">
                 <wheels autoRotateBackSpeed="2.3">
                     <wheel filename="Wheels/LizardFront2.xml" isLeft="true" hasTireTracks="true" hasParticles="true">
                         <physics rotSpeed="1" restLoad="0.6" repr="1&gt;1|0" driveNode="1&gt;1|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="12" damper="22" yOffset="0.0358" brakeFactor="0"/>
@@ -194,7 +194,7 @@
                     </wheel>
                 </wheels>
             </wheelConfiguration>
-            <wheelConfiguration name="$l10n_Big" price="100" brand="Szosowe" saveId="LIZARD2_WIDEWEIGHTS">
+            <wheelConfiguration name="$l10n_Big" price="300" brand="Szosowe" saveId="LIZARD2_WIDEWEIGHTS">
                 <wheels autoRotateBackSpeed="2.3">
                     <wheel filename="Wheels/LizardFront2.xml" isLeft="true" hasTireTracks="true" hasParticles="true">
                         <physics rotSpeed="1" restLoad="0.6" repr="1&gt;1|0" driveNode="1&gt;1|0|0|0" forcePointRatio="0.2" initialCompression="50" suspTravel="0.07" spring="12" damper="22" yOffset="0.0358" brakeFactor="0"/>
@@ -397,7 +397,7 @@
 			<objectChange node="0&gt;2|4" visibilityActive="false"/>
                 <objectChange node="0&gt;2|4|3" compoundChildActive="false"/>				
 		</frontloaderConfiguration>
-		<frontloaderConfiguration name="$l10n_ui_yes" price="300">
+		<frontloaderConfiguration name="$l10n_ui_yes" price="600">
 				<objectChange node="0&gt;2|4" visibilityActive="true" visibilityInactive="false"/>
 				
 			<attacherJoint node="0&gt;2|4|0" jointType="attachableFrontloader" lowerTransLimit="0 0 0" lowerRotLimit="0 0 0" moveTime="2">
@@ -408,7 +408,7 @@
                 <objectChange node="0&gt;2|4|3" compoundChildActive="true"/>					
             </attacherJoint>
 		</frontloaderConfiguration>
-		<frontloaderConfiguration name="$l10n_ui_yes" price="300">
+		<frontloaderConfiguration name="$l10n_ui_yes" price="600">
 				<objectChange node="0&gt;2|4" visibilityActive="true" visibilityInactive="false"/>
 				<objectChange node="0&gt;2|4|3" scaleActive="0.001 0.001 0.001"/>	
 			<attacherJoint node="0&gt;2|4|0" jointType="attachableFrontloader" lowerTransLimit="0 0 0" lowerRotLimit="0 0 0" moveTime="2">
@@ -992,7 +992,7 @@
             <objectChange node="0&gt;6|0|6|7" compoundChildActive="false"/>			
             <objectChange node="0&gt;6|0|7|5" compoundChildActive="false"/>	
         </vehicleTypeConfiguration>	
-        <vehicleTypeConfiguration name="1" price="0" vehicleType="ursus">
+        <vehicleTypeConfiguration name="1" price="500" vehicleType="ursus">
 			<objectChange node="0&gt;6|0|0" visibilityActive="true"/> <objectChange node="0&gt;10|5" visibilityActive="true"/>
 			<objectChange node="0&gt;6|0|2" visibilityActive="false"/>
 			<objectChange node="0&gt;6|0|3" visibilityActive="false"/>
@@ -1009,7 +1009,7 @@
             <objectChange node="0&gt;6|0|6|7" compoundChildActive="false"/>			
             <objectChange node="0&gt;6|0|7|5" compoundChildActive="false"/>
         </vehicleTypeConfiguration>		
-        <vehicleTypeConfiguration name="2" price="0" vehicleType="ursus">
+        <vehicleTypeConfiguration name="2" price="500" vehicleType="ursus">
 			<objectChange node="0&gt;6|0|0" visibilityActive="false"/>
 			<objectChange node="0&gt;6|0|2" visibilityActive="true"/>
 			<objectChange node="0&gt;6|0|3" visibilityActive="false"/>
@@ -1026,7 +1026,7 @@
             <objectChange node="0&gt;6|0|6|7" compoundChildActive="false"/>			
             <objectChange node="0&gt;6|0|7|5" compoundChildActive="false"/>	
         </vehicleTypeConfiguration>		
-        <vehicleTypeConfiguration name="3" price="0" vehicleType="ursus">
+        <vehicleTypeConfiguration name="3" price="500" vehicleType="ursus">
 			<objectChange node="0&gt;6|0|0" visibilityActive="false"/>
 			<objectChange node="0&gt;6|0|2" visibilityActive="false"/>
 			<objectChange node="0&gt;6|0|3" visibilityActive="true"/>
@@ -1043,7 +1043,7 @@
             <objectChange node="0&gt;6|0|6|7" compoundChildActive="false"/>			
             <objectChange node="0&gt;6|0|7|5" compoundChildActive="false"/>	
         </vehicleTypeConfiguration>		
-        <vehicleTypeConfiguration name="4" price="0" vehicleType="ursus">
+        <vehicleTypeConfiguration name="4" price="500" vehicleType="ursus">
 			<objectChange node="0&gt;6|0|0" visibilityActive="false"/>
 			<objectChange node="0&gt;6|0|2" visibilityActive="false"/>
 			<objectChange node="0&gt;6|0|3" visibilityActive="false"/>
@@ -1060,7 +1060,7 @@
             <objectChange node="0&gt;6|0|6|7" compoundChildActive="false"/>			
             <objectChange node="0&gt;6|0|7|5" compoundChildActive="false"/>	
         </vehicleTypeConfiguration>		
-        <vehicleTypeConfiguration name="5" price="0" vehicleType="ursus">
+        <vehicleTypeConfiguration name="5" price="500" vehicleType="ursus">
 			<objectChange node="0&gt;6|0|0" visibilityActive="false"/>
 			<objectChange node="0&gt;6|0|2" visibilityActive="false"/>
 			<objectChange node="0&gt;6|0|3" visibilityActive="false"/>
@@ -1077,7 +1077,7 @@
             <objectChange node="0&gt;6|0|6|7" compoundChildActive="false"/>			
             <objectChange node="0&gt;6|0|7|5" compoundChildActive="false"/>	
         </vehicleTypeConfiguration>	
-        <vehicleTypeConfiguration name="6" price="0" vehicleType="ursus">
+        <vehicleTypeConfiguration name="6" price="500" vehicleType="ursus">
 			<objectChange node="0&gt;6|0|0" visibilityActive="false"/>
 			<objectChange node="0&gt;6|0|2" visibilityActive="false"/>
 			<objectChange node="0&gt;6|0|3" visibilityActive="false"/>
@@ -1094,7 +1094,7 @@
             <objectChange node="0&gt;6|0|6|7" compoundChildActive="false"/>			
             <objectChange node="0&gt;6|0|7|5" compoundChildActive="false"/>
         </vehicleTypeConfiguration>		
-        <vehicleTypeConfiguration name="7" price="0" vehicleType="ursus">
+        <vehicleTypeConfiguration name="7" price="500" vehicleType="ursus">
 			<objectChange node="0&gt;6|0|0" visibilityActive="false"/>
 			<objectChange node="0&gt;6|0|2" visibilityActive="false"/>
 			<objectChange node="0&gt;6|0|3" visibilityActive="false"/>
@@ -1111,7 +1111,7 @@
             <objectChange node="0&gt;6|0|6|7" compoundChildActive="true"/>			
             <objectChange node="0&gt;6|0|7|5" compoundChildActive="false"/>	
         </vehicleTypeConfiguration>		
-        <vehicleTypeConfiguration name="8" price="0" vehicleType="ursus">
+        <vehicleTypeConfiguration name="8" price="500" vehicleType="ursus">
 			<objectChange node="0&gt;6|0|0" visibilityActive="false"/>
 			<objectChange node="0&gt;6|0|2" visibilityActive="false"/>
 			<objectChange node="0&gt;6|0|3" visibilityActive="false"/>
@@ -1128,7 +1128,7 @@
             <objectChange node="0&gt;6|0|6|7" compoundChildActive="true"/>			
             <objectChange node="0&gt;6|0|7|5" compoundChildActive="false"/>	
         </vehicleTypeConfiguration>			
-        <vehicleTypeConfiguration name="9" price="0" vehicleType="ursus">
+        <vehicleTypeConfiguration name="9" price="500" vehicleType="ursus">
 			<objectChange node="0&gt;6|0|0" visibilityActive="false"/>
 			<objectChange node="0&gt;6|0|2" visibilityActive="false"/>
 			<objectChange node="0&gt;6|0|3" visibilityActive="false"/>
