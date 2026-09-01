@@ -1,4 +1,4 @@
--- Ursus C-330 FS25 automatic range controller
+-- Ursus C-330/C-330M FS25 automatic range controller
 -- Stable: validated 2 s upshift failsafe, mass-aware 6F/2R control and ADS-safe operation.
 --
 -- The C-330 range box is NOT a powershift splitter. In automatic mode the
@@ -7,7 +7,7 @@
 -- and the reverse order while downshifting.
 --
 -- Manual modes are left to GIANTS unchanged. Automatic forward and reverse use
--- explicit C-330 range logic. C-330M remains intentionally excluded.
+-- explicit C-330-family range logic. C-330M inherits the validated controller.
 
 C330TransmissionFix = C330TransmissionFix or {}
 
@@ -111,7 +111,8 @@ if not C330TransmissionFix.installed then
         end
 
         if motor.c330FixTargetCache == nil then
-            motor.c330FixTargetCache = getSelectedMotorConfigurationName(motor.vehicle) == "C-330"
+            local motorName = getSelectedMotorConfigurationName(motor.vehicle)
+            motor.c330FixTargetCache = motorName == "C-330" or motorName == "C-330M"
         end
 
         return motor.c330FixTargetCache == true

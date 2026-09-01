@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="100">
     <author>StrielokPL, Speedy, Miziuu</author>
-    <version>0.0.4.3</version>
+    <version>0.0.5.0</version>
     <title>
         <en>Ursus C-330/330M</en>
     </title>
@@ -9,8 +9,8 @@
         <en>
             <![CDATA[C330M The tractor has the following information:
 Base Price: 15500 $
-Power: 31,5 hp
-Top Speed: 27 kph
+Power: 30 hp
+Top Speed: up to 26.3 kph
 
 Configurations:
 - Tires
@@ -28,8 +28,8 @@ Configurations:
         <de>
             <![CDATA[C330M Der Traktor verfügt über die folgenden Informationen.
 Grundpreis: 15500 €
-Leistung: 31,5 PS
-Höchstgeschwindigkeit: 27 km/h
+Leistung: 30 PS
+Höchstgeschwindigkeit: bis 26,3 km/h
 
 Konfigurationen:
 - Reifen
@@ -46,8 +46,8 @@ Konfigurationen:
 </de>
         <fr><![CDATA[C330M Le tracteur dispose des informations suivantes.
 Prix de base: 15500 €
-Pouvoir: 31,5 cv
-Vitesse de pointe: 27 km/h
+Pouvoir: 30 cv
+Vitesse de pointe: jusqu’à 26,3 km/h
 
 Configurations:
 - Pneus
@@ -66,7 +66,7 @@ Configurations:
     <iconFilename>icon_c330m.dds</iconFilename>
     <multiplayer supported="true" />
 
-    <!-- Stable drivetrain + final liquid ballast + local C-330 shop ordering. -->
+    <!-- C-330 stable drivetrain + inherited C-330M calibration test + shared shop ordering. -->
     <extraSourceFiles>
         <sourceFile filename="Scripts/C330LiquidBallast.lua" />
         <sourceFile filename="Scripts/C330ShopOrder.lua" />
