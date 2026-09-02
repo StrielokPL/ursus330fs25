@@ -73,3 +73,10 @@ if not C330LiquidBallast.installed then
         return ok
     end
 end
+
+-- Permanent gameplay layer. It registers an event listener here, but waits until
+-- C330TransmissionFix has loaded before wrapping the final automatic controller.
+local workFixPath = Utils.getFilename("Scripts/C330TransmissionWorkFix.lua", g_currentModDirectory)
+if fileExists ~= nil and fileExists(workFixPath) then
+    source(workFixPath)
+end

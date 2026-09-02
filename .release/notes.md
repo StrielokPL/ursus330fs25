@@ -1,41 +1,44 @@
-## Ursus C-330 / C-330M 0.0.5.0 D2
+## Ursus C-330 / C-330M 0.0.5.0 P1
 
-**Diagnostic hotfix prerelease.** Gameplay calibration is unchanged from 0.0.5.0/D1: no engine curve, ratio, shift threshold or transmission-controller rule is changed here.
+**Gameplay prerelease based on the clean D2 diagnostic log.** Full diagnostics remain integrated in this prerelease.
 
-D2 fixes the diagnostic layer itself after D1 caused severe frame/update stalls and corrupted-looking automatic gearbox behaviour.
+No engine curve, torque value, gearbox ratio, ballast mass or tyre calibration is changed. P1 only adds a second automatic-transmission safety layer after the validated C330TransmissionFix controller.
 
-### Root cause fixed
+### What the D2 log proved
 
-D1 called `tonumber(safeCall(vehicle, "getSpeedLimit", ...))`. `getSpeedLimit()` can return a second boolean value. Lua expanded that second return value into `tonumber()` as its optional base argument, producing:
+With C-330 + Brony 5 (15 km/h work limit), GIANTS allowed II/2 -> II/3 at about 2126 rpm and ~0.755 load. After the shift the engine fell toward 1100 rpm, load rose to ~0.9-1.0 and the tractor kept slowing until II/2 was selected manually.
 
-`C330FullDiagnostic.lua:124: invalid argument #2 to 'tonumber' (number expected, got boolean)`
+With C-330M + U021/1 (8.4 km/h work limit), II/1 was the correct work gear at roughly 2000-2160 rpm, but GIANTS still attempted II/1 -> II/2 and pulled the engine down toward ~1050-1150 rpm.
 
-That exception occurred inside the wrapper around `findGearChangeTargetGearPrediction()`. The real C330 controller had already made its decision, but the diagnostic exception could abort the surrounding vehicle update before the result was returned to GIANTS. This explains both the massive lag/UI lockups and impossible-looking gearbox states such as a range change occurring while the old gear target remained active.
+The log also confirmed that `vehicle:getSpeedLimit(true)` correctly follows the active lowered implement and returns no finite work limit after the implement is lifted.
 
-D1 also wrote some diagnostic events every frame, including repeated start-gear and prediction lines, creating excessive synchronous `log.txt` I/O.
+### P1 gearbox changes
 
-### D2 diagnostic architecture
+- Adds `Scripts/C330TransmissionWorkFix.lua` as a permanent gameplay layer.
+- Uses the active GIANTS implement speed limit, not implement names/types.
+- Maps the active work speed to the highest of the six real C-330/C-330M gears that keeps at least **1500 rpm** at that speed.
+- Example targets from the current calibration:
+  - ~8.4 km/h -> II/1,
+  - ~13-15 km/h -> II/2,
+  - slower implements may correctly remain in range I.
+- The selected work gear becomes an upshift ceiling while the implement work limit is active.
+- If the tractor is already above the correct work gear when a tool is lowered, it reduces one mechanical step at a time.
+- Allows I/3 -> II/1 under field load when II/1 is the calculated work gear, RPM is at least 2050 and the existing 2 s dwell has elapsed. This removes the old `load <= 0.55` trap for that specific work transition.
+- Adds a general lugging recovery: at >=0.85 throttle, >=0.75 load and <=1450 rpm, a too-tall within-range gear is reduced by one step.
+- After a lugging reduction, ordinary upshifts are held for 2.5 s to prevent II/3 -> II/2 -> II/3 hunting.
+- Lifting an actively working implement also creates a 2.5 s headland/release hold before road upshifts resume.
 
-- Critical transmission hooks are now **RAM-only**: they copy primitive state and immediately return the original GIANTS/C330 result.
-- No `Logging`, `getSpeedLimit`, mass probe, implement scan or formatting runs inside the transmission prediction path.
-- `getSpeedLimit()` results are captured explicitly as a single return value before conversion.
-- State snapshots are flushed outside the drivetrain path every **250 ms**.
-- Implement/rear-wheel summaries are flushed every **1000 ms**.
-- Prediction/start information is logged only when its meaningful state changes, not every frame.
-- Range and gear events are recorded only for actual requested changes.
-- The whole deferred diagnostic flush is protected by `pcall`; if any future diagnostic probe fails, diagnostics disable themselves for that tractor after one warning instead of repeatedly breaking `VehicleMotor.update`.
+### Diagnostics
 
-Log prefix remains **`[C330FULLDIAG]`**.
+D2 flight-recorder diagnostics remain enabled in this prerelease. The `[C330FULLDIAG]` log still records transmission state, final prediction, speed limits, load/RPM, range/gear events, implements and wheel data. P1 also leaves controller breadcrumbs such as `WORK GEAR HOLD`, `WORK GEAR DOWN`, `WORK RANGE UP`, `LUG DOWNSHIFT`, `WORK RELEASE HOLD` and `BLOCK UPSHIFT HOLD` for the diagnostic state line.
 
-### Important local cleanup
+### Test order
 
-An old separate `FS25_ZZ_C330FullDiagnostic` package may still be present in the local mods directory from earlier testing. It is no longer required. D2 diagnostics are inside the Ursus ZIP. Delete the old separate diagnostic ZIP/folder to avoid confusion; it was visible in the D1 test log as an available mod but was not selected in the shown save load.
+1. C-330 without an implement: verify normal road sequence and that II/3 is still available when power permits.
+2. C-330 + Brony 5: work at the 15 km/h limit; expected ceiling is II/2, with no self-inflicted II/3 lugging.
+3. C-330M + U021/1: expected work gear is II/1; verify I/3 -> II/1 can occur under real plough load and II/1 -> II/2 is blocked while the plough is active.
+4. Lift/lower the implement while moving and verify the 2.5 s release hold.
+5. Test U-201 / another ~13 km/h implement; expected work gear is II/2.
+6. Send the complete `log.txt`.
 
-### Test
-
-1. Replace D1 with D2 and remove the old separate `FS25_ZZ_C330FullDiagnostic` from the mods folder.
-2. Test C-330 first: automatic start, `I/3 -> II/1 -> II/2 -> II/3`, braking/downshifts, menu open/close and camera following.
-3. Test C-330M with the same small period plow as before: lowered work, uphill/downhill, then brief lift/lower while moving.
-4. Send the complete `log.txt`.
-
-Expected D2 behaviour: no recurring `Error: Running LUA method 'update'` from `C330FullDiagnostic.lua`, no diagnostic-induced camera/UI stalls, and gearbox behaviour should return to the underlying 0.0.5.0 controller behaviour so the original C-330M plow issue can be measured cleanly.
+This remains a prerelease. The full-release workflow still removes `C330FullDiagnostic.lua`; the work-speed gearbox fix itself is permanent gameplay code and is not removed from full builds.
