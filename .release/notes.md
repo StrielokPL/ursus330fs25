@@ -1,45 +1,41 @@
-## Ursus C-330 / C-330M 0.0.5.0 D1
+## Ursus C-330 / C-330M 0.0.5.0 D2
 
-**Diagnostic prerelease rebuild of the existing 0.0.5.0 calibration.** Drivetrain ratios, engine calibration and controller thresholds are intentionally unchanged in D1. This build exists only to capture enough runtime data to diagnose the C-330M automatic gearbox while working with period-correct implements.
+**Diagnostic hotfix prerelease.** Gameplay calibration is unchanged from 0.0.5.0/D1: no engine curve, ratio, shift threshold or transmission-controller rule is changed here.
 
-### Integrated full diagnostics
+D2 fixes the diagnostic layer itself after D1 caused severe frame/update stalls and corrupted-looking automatic gearbox behaviour.
 
-The diagnostic is now part of the Ursus prerelease ZIP itself. No second mod needs to appear in the mod selector.
+### Root cause fixed
 
-Log prefix: **`[C330FULLDIAG]`**
+D1 called `tonumber(safeCall(vehicle, "getSpeedLimit", ...))`. `getSpeedLimit()` can return a second boolean value. Lua expanded that second return value into `tonumber()` as its optional base argument, producing:
 
-The build records:
+`C330FullDiagnostic.lua:124: invalid argument #2 to 'tonumber' (number expected, got boolean)`
 
-- full transmission state every **200 ms** while the gearbox prediction is active,
-- final `findGearChangeTargetGearPrediction()` result after `C330TransmissionFix`,
-- current/target gear and mechanical range I/II,
-- RPM, real speed and accelerator input,
-- total tractor + implement/trailer mass,
-- ADS `dynamicMotorLoad`, native GIANTS smooth load, selected load and source,
-- `getSpeedLimit(true)` with the active working implement and the vehicle-only limit,
-- internal C330 controller dwell, cooldown, upshift hold and recovery timers,
-- last requested range/gear and the C330 controller reason breadcrumb,
-- explicit `setGearGroup()` / `setGear()` calls,
-- start-gear/start-range decisions,
-- attached implements every ~1 s with lowered/on state, implement speed limit and plow/work-area presence,
-- a compact rear-wheel snapshot (`tireLoad`, `restLoad`, `additionalMass`, radius).
+That exception occurred inside the wrapper around `findGearChangeTargetGearPrediction()`. The real C330 controller had already made its decision, but the diagnostic exception could abort the surrounding vehicle update before the result was returned to GIANTS. This explains both the massive lag/UI lockups and impossible-looking gearbox states such as a range change occurring while the old gear target remained active.
 
-### Recommended C-330M test
+D1 also wrote some diagnostic events every frame, including repeated start-gear and prediction lines, creating excessive synchronous `log.txt` I/O.
 
-1. Fresh C-330M, automatic gearbox, no implement: accelerate normally through the ranges.
-2. Attach the small period plow used in the previous test.
-3. Lower it and plow at full working load on level ground.
-4. Repeat uphill and downhill.
-5. While moving, lift the plow briefly and lower it again without changing throttle.
-6. Note whether the sequence reaches `I/3 -> II/1`, and whether a temporary lift causes `II/1 -> II/2 -> II/3`.
-7. Repeat with period-correct harrow/cultivator/seeder when available.
-8. Send the complete `log.txt`; filtering is not required.
+### D2 diagnostic architecture
 
-### Release policy from now on
+- Critical transmission hooks are now **RAM-only**: they copy primitive state and immediately return the original GIANTS/C330 result.
+- No `Logging`, `getSpeedLimit`, mass probe, implement scan or formatting runs inside the transmission prediction path.
+- `getSpeedLimit()` results are captured explicitly as a single return value before conversion.
+- State snapshots are flushed outside the drivetrain path every **250 ms**.
+- Implement/rear-wheel summaries are flushed every **1000 ms**.
+- Prediction/start information is logged only when its meaningful state changes, not every frame.
+- Range and gear events are recorded only for actual requested changes.
+- The whole deferred diagnostic flush is protected by `pcall`; if any future diagnostic probe fails, diagnostics disable themselves for that tractor after one warning instead of repeatedly breaking `VehicleMotor.update`.
 
-- **Prerelease builds intentionally contain `Scripts/C330FullDiagnostic.lua`.**
-- **Full releases automatically remove this file from the final Farming Simulator ZIP.**
-- CI fails if a full release still contains `[C330FULLDIAG]` or the diagnostic Lua file.
-- Standard temporary kits such as `TractorDebugKit` / `TyreDebugKit` remain forbidden in published release ZIPs.
+Log prefix remains **`[C330FULLDIAG]`**.
 
-The in-game mod version remains **0.0.5.0** because D1 does not change calibration or gameplay logic; the GitHub prerelease tag `0.0.5.0D1` uniquely identifies this diagnostic build. The next actual transmission fix can advance the mod version normally.
+### Important local cleanup
+
+An old separate `FS25_ZZ_C330FullDiagnostic` package may still be present in the local mods directory from earlier testing. It is no longer required. D2 diagnostics are inside the Ursus ZIP. Delete the old separate diagnostic ZIP/folder to avoid confusion; it was visible in the D1 test log as an available mod but was not selected in the shown save load.
+
+### Test
+
+1. Replace D1 with D2 and remove the old separate `FS25_ZZ_C330FullDiagnostic` from the mods folder.
+2. Test C-330 first: automatic start, `I/3 -> II/1 -> II/2 -> II/3`, braking/downshifts, menu open/close and camera following.
+3. Test C-330M with the same small period plow as before: lowered work, uphill/downhill, then brief lift/lower while moving.
+4. Send the complete `log.txt`.
+
+Expected D2 behaviour: no recurring `Error: Running LUA method 'update'` from `C330FullDiagnostic.lua`, no diagnostic-induced camera/UI stalls, and gearbox behaviour should return to the underlying 0.0.5.0 controller behaviour so the original C-330M plow issue can be measured cleanly.

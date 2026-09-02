@@ -1,14 +1,15 @@
--- C-330/C-330M full drivetrain diagnostics for prerelease builds.
--- Read-only instrumentation: this file must not intentionally change drivetrain decisions.
--- Loaded indirectly by C330ShopOrder.lua and installed on the first mission update,
--- after C330TransmissionFix.lua has finished wrapping VehicleMotor.
+-- C-330/C-330M flight-recorder diagnostics for prerelease builds.
+-- IMPORTANT: instrumentation must never change or interrupt drivetrain execution.
+-- Critical VehicleMotor hooks only copy primitive values to RAM and return immediately.
+-- Formatting, API probes and log writes happen later from the mod event listener.
 
 C330FullDiagnostic = C330FullDiagnostic or {}
 
 local PREFIX = "[C330FULLDIAG]"
-local SNAPSHOT_INTERVAL_MS = 200
+local SNAPSHOT_INTERVAL_MS = 250
 local IMPLEMENT_INTERVAL_MS = 1000
 local modDirectory = g_currentModDirectory
+local trackedMotors = setmetatable({}, {__mode = "k"})
 
 local function fmt(value, decimals)
     if value == nil then
@@ -27,7 +28,10 @@ local function bool(value)
     return value and "true" or "false"
 end
 
-local function safeCall(object, methodName, ...)
+-- Explicitly return ONLY the first result. Some GIANTS methods (notably
+-- getSpeedLimit) return a second boolean; forwarding all Lua return values into
+-- tonumber() accidentally turns that boolean into tonumber's base argument.
+local function safeFirst(object, methodName, ...)
     if object == nil then
         return nil
     end
@@ -35,11 +39,11 @@ local function safeCall(object, methodName, ...)
     if type(fn) ~= "function" then
         return nil
     end
-    local ok, a, b, c = pcall(fn, object, ...)
+    local ok, first = pcall(fn, object, ...)
     if not ok then
         return nil
     end
-    return a, b, c
+    return first
 end
 
 local function endsWith(value, suffix)
@@ -61,6 +65,14 @@ end
 
 local function isTargetMotor(motor)
     return motor ~= nil and isTargetVehicle(motor.vehicle)
+end
+
+local function trackMotor(motor)
+    if isTargetMotor(motor) then
+        trackedMotors[motor] = true
+        return true
+    end
+    return false
 end
 
 local function getMotorConfigName(vehicle)
@@ -89,23 +101,23 @@ local function getMotorConfigName(vehicle)
 end
 
 local function getRpm(motor)
-    local rpm = tonumber(safeCall(motor, "getLastModulatedMotorRpm"))
+    local rpm = tonumber(safeFirst(motor, "getLastModulatedMotorRpm"))
     return rpm or tonumber(motor ~= nil and motor.lastMotorRpm) or 0
 end
 
 local function getSpeed(vehicle)
-    return tonumber(safeCall(vehicle, "getLastSpeed")) or 0
+    return tonumber(safeFirst(vehicle, "getLastSpeed")) or 0
 end
 
 local function getMass(vehicle)
-    return tonumber(safeCall(vehicle, "getTotalMass"))
+    return tonumber(safeFirst(vehicle, "getTotalMass"))
 end
 
 local function getLoads(motor)
     local vehicle = motor ~= nil and motor.vehicle or nil
     local adsSpec = vehicle ~= nil and vehicle.spec_AdvancedDamageSystem or nil
     local ads = adsSpec ~= nil and tonumber(adsSpec.dynamicMotorLoad) or nil
-    local native = tonumber(safeCall(motor, "getSmoothLoadPercentage"))
+    local native = tonumber(safeFirst(motor, "getSmoothLoadPercentage"))
     local selected = nil
     local sourceName = "n/a"
 
@@ -121,15 +133,16 @@ local function getLoads(motor)
 end
 
 local function getSpeedLimits(vehicle)
-    return tonumber(safeCall(vehicle, "getSpeedLimit", true)),
-        tonumber(safeCall(vehicle, "getSpeedLimit", false))
+    local tools = safeFirst(vehicle, "getSpeedLimit", true)
+    local vehicleOnly = safeFirst(vehicle, "getSpeedLimit", false)
+    return tonumber(tools), tonumber(vehicleOnly)
 end
 
 local function getObjectName(object)
     if object == nil then
         return "nil"
     end
-    local name = safeCall(object, "getName")
+    local name = safeFirst(object, "getName")
     if type(name) == "string" and name ~= "" then
         return name
     end
@@ -140,7 +153,7 @@ local function getObjectName(object)
 end
 
 local function getImplementsSummary(vehicle)
-    local attached = safeCall(vehicle, "getAttachedImplements")
+    local attached = safeFirst(vehicle, "getAttachedImplements")
     if type(attached) ~= "table" then
         return "none"
     end
@@ -149,9 +162,9 @@ local function getImplementsSummary(vehicle)
     for index, implement in ipairs(attached) do
         local object = implement ~= nil and implement.object or nil
         if object ~= nil then
-            local lowered = safeCall(object, "getIsLowered")
-            local turnedOn = safeCall(object, "getIsTurnedOn")
-            local limit = tonumber(safeCall(object, "getSpeedLimit"))
+            local lowered = safeFirst(object, "getIsLowered")
+            local turnedOn = safeFirst(object, "getIsTurnedOn")
+            local limit = tonumber(safeFirst(object, "getSpeedLimit"))
             parts[#parts + 1] = string.format(
                 "%d:%s{lowered=%s,on=%s,limit=%s,plow=%s,workArea=%s}",
                 index,
@@ -210,36 +223,34 @@ local function remainingUntil(value, now)
     return math.max(0, value - now)
 end
 
-local function logSnapshot(motor, curGear, resultGear, acceleratorPedal, reason)
-    if not isTargetMotor(motor) then
+function C330FullDiagnostic:flushMotor(motor, now)
+    if motor == nil or motor.c330FullDiagDisabled or not isTargetMotor(motor) then
         return
     end
-
-    local now = g_time or 0
-    local last = motor.c330FullDiagLastSnapshot or -100000
-    if reason == "periodic" and now - last < SNAPSHOT_INTERVAL_MS then
-        return
-    end
-    motor.c330FullDiagLastSnapshot = now
 
     local vehicle = motor.vehicle
+    if motor.c330FullDiagModel == nil then
+        motor.c330FullDiagModel = getMotorConfigName(vehicle)
+    end
+
     local ads, native, selected, sourceName = getLoads(motor)
     local toolsLimit, vehicleLimit = getSpeedLimits(vehicle)
+    local prediction = motor.c330FullDiagPrediction or {}
 
     Logging.info(
-        "%s[STATE] model=%s dir=%s shiftMode=%s speed=%s rpm=%s gear=%s target=%s curArg=%s result=%s range=%s accel=%s massT=%s loadSel=%s loadSrc=%s adsRaw=%s nativeRaw=%s speedLimitTools=%s speedLimitVehicle=%s autoTimer=%s dwellAgeMs=%s holdRemainMs=%s cooldownRemainMs=%s rangeRecoveryAgeMs=%s topLowLoadAgeMs=%s reqRange=%s reqGear=%s reqReason=%s sample=%s",
+        "%s[STATE] model=%s dir=%s shiftMode=%s speed=%s rpm=%s gear=%s target=%s range=%s predCur=%s predResult=%s accel=%s massT=%s loadSel=%s loadSrc=%s adsRaw=%s nativeRaw=%s speedLimitTools=%s speedLimitVehicle=%s autoTimer=%s dwellAgeMs=%s holdRemainMs=%s cooldownRemainMs=%s rangeRecoveryAgeMs=%s topLowLoadAgeMs=%s reqRange=%s reqGear=%s reqReason=%s",
         PREFIX,
-        getMotorConfigName(vehicle),
+        motor.c330FullDiagModel,
         tostring(motor.currentDirection or "n/a"),
         tostring(motor.gearShiftMode or "n/a"),
         fmt(getSpeed(vehicle), 3),
         fmt(getRpm(motor), 1),
         tostring(motor.gear or "n/a"),
         tostring(motor.targetGear or "n/a"),
-        tostring(curGear or "n/a"),
-        tostring(resultGear or "n/a"),
         tostring(motor.activeGearGroupIndex or "n/a"),
-        fmt(math.abs(tonumber(acceleratorPedal) or 0), 3),
+        tostring(prediction.curGear or "n/a"),
+        tostring(prediction.resultGear or "n/a"),
+        fmt(math.abs(tonumber(prediction.acceleratorPedal) or 0), 3),
         fmt(getMass(vehicle), 3),
         fmt(selected, 3),
         sourceName,
@@ -255,9 +266,85 @@ local function logSnapshot(motor, curGear, resultGear, acceleratorPedal, reason)
         fmt(ageSince(motor.c330FixTopGearLowLoadSince, now), 0),
         tostring(motor.c330FixRequestedRange or "n/a"),
         tostring(motor.c330FixRequestedGear or "n/a"),
-        tostring(motor.c330FixRequestedRangeReason or "n/a"),
-        tostring(reason or "n/a")
+        tostring(motor.c330FixRequestedRangeReason or "n/a")
     )
+
+    local predictionSig = table.concat({
+        tostring(prediction.curGear or "n/a"),
+        tostring(prediction.resultGear or "n/a"),
+        tostring(prediction.rangeBefore or "n/a"),
+        tostring(prediction.rangeAfter or "n/a"),
+        tostring(prediction.gearSign or "n/a"),
+        tostring(motor.c330FixRequestedRangeReason or "n/a")
+    }, ":")
+    if prediction.time ~= nil and predictionSig ~= motor.c330FullDiagLastPredictionSig then
+        motor.c330FullDiagLastPredictionSig = predictionSig
+        Logging.info(
+            "%s[PREDICTION_CHANGE] cur=%s result=%s rangeBefore=%s rangeAfter=%s gearBefore=%s gearAfter=%s targetBefore=%s targetAfter=%s gearSign=%s changeTimer=%s ageMs=%s",
+            PREFIX,
+            tostring(prediction.curGear or "n/a"),
+            tostring(prediction.resultGear or "n/a"),
+            tostring(prediction.rangeBefore or "n/a"),
+            tostring(prediction.rangeAfter or "n/a"),
+            tostring(prediction.gearBefore or "n/a"),
+            tostring(prediction.gearAfter or "n/a"),
+            tostring(prediction.targetBefore or "n/a"),
+            tostring(prediction.targetAfter or "n/a"),
+            tostring(prediction.gearSign or "n/a"),
+            tostring(prediction.gearChangeTimer or "n/a"),
+            tostring(math.max(0, now - prediction.time))
+        )
+    end
+
+    local start = motor.c330FullDiagStart
+    if start ~= nil then
+        local startSig = table.concat({
+            tostring(start.gear or "n/a"),
+            tostring(start.group or "n/a"),
+            tostring(motor.currentDirection or "n/a")
+        }, ":")
+        if startSig ~= motor.c330FullDiagLastStartSig then
+            motor.c330FullDiagLastStartSig = startSig
+            Logging.info(
+                "%s[START_CHANGE] gear=%s range=%s model=%s direction=%s",
+                PREFIX,
+                tostring(start.gear or "n/a"),
+                tostring(start.group or "n/a"),
+                motor.c330FullDiagModel,
+                tostring(motor.currentDirection or "n/a")
+            )
+        end
+    end
+
+    local rangeEvent = motor.c330FullDiagRangeEvent
+    if rangeEvent ~= nil and rangeEvent.seq ~= motor.c330FullDiagLastRangeSeq then
+        motor.c330FullDiagLastRangeSeq = rangeEvent.seq
+        Logging.info(
+            "%s[RANGE_EVENT] before=%s requested=%s after=%s gear=%s target=%s reqReason=%s ageMs=%s",
+            PREFIX,
+            tostring(rangeEvent.before or "n/a"),
+            tostring(rangeEvent.requested or "n/a"),
+            tostring(rangeEvent.after or "n/a"),
+            tostring(rangeEvent.gear or "n/a"),
+            tostring(rangeEvent.target or "n/a"),
+            tostring(rangeEvent.reason or "n/a"),
+            tostring(math.max(0, now - (rangeEvent.time or now)))
+        )
+    end
+
+    local gearEvent = motor.c330FullDiagGearEvent
+    if gearEvent ~= nil and gearEvent.seq ~= motor.c330FullDiagLastGearSeq then
+        motor.c330FullDiagLastGearSeq = gearEvent.seq
+        Logging.info(
+            "%s[GEAR_EVENT] before=%s requested=%s after=%s range=%s ageMs=%s",
+            PREFIX,
+            tostring(gearEvent.before or "n/a"),
+            tostring(gearEvent.requested or "n/a"),
+            tostring(gearEvent.after or "n/a"),
+            tostring(gearEvent.range or "n/a"),
+            tostring(math.max(0, now - (gearEvent.time or now)))
+        )
+    end
 
     local lastImpl = motor.c330FullDiagLastImplement or -100000
     if now - lastImpl >= IMPLEMENT_INTERVAL_MS then
@@ -281,30 +368,23 @@ function C330FullDiagnostic:install()
             local beforeTarget = selfMotor.targetGear
             local result = originalPrediction(selfMotor, curGear, gears, gearSign, gearChangeTimer, acceleratorPedal, dt)
 
-            if isTargetMotor(selfMotor) then
-                logSnapshot(selfMotor, curGear, result, acceleratorPedal, "periodic")
-                if result ~= nil and curGear ~= nil and result ~= curGear then
-                    Logging.info(
-                        "%s[DECISION] cur=%s result=%s rangeBefore=%s rangeAfter=%s gearBefore=%s gearAfter=%s targetBefore=%s targetAfter=%s gearSign=%s changeTimer=%s rpm=%s speed=%s load=%s source=%s reqReason=%s",
-                        PREFIX,
-                        tostring(curGear),
-                        tostring(result),
-                        tostring(beforeRange or "n/a"),
-                        tostring(selfMotor.activeGearGroupIndex or "n/a"),
-                        tostring(beforeGear or "n/a"),
-                        tostring(selfMotor.gear or "n/a"),
-                        tostring(beforeTarget or "n/a"),
-                        tostring(selfMotor.targetGear or "n/a"),
-                        tostring(gearSign or "n/a"),
-                        tostring(gearChangeTimer or "n/a"),
-                        fmt(getRpm(selfMotor), 1),
-                        fmt(getSpeed(selfMotor.vehicle), 3),
-                        fmt(select(3, getLoads(selfMotor)), 3),
-                        select(4, getLoads(selfMotor)),
-                        tostring(selfMotor.c330FixRequestedRangeReason or "n/a")
-                    )
-                    logSnapshot(selfMotor, curGear, result, acceleratorPedal, "decision")
-                end
+            -- Critical path: assignments only. Never call Logging, pcall probes,
+            -- getSpeedLimit, getTotalMass or any other potentially expensive API here.
+            if trackMotor(selfMotor) then
+                selfMotor.c330FullDiagPrediction = {
+                    time = g_time or 0,
+                    curGear = curGear,
+                    resultGear = result,
+                    rangeBefore = beforeRange,
+                    rangeAfter = selfMotor.activeGearGroupIndex,
+                    gearBefore = beforeGear,
+                    gearAfter = selfMotor.gear,
+                    targetBefore = beforeTarget,
+                    targetAfter = selfMotor.targetGear,
+                    gearSign = gearSign,
+                    gearChangeTimer = gearChangeTimer,
+                    acceleratorPedal = acceleratorPedal
+                }
             end
             return result
         end
@@ -314,16 +394,12 @@ function C330FullDiagnostic:install()
     if type(originalBestStartGear) == "function" then
         VehicleMotor.getBestStartGear = function(selfMotor, gears)
             local gear, group = originalBestStartGear(selfMotor, gears)
-            if isTargetMotor(selfMotor) then
-                Logging.info(
-                    "%s[START_GEAR] gear=%s range=%s massT=%s model=%s direction=%s",
-                    PREFIX,
-                    tostring(gear or "n/a"),
-                    tostring(group or "n/a"),
-                    fmt(getMass(selfMotor.vehicle), 3),
-                    getMotorConfigName(selfMotor.vehicle),
-                    tostring(selfMotor.currentDirection or "n/a")
-                )
+            if trackMotor(selfMotor) then
+                selfMotor.c330FullDiagStart = {
+                    time = g_time or 0,
+                    gear = gear,
+                    group = group
+                }
             end
             return gear, group
         end
@@ -332,24 +408,24 @@ function C330FullDiagnostic:install()
     local originalSetGearGroup = VehicleMotor.setGearGroup
     if type(originalSetGearGroup) == "function" then
         VehicleMotor.setGearGroup = function(selfMotor, groupIndex, ...)
-            if isTargetMotor(selfMotor) then
-                Logging.info(
-                    "%s[RANGE_SET] before=%s requested=%s gear=%s target=%s rpm=%s speed=%s load=%s source=%s reqReason=%s",
-                    PREFIX,
-                    tostring(selfMotor.activeGearGroupIndex or "n/a"),
-                    tostring(groupIndex or "n/a"),
-                    tostring(selfMotor.gear or "n/a"),
-                    tostring(selfMotor.targetGear or "n/a"),
-                    fmt(getRpm(selfMotor), 1),
-                    fmt(getSpeed(selfMotor.vehicle), 3),
-                    fmt(select(3, getLoads(selfMotor)), 3),
-                    select(4, getLoads(selfMotor)),
-                    tostring(selfMotor.c330FixRequestedRangeReason or "n/a")
-                )
-            end
+            local target = trackMotor(selfMotor)
+            local before = selfMotor.activeGearGroupIndex
+            local beforeGear = selfMotor.gear
+            local beforeTarget = selfMotor.targetGear
+            local reason = selfMotor.c330FixRequestedRangeReason
             local result = originalSetGearGroup(selfMotor, groupIndex, ...)
-            if isTargetMotor(selfMotor) then
-                Logging.info("%s[RANGE_DONE] active=%s", PREFIX, tostring(selfMotor.activeGearGroupIndex or "n/a"))
+            if target and groupIndex ~= before then
+                selfMotor.c330FullDiagRangeSeq = (selfMotor.c330FullDiagRangeSeq or 0) + 1
+                selfMotor.c330FullDiagRangeEvent = {
+                    seq = selfMotor.c330FullDiagRangeSeq,
+                    time = g_time or 0,
+                    before = before,
+                    requested = groupIndex,
+                    after = selfMotor.activeGearGroupIndex,
+                    gear = beforeGear,
+                    target = beforeTarget,
+                    reason = reason
+                }
             end
             return result
         end
@@ -358,29 +434,52 @@ function C330FullDiagnostic:install()
     local originalSetGear = VehicleMotor.setGear
     if type(originalSetGear) == "function" then
         VehicleMotor.setGear = function(selfMotor, gearIndex, ...)
-            if isTargetMotor(selfMotor) then
-                Logging.info(
-                    "%s[GEAR_SET] before=%s requested=%s range=%s rpm=%s speed=%s load=%s source=%s",
-                    PREFIX,
-                    tostring(selfMotor.gear or "n/a"),
-                    tostring(gearIndex or "n/a"),
-                    tostring(selfMotor.activeGearGroupIndex or "n/a"),
-                    fmt(getRpm(selfMotor), 1),
-                    fmt(getSpeed(selfMotor.vehicle), 3),
-                    fmt(select(3, getLoads(selfMotor)), 3),
-                    select(4, getLoads(selfMotor))
-                )
+            local target = trackMotor(selfMotor)
+            local before = selfMotor.gear
+            local range = selfMotor.activeGearGroupIndex
+            local result = originalSetGear(selfMotor, gearIndex, ...)
+            if target and gearIndex ~= before then
+                selfMotor.c330FullDiagGearSeq = (selfMotor.c330FullDiagGearSeq or 0) + 1
+                selfMotor.c330FullDiagGearEvent = {
+                    seq = selfMotor.c330FullDiagGearSeq,
+                    time = g_time or 0,
+                    before = before,
+                    requested = gearIndex,
+                    after = selfMotor.gear,
+                    range = range
+                }
             end
-            return originalSetGear(selfMotor, gearIndex, ...)
+            return result
         end
     end
 
-    Logging.info("%s installed inside Ursus prerelease; snapshot=%dms implements=%dms", PREFIX, SNAPSHOT_INTERVAL_MS, IMPLEMENT_INTERVAL_MS)
+    Logging.info("%s flight recorder installed; state=%dms implements=%dms; critical hooks are RAM-only", PREFIX, SNAPSHOT_INTERVAL_MS, IMPLEMENT_INTERVAL_MS)
 end
 
 function C330FullDiagnostic:update(dt)
     if not self.installed and VehicleMotor ~= nil then
         self:install()
+    end
+    if not self.installed then
+        return
+    end
+
+    local now = g_time or 0
+    if self.nextFlushAt ~= nil and now < self.nextFlushAt then
+        return
+    end
+    self.nextFlushAt = now + SNAPSHOT_INTERVAL_MS
+
+    for motor, _ in pairs(trackedMotors) do
+        if motor ~= nil and not motor.c330FullDiagDisabled then
+            local ok, err = pcall(C330FullDiagnostic.flushMotor, self, motor, now)
+            if not ok then
+                -- Fail closed: one diagnostic bug may cost one warning, but it must
+                -- never keep breaking VehicleMotor.update or spam an exception each frame.
+                motor.c330FullDiagDisabled = true
+                Logging.warning("%s disabled for one tractor after diagnostic error: %s", PREFIX, tostring(err))
+            end
+        end
     end
 end
 
