@@ -62,10 +62,17 @@ jobs:
             --exclude='README.md' \
             --exclude='CHANGELOG.md' \
             --exclude='build/'
+
+          # Policy: prereleases intentionally contain the integrated full diagnostic.
+          # Full releases automatically strip it from the final mod ZIP.
+          if [ "${{ steps.cfg.outputs.prerelease }}" = "false" ]; then
+            rm -f build/mod/Scripts/C330FullDiagnostic.lua
+          fi
+
           cd build/mod
           zip -r -9 "../${{ steps.cfg.outputs.zip_name }}" .
 
-      - name: Verify release ZIP has no temporary diagnostics
+      - name: Verify diagnostic policy and release ZIP cleanliness
         shell: bash
         run: |
           python3 - <<'PY'
@@ -74,7 +81,9 @@ jobs:
           import zipfile
 
           zip_path = pathlib.Path('build/${{ steps.cfg.outputs.zip_name }}')
-          bad_names = (
+          prerelease = '${{ steps.cfg.outputs.prerelease }}' == 'true'
+
+          always_bad_names = (
               'TractorDebugKit.lua',
               'TyreDebugKit.lua',
               'QuickMassProbe.lua',
@@ -82,28 +91,47 @@ jobs:
               'DrivetrainProbe.lua',
               'WheelSuspensionProbe.lua',
           )
-          bad_markers = ('[TRACTORDBG]', '[TYREDBG]')
+          always_bad_markers = ('[TRACTORDBG]', '[TYREDBG]')
+          full_release_bad_names = ('C330FullDiagnostic.lua',)
+          full_release_bad_markers = ('[C330FULLDIAG]',)
           text_ext = {'.lua', '.xml', '.txt', '.md'}
           problems = []
+          found_integrated_diag = False
 
           with zipfile.ZipFile(zip_path) as zf:
               for name in zf.namelist():
-                  if any(part in name for part in bad_names):
-                      problems.append(f'debug file present: {name}')
+                  if name.endswith('Scripts/C330FullDiagnostic.lua'):
+                      found_integrated_diag = True
+
+                  if any(part in name for part in always_bad_names):
+                      problems.append(f'standardized temporary debug file present: {name}')
+                  if not prerelease and any(part in name for part in full_release_bad_names):
+                      problems.append(f'prerelease-only diagnostic present in full release: {name}')
+
                   if pathlib.Path(name).suffix.lower() not in text_ext:
                       continue
                   text = zf.read(name).decode('utf-8', errors='replace')
-                  for marker in bad_markers:
+                  for marker in always_bad_markers:
                       if marker in text:
-                          problems.append(f'debug marker {marker} present in {name}')
+                          problems.append(f'standardized temporary marker {marker} present in {name}')
+                  if not prerelease:
+                      for marker in full_release_bad_markers:
+                          if marker in text:
+                              problems.append(f'prerelease-only marker {marker} present in full release: {name}')
+
+          if prerelease and not found_integrated_diag:
+              problems.append('prerelease is missing Scripts/C330FullDiagnostic.lua')
 
           if problems:
-              print('TEMPORARY DEBUG FOUND IN RELEASE ZIP:')
+              print('RELEASE DIAGNOSTIC POLICY FAILED:')
               for problem in sorted(set(problems)):
                   print(' -', problem)
               sys.exit(1)
 
-          print('OK: release ZIP contains no standardized temporary diagnostics')
+          if prerelease:
+              print('OK: prerelease contains integrated C330 full diagnostics')
+          else:
+              print('OK: full release contains no temporary C330 diagnostics')
           PY
 
       - name: Create or update GitHub release
