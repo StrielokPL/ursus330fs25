@@ -1,40 +1,45 @@
-## Ursus C-330 / C-330M 0.0.5.0
+## Ursus C-330 / C-330M 0.0.5.0 D1
 
-**Prerelease calibration test focused on C-330M.** The stable C-330 0.0.4.3 baseline is intentionally preserved; C-330M now inherits the validated shared physics and drivetrain behavior wherever the real tractors use the same systems.
+**Diagnostic prerelease rebuild of the existing 0.0.5.0 calibration.** Drivetrain ratios, engine calibration and controller thresholds are intentionally unchanged in D1. This build exists only to capture enough runtime data to diagnose the C-330M automatic gearbox while working with period-correct implements.
 
-### C-330M inherited from the validated C-330 baseline
+### Integrated full diagnostics
 
-- Same S-312C calibration: **100 Nm target**, **600-2200 rpm**, approximately **22.4 kW / 30 hp** at rated speed.
-- Same calibrated torque curve as C-330.
-- Same base vehicle mass/COM and shared wheel physics.
-- Same dry tyre setup: **spring 12 / damper 22 / suspTravel 0.07**.
-- Same rear tyre water ballast: **+132 kg per rear wheel / +264 kg total**, approximately **spring 14 / damper 30** when filled.
-- Same shop ordering: **Engine -> Wheels -> Water -> Front ballast -> Cabin -> Loader console**.
-- Same automatic 6F/2R controller, including mass-aware starts, range logic, 2 s upshift dwell, RPM/load protections and optional read-only ADS load input.
+The diagnostic is now part of the Ursus prerelease ZIP itself. No second mod needs to appear in the mod selector.
 
-### C-330M-specific gearing
+Log prefix: **`[C330FULLDIAG]`**
 
-The M variant keeps the same three gearbox-step proportions and the same low/high range ratio as the calibrated C-330, while the complete speed set is scaled to a working top-speed target of **26.290 km/h**.
+The build records:
 
-High range / nominal max speed at 2200 rpm:
+- full transmission state every **200 ms** while the gearbox prediction is active,
+- final `findGearChangeTargetGearPrediction()` result after `C330TransmissionFix`,
+- current/target gear and mechanical range I/II,
+- RPM, real speed and accelerator input,
+- total tractor + implement/trailer mass,
+- ADS `dynamicMotorLoad`, native GIANTS smooth load, selected load and source,
+- `getSpeedLimit(true)` with the active working implement and the vehicle-only limit,
+- internal C330 controller dwell, cooldown, upshift hold and recovery timers,
+- last requested range/gear and the C330 controller reason breadcrumb,
+- explicit `setGearGroup()` / `setGear()` calls,
+- start-gear/start-range decisions,
+- attached implements every ~1 s with lowered/on state, implement speed limit and plow/work-area presence,
+- a compact rear-wheel snapshot (`tireLoad`, `restLoad`, `additionalMass`, radius).
 
-- **II/1: 8.491 km/h**
-- **II/2: 16.460 km/h**
-- **II/3: 26.290 km/h**
-- **R-II: 7.133 km/h**
+### Recommended C-330M test
 
-Low range uses the same **0.24691358** ratio:
+1. Fresh C-330M, automatic gearbox, no implement: accelerate normally through the ranges.
+2. Attach the small period plow used in the previous test.
+3. Lower it and plow at full working load on level ground.
+4. Repeat uphill and downhill.
+5. While moving, lift the plow briefly and lower it again without changing throttle.
+6. Note whether the sequence reaches `I/3 -> II/1`, and whether a temporary lift causes `II/1 -> II/2 -> II/3`.
+7. Repeat with period-correct harrow/cultivator/seeder when available.
+8. Send the complete `log.txt`; filtering is not required.
 
-- **I/1: ~2.097 km/h**
-- **I/2: ~4.064 km/h**
-- **I/3: ~6.491 km/h**
-- **R-I: ~1.761 km/h**
+### Release policy from now on
 
-### Important test status
+- **Prerelease builds intentionally contain `Scripts/C330FullDiagnostic.lua`.**
+- **Full releases automatically remove this file from the final Farming Simulator ZIP.**
+- CI fails if a full release still contains `[C330FULLDIAG]` or the diagnostic Lua file.
+- Standard temporary kits such as `TractorDebugKit` / `TyreDebugKit` remain forbidden in published release ZIPs.
 
-- **C-330 remains the 0.0.4.3 stable calibration.** Its XML speed set and torque curve were not changed.
-- **C-330M 0.0.5.0 is not yet validated in gameplay.** This prerelease needs the same staged road/load/hill checks previously used for C-330.
-- Current rebuild multiplayer remains **not yet fully validated**.
-- The shared shop-order and liquid-ballast helpers already target `c330m.xml`, so both motor variants use them without duplicate hooks.
-
-Recommended first test: buy a fresh C-330M, verify 30 hp/100 Nm behavior, manual and automatic `I/1 -> I/2 -> I/3 -> II/1 -> II/2 -> II/3`, unloaded top speed around 26.3 km/h, reverse around 7.1 km/h, then repeat with a moderate implement/trailer and ADS/MudSystemPhysics enabled.
+The in-game mod version remains **0.0.5.0** because D1 does not change calibration or gameplay logic; the GitHub prerelease tag `0.0.5.0D1` uniquely identifies this diagnostic build. The next actual transmission fix can advance the mod version normally.
