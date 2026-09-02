@@ -180,3 +180,11 @@ if not C330ShopOrder.installed and g_vehicleConfigurationManager ~= nil then
         Logging.warning("[C330SHOP] getSortedConfigurationTypes unavailable; leaving default shop order")
     end
 end
+
+-- Prerelease-only full diagnostics are kept as a separate file so the release
+-- workflow can remove them automatically from full releases. The loader itself
+-- is safe to keep permanently: on a full release the file simply does not exist.
+local diagnosticPath = Utils.getFilename("Scripts/C330FullDiagnostic.lua", g_currentModDirectory)
+if fileExists ~= nil and fileExists(diagnosticPath) then
+    source(diagnosticPath)
+end
