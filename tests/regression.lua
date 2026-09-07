@@ -39,7 +39,6 @@ local function boot(diagnostics)
         return 0.42
     end
     dofile(root..'/Scripts/C330Runtime.lua')
-    dofile(root..'/Scripts/C330ExhaustBridge.lua')
     dofile(root..'/Scripts/C330TransmissionFix.lua')
     dofile(root..'/Scripts/C330TransmissionWorkFix.lua')
     C330TransmissionWorkFix:install()
@@ -142,22 +141,6 @@ local reverse=make({reverse=true,gear=1,range=1,target=1})
 predict(reverse);check(reverse.c330P2==nil,'P2 forward rules do not alter reverse controller')
 local cm=make({model='C-330M',limit=8.4,target=2})
 check(predict(cm)==1,'C330M work ceiling supported')
--- Smoke depends on load at identical road speed, and only modifies visual state.
-local shader={};setShaderParameter=function(node,name,a,b,c,d) shader[name]=d end
-local sm,sv,ss=make({ads=0.9,native=0.2})
-sv.spec_motorized.exhaustEffects={{effectNode=1,minRpmColor={0,0,0,1},maxRpmColor={0,0,0,5},minRpmScale=0.1,maxRpmScale=0.55,xRot=0,zRot=0}}
-sv.spec_exhaustExtension={initialized=true,particleSystems={{}},particleModifiers={engineLoadThreshold=0.5},timer=-1,timerOffset=-1}
-sv.toggleEffects=function(_,on) sv.emitting=on end
-sv.setParticleIntensity=function(_,intensity) sv.intensity=intensity end
-check(Vehicle.update(sv,1000)=='vehicle-result','visual bridge preserves Vehicle.update result')
-check(sv.c330Smoke.source=='ADS' and sv.intensity>0 and sv.emitting,'ADS drives extension visuals')
-check(sv.spec_AdvancedDamageSystem.dynamicMotorLoad==0.9 and sm:getSmoothLoadPercentage()==0.2,'bridge never changes source loads')
-local highAlpha=shader.exhaustColor
-sv.spec_AdvancedDamageSystem=nil;sv.spec_exhaustExtension=nil
-Vehicle.update(sv,2000)
-check(sv.c330Smoke.source=='GIANTS' and shader.exhaustColor<highAlpha,'base exhaust fallback without optional mods')
-ss.started=false;Vehicle.update(sv,100)
-check(sv.c330Smoke.load==0,'stopped engine has no load smoke')
 -- Queue capacity reports missing events instead of silently losing transitions.
 boot(true)
 local queued=make({manual=true})
