@@ -1,13 +1,13 @@
-## Ursus C-330 / C-330M 0.0.5.2 P3
+## Ursus C-330 / C-330M 0.0.5.1 P3
 
-Prerelease izolujący crash P2. Wersja wewnętrzna: **0.0.5.2**; tag: **0.0.5.2P3**.
+Prerelease izolujący crash P2. Wersja wewnętrzna: **0.0.5.1**; tag: **0.0.5.1P3**.
 
 P2 z 7 września 2026 był niegrywalny: 1102 wyjątków `Lights.lua:1469 math.abs(nil)` w `Vehicle.update`, zamarznięty ciągnik i kamera. Skrzynia w tym logu nie zdążyła pracować.
 
 ### Co znika względem P2
 
-- Usunięty `C330ExhaustBridge.lua` (hook `Vehicle.update`, `toggleEffects`, `setParticleIntensity`).
-- Brak mostka ADS → ExhaustExtension. Dym wraca do zachowania GIANTS / ExhaustExtension bez ingerencji Ursusa.
+- `C330ExhaustBridge.lua` nie owija już `Vehicle.update` i nie woła `toggleEffects` / `setParticleIntensity`.
+- Brak mostka ADS → ExhaustExtension. Dym wraca do GIANTS / ExhaustExtension.
 - Diagnostyka `[EXHAUST]` zostaje, ale `extension` będzie `n/a` / `false`.
 
 ### Co zostaje z P2 (do weryfikacji w jeździe)
