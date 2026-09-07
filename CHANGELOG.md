@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.0.5.1 P2 — working-gear recovery and load-driven exhaust
+
+- Execute emergency downshifts through GIANTS while retaining mechanical shift times and overspeed protection.
+- Gate field upshifts by estimated torque reserve, ground speed/slip and stability; remember failed gears until demand improves.
+- Add an optional per-tractor ADS/GIANTS visual bridge for stock exhaust and ExhaustExtension.
+- Record actual shift transitions, decision timestamps, GIANTS veto timers, reduction latency and all-wheel physics telemetry.
+- Add regression and release-artifact validation to CI. Engine, gearing, tyre/ballast calibration and vehicle assets remain unchanged.
+- See `.release/notes.md` for the field test sequence and remaining runtime validation.
+
 ## 0.0.4.3 - C-330 shop cleanup test
 
 Shop/configuration cleanup prerelease after the mass, dry-tyre and liquid-ballast physics milestones.

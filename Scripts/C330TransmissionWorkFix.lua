@@ -95,20 +95,7 @@ local function getRpm(motor)
 end
 
 local function getLoad(motor)
-    local vehicle = motor ~= nil and motor.vehicle or nil
-    local adsSpec = vehicle ~= nil and vehicle.spec_AdvancedDamageSystem or nil
-    local adsLoad = adsSpec ~= nil and tonumber(adsSpec.dynamicMotorLoad) or nil
-    if adsLoad ~= nil and adsLoad >= 0 and adsLoad <= 1.05 then
-        return math.clamp(adsLoad, 0, 1.0), "ADS"
-    end
-
-    if motor ~= nil and motor.getSmoothLoadPercentage ~= nil then
-        local nativeLoad = tonumber(motor:getSmoothLoadPercentage())
-        if nativeLoad ~= nil then
-            return math.clamp(nativeLoad, 0, 1.5), "GIANTS"
-        end
-    end
-    return nil, "n/a"
+    return C330Runtime.load(motor)
 end
 
 local function getFiniteSpeedLimit(vehicle, withTools)
@@ -207,139 +194,220 @@ local function requestRange(motor, targetRange, targetGear, reason, workLimit, t
     return targetGear
 end
 
+-- P2: reserve estimates are selection heuristics, not a replacement engine model.
+local function nominal(motor, range, gear)
+    local speeds = HIGH_RANGE_SPEEDS[getMotorName(motor)]
+    return speeds[gear] * (range == LOW_RANGE and LOW_RANGE_RATIO or 1)
+end
+local function state(motor)
+    if motor.c330P2 == nil then motor.c330P2 = {} end
+    return motor.c330P2
+end
+local function decision(motor, range, gear, reason)
+    markDecision(motor, range, gear, reason, motor.c330WorkSpeedLimit, motor.c330WorkTargetVirtual)
+    local s = state(motor)
+    s.reason, s.decisionAt, s.decisionRange, s.decisionGear = reason, g_time or 0, range, gear
+    s.decisionLoad, s.decisionSource, s.decisionRpm = s.load, s.source, s.rpm
+end
+local function sample(motor, dt)
+    local s, now = state(motor), g_time or 0
+    local load, sourceName, ads, native = getLoad(motor)
+    local speed = C330Runtime.number(C330Runtime.first(motor.vehicle, "getLastSpeed")) or 0
+    local elapsed = s.sampleAt and math.max(1, now - s.sampleAt) or math.max(dt or 16, 1)
+    if s.sampleAt ~= now then
+        local alpha = 1 - math.exp(-elapsed / 400)
+        s.filteredLoad = load and ((s.filteredLoad or load) + alpha * (load - (s.filteredLoad or load))) or nil
+        s.speedTrend = s.speed and ((s.speedTrend or 0) + alpha * ((speed - s.speed) * 1000 / elapsed - (s.speedTrend or 0))) or 0
+        s.sampleAt, s.speed = now, speed
+    end
+    s.load, s.source, s.adsRaw, s.nativeRaw = load, sourceName, ads, native
+    s.rpm, s.slip = getRpm(motor), C330Runtime.rearSlip(motor.vehicle)
+    return s
+end
+local function canUpshift(motor, range, gear, targetRange, targetGear, now)
+    local s = state(motor)
+    local ratio = nominal(motor, range, gear) / nominal(motor, targetRange, targetGear)
+    local predicted = (s.rpm or 0) * ratio
+    local load = s.load and math.max(s.load, s.filteredLoad or s.load)
+    local currentTorque = C330Runtime.number(C330Runtime.first(motor, "getTorqueCurveValue", s.rpm))
+    local nextTorque = C330Runtime.number(C330Runtime.first(motor, "getTorqueCurveValue", predicted))
+    local demand = load and load / ratio
+    if demand and currentTorque and nextTorque and nextTorque > 0 then demand = demand * currentTorque / nextTorque end
+    s.predictedRpm, s.predictedLoad, s.candidateVirtual = predicted, demand, getVirtualGear(targetRange, targetGear)
+    s.candidateAt = now
+    local reason
+    if (motor.gear or 0) <= 0 or (motor.gearChangeTimer or -1) >= 0
+        or (motor.groupChangeTimer or 0) > 0 then reason = "SHIFT IN PROGRESS"
+    elseif motor.c330FixUpshiftHoldUntil and now < motor.c330FixUpshiftHoldUntil then reason = "UPSHIFT HOLD"
+    elseif (s.rpm or 0) < WORK_RANGE_UP_RPM then reason = "UPSHIFT RPM"
+    elseif predicted < 1000 then reason = "POSTSHIFT RPM"
+    elseif demand == nil or demand > 0.90 then reason = "TORQUE RESERVE"
+    elseif (s.slip or 0) > 0.25 then reason = "WHEEL SLIP"
+    elseif (s.speed or 0) < nominal(motor, range, gear) * (s.rpm or 0) / MAX_RPM * 0.75 then reason = "GROUND SPEED"
+    elseif (s.speedTrend or 0) < -0.30 then reason = "SPEED FALLING"
+    end
+    local failure = s.failure
+    if reason == nil and failure and failure.to == s.candidateVirtual then
+        -- Time alone never retries a failed gear. Demand must fall as well.
+        if now < failure.at + 5000 or load == nil or load > failure.load - 0.12
+            or (s.speed or 0) < failure.speed - 0.2 then reason = "FAILED GEAR MEMORY" end
+    end
+    if reason ~= nil then
+        s.readyAt, s.readyCandidate, s.gate = nil, nil, reason
+        return false
+    end
+    if s.readyCandidate ~= s.candidateVirtual then s.readyAt, s.readyCandidate = now, s.candidateVirtual end
+    s.gate = now - (s.readyAt or now) >= 800 and "READY" or "STABILIZING"
+    return s.gate == "READY"
+end
+local function rememberPlan(motor, fromRange, fromGear, toRange, toGear)
+    local s = state(motor)
+    s.plan = {from=getVirtualGear(fromRange, fromGear), to=getVirtualGear(toRange, toGear),
+        at=g_time or 0, load=math.max(s.load or 0, s.filteredLoad or 0), speed=s.speed or 0}
+end
+local function rememberFailure(motor, currentVirtual, now)
+    local s = state(motor)
+    local attempt = s.attempt
+    if attempt and attempt.to == currentVirtual and now - (attempt.settledAt or now) < 8000
+        and math.abs(motor.lastAcceleratorPedal or 0) >= 0.85 and (s.load or 0) >= 0.50 then
+        s.failure = {to=attempt.to, load=attempt.load, speed=attempt.speed, at=now}
+        s.attempt = nil
+    end
+end
+local function observeSettled(motor, now)
+    local s = state(motor)
+    if (motor.gear or 0) <= 0 or (motor.gearChangeTimer or -1) >= 0
+        or (motor.groupChangeTimer or 0) > 0 then return end
+    local virtual = getVirtualGear(motor.activeGearGroupIndex, motor.gear)
+    if virtual ~= s.settled then
+        if s.settled and virtual > s.settled then
+            local plan = s.plan
+            s.attempt = plan and plan.from == s.settled and plan.to == virtual and plan or nil
+            if s.attempt then s.attempt.settledAt = now end
+        elseif s.settled and virtual < s.settled then
+            local attempt = s.attempt
+            if attempt and attempt.to == s.settled and now - (attempt.settledAt or now) < 8000
+                and math.abs(motor.lastAcceleratorPedal or 0) >= 0.85 and (s.load or 0) >= 0.50 then
+                s.failure = {to=attempt.to, load=attempt.load, speed=attempt.speed, at=now}
+            end
+            s.attempt = nil
+        end
+        s.settled, s.settledAt, s.readyAt, s.readyCandidate = virtual, now, nil, nil
+        if s.reduction then
+            if virtual == s.reduction.to then s.reductionCompletedAt = now end
+            s.reduction = nil
+        end
+    end
+end
+local function reduce(motor, range, curGear, targetRange, targetGear, reason)
+    local s, now = state(motor), g_time or 0
+    local predicted = getRpm(motor) * nominal(motor, range, curGear) / nominal(motor, targetRange, targetGear)
+    -- A newly lowered tool must not force overspeed on a road-speed downshift.
+    if predicted > MAX_RPM + 100 then
+        decision(motor, range, curGear, "DOWNSHIFT RPM GUARD")
+        return curGear
+    end
+    rememberFailure(motor, getVirtualGear(range, curGear), now)
+    if s.reduction == nil then
+        s.reduction = {at=now, to=getVirtualGear(targetRange, targetGear)}
+        s.reductionRequestedAt, s.reductionCompletedAt = now, nil
+    end
+    s.vetoBefore = motor.allowGearChangeTimer
+    -- The GIANTS updateGear direction veto runs AFTER prediction. Release only
+    -- that veto for this confirmed reduction. Mechanical/clutch timers stay intact.
+    motor.allowGearChangeTimer = 0
+    motor.autoGearChangeTimer = 0
+    s.vetoReleasedAt = now
+    setUpshiftHold(motor, now + WORK_RELEASE_HOLD_MS)
+    decision(motor, targetRange, targetGear, reason)
+    if targetRange ~= range then return requestRange(motor, targetRange, targetGear, reason, motor.c330WorkSpeedLimit, motor.c330WorkTargetVirtual) end
+    return targetGear
+end
 function C330TransmissionWorkFix:install()
-    if self.installed or VehicleMotor == nil then
-        return
-    end
-
-    local originalPrediction = VehicleMotor.findGearChangeTargetGearPrediction
-    if type(originalPrediction) ~= "function" then
-        return
-    end
-
+    if self.installed or VehicleMotor == nil then return end
+    local originalPrediction, originalUpdateGear = VehicleMotor.findGearChangeTargetGearPrediction, VehicleMotor.updateGear
+    if type(originalPrediction) ~= "function" or type(originalUpdateGear) ~= "function" then return end
     self.installed = true
-
-    VehicleMotor.findGearChangeTargetGearPrediction = function(motor, curGear, gears, gearSign, gearChangeTimer, acceleratorPedal, dt)
-        local beforeRange = motor.activeGearGroupIndex or LOW_RANGE
-        local result = originalPrediction(motor, curGear, gears, gearSign, gearChangeTimer, acceleratorPedal, dt)
-
-        if not isAutomaticForward(motor)
-            or curGear == nil
-            or curGear <= 0
-            or gears == nil
-            or #gears < 1 then
-            return result
+    VehicleMotor.updateGear = function(motor, acceleratorPedal, brakePedal, dt)
+        if not isAutomaticForward(motor) or motor.vehicle.isServer == false then
+            if motor.c330P2 then motor.c330P2, motor.c330P2RangeUpAllowed = nil, nil end
+            return originalUpdateGear(motor, acceleratorPedal, brakePedal, dt)
         end
-
-        -- If the validated base controller changed the mechanical range during
-        -- this prediction, never second-guess that same transition in this frame.
-        local range = motor.activeGearGroupIndex or LOW_RANGE
-        if range ~= beforeRange then
-            return result
-        end
-
-        local now = g_time or 0
-        local rpm = getRpm(motor)
-        local load, loadSource = getLoad(motor)
-        local accel = math.abs(tonumber(acceleratorPedal) or 0)
-        local workLimit = getActiveWorkSpeedLimit(motor.vehicle)
-        local workRange, workGear, workVirtual = getWorkTarget(motor, workLimit)
-
-        motor.c330WorkSpeedLimit = workLimit
-        motor.c330WorkTargetVirtual = workVirtual
-        motor.c330WorkLoadSource = loadSource
-
-        if workLimit ~= nil then
-            motor.c330WorkWasActive = true
-            motor.c330WorkReleaseHoldUntil = nil
-        elseif motor.c330WorkWasActive then
-            motor.c330WorkWasActive = false
-            motor.c330WorkReleaseHoldUntil = now + WORK_RELEASE_HOLD_MS
-            setUpshiftHold(motor, motor.c330WorkReleaseHoldUntil)
-            markDecision(motor, range, curGear, "WORK RELEASE HOLD", nil, nil)
-        end
-
-        if workVirtual ~= nil then
-            local currentVirtual = getVirtualGear(range, curGear)
-
-            -- If the tool becomes active while the tractor is already above the
-            -- correct work gear, reduce one real step at a time until it is safe.
-            if currentVirtual > workVirtual then
-                local targetVirtual = currentVirtual - 1
-                local targetRange, targetGear = virtualToRangeGear(targetVirtual)
-                setUpshiftHold(motor, now + WORK_RELEASE_HOLD_MS)
-                if targetRange ~= range then
-                    return requestRange(motor, targetRange, targetGear, "WORK GEAR DOWN", workLimit, workVirtual)
-                end
-                markDecision(motor, targetRange, targetGear, "WORK GEAR DOWN", workLimit, workVirtual)
-                motor.autoGearChangeTimer = math.max(motor.autoGearChangeTime or 0, RANGE_CHANGE_COOLDOWN_MS)
-                return targetGear
-            end
-
-            -- The selected work gear is a ceiling while the implement speed limit
-            -- is active. GIANTS may otherwise keep chasing a taller gear after the
-            -- requested field speed has already been reached.
-            if currentVirtual == workVirtual and result ~= nil and result > curGear then
-                markDecision(motor, range, curGear, "WORK GEAR HOLD", workLimit, workVirtual)
-                motor.autoGearChangeTimer = math.max(motor.autoGearChangeTime or 0, 250)
-                return curGear
-            end
-
-            -- The original controller required load <= 0.55 for I/3 -> II/1.
-            -- Under real field load that can trap the tractor in I/3 even when
-            -- II/1 is the correct work gear. Permit only this boundary crossing
-            -- once RPM and the existing 2 s dwell are both safe.
-            if currentVirtual == 3
-                and workVirtual >= 4
-                and rpm >= WORK_RANGE_UP_RPM
-                and now - (motor.c330FixSettledGearSince or now) >= WORK_RANGE_UP_DWELL_MS
-                and (motor.c330FixUpshiftHoldUntil == nil or now >= motor.c330FixUpshiftHoldUntil) then
-                return requestRange(motor, HIGH_RANGE, 1, "WORK RANGE UP", workLimit, workVirtual)
-            end
-        end
-
-        -- Recovery failsafe independent of implements. If a tall gear has already
-        -- pulled the engine into the lugging zone at high throttle/load, force one
-        -- mechanical downshift and hold further upshifts for 2.5 s.
-        if curGear > 1
-            and accel >= LUG_DOWNSHIFT_ACCEL
-            and load ~= nil
-            and load >= LUG_DOWNSHIFT_LOAD
-            and rpm <= LUG_DOWNSHIFT_RPM then
-            local targetGear = curGear - 1
-            setUpshiftHold(motor, now + WORK_RELEASE_HOLD_MS)
-            markDecision(motor, range, targetGear, "LUG DOWNSHIFT", workLimit, workVirtual)
-            motor.autoGearChangeTimer = math.max(motor.autoGearChangeTime or 0, RANGE_CHANGE_COOLDOWN_MS)
-            return targetGear
-        end
-
-        -- The base controller already uses c330FixUpshiftHoldUntil for range
-        -- recovery. Extend that same hold to ordinary within-range upshifts so a
-        -- recovery reduction cannot bounce immediately back into the bad gear.
-        if result ~= nil
-            and result > curGear
-            and motor.c330FixUpshiftHoldUntil ~= nil
-            and now < motor.c330FixUpshiftHoldUntil then
-            markDecision(motor, range, curGear, "BLOCK UPSHIFT HOLD", workLimit, workVirtual)
-            motor.autoGearChangeTimer = math.max(motor.autoGearChangeTime or 0, 250)
-            return curGear
-        end
-
+        sample(motor, dt)
+        observeSettled(motor, g_time or 0)
+        local result = originalUpdateGear(motor, acceleratorPedal, brakePedal, dt)
+        observeSettled(motor, g_time or 0)
         return result
     end
-
-    Logging.info("[C330WORKFIX] installed work-speed governor + lug recovery")
-end
-
-function C330TransmissionWorkFix:update(dt)
-    if not self.installed
-        and VehicleMotor ~= nil
-        and C330TransmissionFix ~= nil
-        and C330TransmissionFix.installed then
-        self:install()
+    VehicleMotor.findGearChangeTargetGearPrediction = function(motor, curGear, gears, gearSign, gearChangeTimer, acceleratorPedal, dt)
+        if not isAutomaticForward(motor) or motor.vehicle.isServer == false or not curGear or curGear <= 0 or not gears or #gears < 1 then
+            return originalPrediction(motor, curGear, gears, gearSign, gearChangeTimer, acceleratorPedal, dt)
+        end
+        local now, range = g_time or 0, motor.activeGearGroupIndex or LOW_RANGE
+        local s = sample(motor, dt)
+        local workLimit = getActiveWorkSpeedLimit(motor.vehicle)
+        local _, _, workVirtual = getWorkTarget(motor, workLimit)
+        motor.c330WorkSpeedLimit, motor.c330WorkTargetVirtual, motor.c330WorkLoadSource = workLimit, workVirtual, s.source
+        if s.workLimit ~= workLimit then
+            if s.workLimit ~= nil and workLimit == nil then setUpshiftHold(motor, now + WORK_RELEASE_HOLD_MS) end
+            s.failure, s.attempt, s.readyAt, s.readyCandidate = nil, nil, nil, nil
+            s.workLimit = workLimit
+        end
+        -- Gate the base controller BEFORE it can mutate the range. This also
+        -- prevents a low work-speed ceiling being bypassed by the base controller.
+        motor.c330P2RangeUpAllowed = true
+        if range == LOW_RANGE and curGear == 3 then
+            if workVirtual and workVirtual < 4 then motor.c330P2RangeUpAllowed = false
+            elseif workVirtual or s.failure then motor.c330P2RangeUpAllowed = canUpshift(motor, range, curGear, HIGH_RANGE, 1, now) end
+        end
+        local result = originalPrediction(motor, curGear, gears, gearSign, gearChangeTimer, acceleratorPedal, dt)
+        local afterRange = motor.activeGearGroupIndex or LOW_RANGE
+        if afterRange ~= range then
+            if afterRange > range then rememberPlan(motor, range, curGear, afterRange, result)
+            else rememberFailure(motor, getVirtualGear(range, curGear), now) end
+            decision(motor, afterRange, result, motor.c330FixRequestedRangeReason or "BASE RANGE CHANGE")
+            return result
+        end
+        local accel = math.abs(tonumber(acceleratorPedal) or 0)
+        local currentVirtual = getVirtualGear(range, curGear)
+        -- Rescue takes precedence over the upshift ceiling, even if vanilla
+        -- simultaneously predicts another upshift.
+        if curGear > 1 and accel >= LUG_DOWNSHIFT_ACCEL and s.load and s.load >= LUG_DOWNSHIFT_LOAD and s.rpm <= LUG_DOWNSHIFT_RPM then
+            return reduce(motor, range, curGear, range, curGear - 1, "LUG DOWNSHIFT")
+        end
+        if workVirtual and currentVirtual > workVirtual then
+            local tr, tg = virtualToRangeGear(currentVirtual - 1)
+            return reduce(motor, range, curGear, tr, tg, "WORK GEAR DOWN")
+        end
+        if workVirtual and currentVirtual == workVirtual and result and result > curGear then
+            decision(motor, range, curGear, "WORK GEAR HOLD")
+            return curGear
+        end
+        if workVirtual and currentVirtual == 3 and workVirtual >= 4
+            and motor.c330P2RangeUpAllowed and now - (s.settledAt or now) >= WORK_RANGE_UP_DWELL_MS then
+            rememberPlan(motor, range, curGear, HIGH_RANGE, 1)
+            decision(motor, HIGH_RANGE, 1, "WORK RANGE UP")
+            return requestRange(motor, HIGH_RANGE, 1, "WORK RANGE UP", workLimit, workVirtual)
+        end
+        if result and result > curGear then
+            if motor.c330FixUpshiftHoldUntil and now < motor.c330FixUpshiftHoldUntil then
+                decision(motor, range, curGear, "BLOCK UPSHIFT HOLD")
+                return curGear
+            end
+            if (workVirtual or s.failure) and not canUpshift(motor, range, curGear, range, result, now) then
+                decision(motor, range, curGear, s.gate)
+                return curGear
+            end
+            rememberPlan(motor, range, curGear, range, result)
+        end
+        decision(motor, range, result or curGear, result == curGear and "KEEP GEAR" or "BASE PREDICTION")
+        return result
     end
+    Logging.info("[C330WORKFIX] 0.0.5.1P2 installed; load reserve, failed-gear memory, executable lug recovery")
 end
-
+function C330TransmissionWorkFix:update(dt)
+    if not self.installed then self:install() end
+end
 if not C330TransmissionWorkFix.listenerAdded then
     C330TransmissionWorkFix.listenerAdded = true
     addModEventListener(C330TransmissionWorkFix)

@@ -212,26 +212,7 @@ if not C330TransmissionFix.installed then
     end
 
     local function getLoad(motor)
-        local vehicle = motor ~= nil and motor.vehicle or nil
-        local adsSpec = vehicle ~= nil and vehicle.spec_AdvancedDamageSystem or nil
-        local adsLoad = adsSpec ~= nil and tonumber(adsSpec.dynamicMotorLoad) or nil
-
-        -- ADS briefly reports negative values around shifts. Treat those as an
-        -- unavailable sample and fall back to the native GIANTS load instead.
-        -- ADS dynamicMotorLoad is read-only; invalid/out-of-range samples are not
-        -- used for a shift decision.
-        if adsLoad ~= nil and adsLoad >= 0 and adsLoad <= 1.05 then
-            return math.clamp(adsLoad, 0, 1.0), "ADS"
-        end
-
-        if motor ~= nil and motor.getSmoothLoadPercentage ~= nil then
-            local nativeLoad = tonumber(motor:getSmoothLoadPercentage())
-            if nativeLoad ~= nil then
-                return math.clamp(nativeLoad, 0, 1.5), "GIANTS"
-            end
-        end
-
-        return nil, "n/a"
+        return C330Runtime.load(motor)
     end
 
     local function getUpshiftDwellState(motor, range, gear, now)
@@ -428,7 +409,8 @@ if not C330TransmissionFix.installed then
 
         -- Crossing the upper range boundary is I/3 -> II/1. Require sustained
         -- recovery before leaving range I.
-        local rangeRecoveryBaseReady = range == LOW_RANGE
+        local rangeRecoveryBaseReady = self.c330P2RangeUpAllowed ~= false
+            and range == LOW_RANGE
             and curGear == maxGear
             and rpm >= RANGE_UPSHIFT_RPM
             and (load == nil or load <= RANGE_UPSHIFT_MAX_LOAD)

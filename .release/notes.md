@@ -1,44 +1,35 @@
-## Ursus C-330 / C-330M 0.0.5.0 P1
+## Ursus C-330 / C-330M 0.0.5.1 P2
 
-**Gameplay prerelease based on the clean D2 diagnostic log.** Full diagnostics remain integrated in this prerelease.
+Prerelease z poprawkami skrzyni na podstawie logu P1 z 7 września 2026. Wersja wewnętrzna: **0.0.5.1**; tag i komunikat startowy: **0.0.5.1P2**.
 
-No engine curve, torque value, gearbox ratio, ballast mass or tyre calibration is changed. P1 only adds a second automatic-transmission safety layer after the validated C330TransmissionFix controller.
+### Skrzynia
 
-### What the D2 log proved
+- Redukcja ratunkowa zwalnia blokadę kierunku zmiany GIANTS. Zachowuje mechaniczne czasy zmiany biegu i sprzęgła; samo żądanie niższego biegu nie czeka już na trzysekundową blokadę.
+- Redukcja ma pierwszeństwo przed blokowaniem zbyt wysokiego biegu roboczego. Ochrona przed nadmiernymi obrotami nadal może odroczyć redukcję.
+- Dobór biegu uwzględnia szacowaną rezerwę momentu po zmianie, rzeczywisty skok przełożeń, trend prędkości, poślizg oraz 0,8 s stabilnych warunków. Prognoza jest heurystyką sterownika, nie nową symulacją silnika.
+- Nieudana zmiana jest zapamiętywana przed rozłączeniem napędu. Ponowienie wymaga co najmniej 5 s oraz spadku obciążenia o 0,12 i odzyskania prędkości. Sam powrót wysokich obrotów nie wystarcza.
+- Zachowano sufit biegu wynikający z limitu narzędzia; nie można go obejść zmianą zakresu w bazowym sterowniku.
+- P2 dotyczy automatycznej jazdy do przodu C-330/C-330M. Nie zmienia przełożeń, krzywych silnika, mas, geometrii ani strojenia kół. Wspólny odczyt ADS akceptuje prawidłowe przeciążenie ponad 100% również w bazowym sterowniku.
 
-With C-330 + Brony 5 (15 km/h work limit), GIANTS allowed II/2 -> II/3 at about 2126 rpm and ~0.755 load. After the shift the engine fell toward 1100 rpm, load rose to ~0.9-1.0 and the tractor kept slowing until II/2 was selected manually.
+### Opcjonalny bridge wydechu
 
-With C-330M + U021/1 (8.4 km/h work limit), II/1 was the correct work gear at roughly 2000-2160 rpm, but GIANTS still attempted II/1 -> II/2 and pulled the engine down toward ~1050-1150 rpm.
+Dym bazowy i efekt ExhaustExtension korzystają z obciążenia ADS, jeśli jest dostępne, lub GIANTS. Odczyt jest tylko do odczytu; bridge modyfikuje wyłącznie efekty wizualne tego ciągnika. Zachowuje sekwencję rozruchową ExhaustExtension i kolory efektów używane przez ADS. Żaden z modów ADS, ExhaustExtension, MudSystemPhysics ani Mud Sprayer nie jest wymagany. Bridge nie zmienia tarcia ani promieni kół sterowanych przez mody błota.
 
-The log also confirmed that `vehicle:getSpeedLimit(true)` correctly follows the active lowered implement and returns no finite work limit after the implement is lifted.
+### Diagnostyka
 
-### P1 gearbox changes
+- `[C330FULLDIAG][vN][SHIFT_ACTUAL]`: rzeczywiste zmiany aktywnego/celowego biegu i zakresu, numery sekwencji, chwila zdarzenia i wiek decyzji.
+- `[CONTROL]`: blokada GIANTS przed zwolnieniem, timery sprzęgła/zakresu/kierunku, prognoza obrotów i obciążenia z wiekiem próbki, powód decyzji, pamięć nieudanego biegu i czas wykonania redukcji.
+- `[WHEELS]`: wszystkie koła, nacisk przez `wheel.physics:getTireLoad()` w tonach, kontakt, poślizg GIANTS, prędkość kątowa, ugięcie i bieżący promień. Brak lokalnego pomiaru siły jest jawnie oznaczony jako `unavailable`, nie jako zero.
+- `[EXHAUST]`: źródło i filtrowane obciążenie, aktywność bridge'a ExhaustExtension i intensywność.
+- Pomiary co 250 ms, narzędzia co 1000 ms. Ograniczona kolejka zdarzeń raportuje przepełnienie. Formatowanie i zapis nadal odbywają się poza ścieżką skrzyni.
 
-- Adds `Scripts/C330TransmissionWorkFix.lua` as a permanent gameplay layer.
-- Uses the active GIANTS implement speed limit, not implement names/types.
-- Maps the active work speed to the highest of the six real C-330/C-330M gears that keeps at least **1500 rpm** at that speed.
-- Example targets from the current calibration:
-  - ~8.4 km/h -> II/1,
-  - ~13-15 km/h -> II/2,
-  - slower implements may correctly remain in range I.
-- The selected work gear becomes an upshift ceiling while the implement work limit is active.
-- If the tractor is already above the correct work gear when a tool is lowered, it reduces one mechanical step at a time.
-- Allows I/3 -> II/1 under field load when II/1 is the calculated work gear, RPM is at least 2050 and the existing 2 s dwell has elapsed. This removes the old `load <= 0.55` trap for that specific work transition.
-- Adds a general lugging recovery: at >=0.85 throttle, >=0.75 load and <=1450 rpm, a too-tall within-range gear is reduced by one step.
-- After a lugging reduction, ordinary upshifts are held for 2.5 s to prevent II/3 -> II/2 -> II/3 hunting.
-- Lifting an actively working implement also creates a 2.5 s headland/release hold before road upshifts resume.
+### Walidacja i test w grze
 
-### Diagnostics
+Testy Lua w modelu kontraktu GIANTS obejmują opóźnioną redukcję z P1, pamięć nieudanego zakresu, rezerwę II/2, poślizg, ochronę przed nadmiernymi obrotami, zakres C-330M, tryb ręczny, brak ADS, błędne próbki, wydech z/bez dodatków i diagnostykę. Workflow sprawdza składnię, testy i zawartość ZIP-a przed publikacją. **Nie jest to potwierdzenie z jazdy w FS25**; parametry selekcji wymagają testu terenowego.
 
-D2 flight-recorder diagnostics remain enabled in this prerelease. The `[C330FULLDIAG]` log still records transmission state, final prediction, speed limits, load/RPM, range/gear events, implements and wheel data. P1 also leaves controller breadcrumbs such as `WORK GEAR HOLD`, `WORK GEAR DOWN`, `WORK RANGE UP`, `LUG DOWNSHIFT`, `WORK RELEASE HOLD` and `BLOCK UPSHIFT HOLD` for the diagnostic state line.
-
-### Test order
-
-1. C-330 without an implement: verify normal road sequence and that II/3 is still available when power permits.
-2. C-330 + Brony 5: work at the 15 km/h limit; expected ceiling is II/2, with no self-inflicted II/3 lugging.
-3. C-330M + U021/1: expected work gear is II/1; verify I/3 -> II/1 can occur under real plough load and II/1 -> II/2 is blocked while the plough is active.
-4. Lift/lower the implement while moving and verify the 2.5 s release hold.
-5. Test U-201 / another ~13 km/h implement; expected work gear is II/2.
-6. Send the complete `log.txt`.
-
-This remains a prerelease. The full-release workflow still removes `C330FullDiagnostic.lua`; the work-speed gearbox fix itself is permanent gameplay code and is not removed from full builds.
+1. Zainstaluj ZIP z tej publikacji jako jedyny aktywny egzemplarz Ursusa; nie dodawaj osobnej starej diagnostyki.
+2. C-330: przejazd bez narzędzia, następnie U021/1, Brony 3/5 i U240 w tych samych warunkach co w P1. Uwzględnij ciężki fragment, wyjazd na lżejszy i podniesienie narzędzia.
+3. Sprawdź, czy po nieudanej zmianie automat utrzymuje niższy bieg, a po spadku obciążenia podejmuje udaną próbę. II/2 nie jest obowiązkowym biegiem dla każdych bron.
+4. Przy jednakowej prędkości porównaj dym podczas lekkiej i ciężkiej pracy. Wykonaj rozruch/zgaszenie. Powtórz krótko bez ADS i bez ExhaustExtension.
+5. C-330M: analogiczny krótki test; P1 z 7 września obejmował tylko C-330.
+6. Prześlij pełny `log.txt`, z zaznaczeniem fragmentu, w którym bieg nadal był nieprawidłowy.

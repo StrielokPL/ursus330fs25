@@ -220,3 +220,8 @@ Przy kolejnym logu porównywać `predCur`, `predResult`, aktualny/target gear, r
 - Historia P1: https://github.com/StrielokPL/ursus330fs25/commit/3f4b2dd145eb3da2b78a296ff66530bf5a49bc10
 
 Surowe logi użytkownika nie zostały automatycznie zapisane w repozytorium. Ten dokument zachowuje znane, wcześniej odczytane przykłady i wnioski, ale nie zastępuje pełnych plików źródłowych. Nie należy przypisywać mu niezweryfikowanych nazw plików, timestampów ani udawać, że wykonano test P1 po jego opublikowaniu. Przy późniejszej archiwizacji logów można dodać ich rzeczywiste nazwy i sumy SHA-256 oraz odnośniki do odpowiednich incydentów.
+
+
+## 2026-09-07 — 0.0.5.1 P2
+
+Log P1 potwierdził trzysekundowe oczekiwanie po zwróceniu niższego biegu oraz powtarzanie I/3 ↔ II/1. P2 zwalnia wyłącznie natywną blokadę kierunku dla potwierdzonej redukcji, dodaje ocenę rezerwy i pamięć nieudanej zmiany. Nie zmienia silnika ani kół. Dym korzysta opcjonalnie z ADS, z fallbackiem GIANTS. Diagnostyka obejmuje rzeczywiste zmiany, ich czas wykonania i poprawne API nacisku wszystkich kół; szczegóły w `docs/P2_DIAGNOSTICS.md`. Potwierdzono testy izolowane; jazda w FS25 pozostaje do wykonania.

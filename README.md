@@ -1,3 +1,5 @@
+**Aktualny prerelease: [0.0.5.1 P2](https://github.com/StrielokPL/ursus330fs25/releases/tag/0.0.5.1P2).** Poprawki doboru i wykonywania biegów, opcjonalny bridge ADS → wydech oraz diagnostyka rzeczywistych zmian. [Instrukcja testu i opis pól](docs/P2_DIAGNOSTICS.md).
+
 # Ursus C-330 / C-330M for Farming Simulator 25
 
 Working repository for analysis, correction and further development of the FS25 Ursus C-330 / C-330M 4x2 mod.

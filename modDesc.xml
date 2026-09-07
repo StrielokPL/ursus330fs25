@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="100">
     <author>StrielokPL, Speedy, Miziuu</author>
-    <version>0.0.5.0</version>
+    <version>0.0.5.1</version>
     <title>
         <en>Ursus C-330/330M</en>
     </title>
@@ -68,6 +68,8 @@ Configurations:
 
     <!-- C-330 stable drivetrain + inherited C-330M calibration test + shared shop ordering. -->
     <extraSourceFiles>
+        <sourceFile filename="Scripts/C330Runtime.lua" />
+        <sourceFile filename="Scripts/C330ExhaustBridge.lua" />
         <sourceFile filename="Scripts/C330LiquidBallast.lua" />
         <sourceFile filename="Scripts/C330ShopOrder.lua" />
         <sourceFile filename="Scripts/C330TransmissionFix.lua" />

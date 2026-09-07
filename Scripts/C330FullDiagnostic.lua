@@ -9,6 +9,7 @@ local PREFIX = "[C330FULLDIAG]"
 local SNAPSHOT_INTERVAL_MS = 250
 local IMPLEMENT_INTERVAL_MS = 1000
 local modDirectory = g_currentModDirectory
+local nextVehicleId = 0
 local trackedMotors = setmetatable({}, {__mode = "k"})
 
 local function fmt(value, decimals)
@@ -69,6 +70,10 @@ end
 
 local function trackMotor(motor)
     if isTargetMotor(motor) then
+        if not trackedMotors[motor] then
+            nextVehicleId = nextVehicleId + 1
+            motor.c330FullDiagId = nextVehicleId
+        end
         trackedMotors[motor] = true
         return true
     end
@@ -114,21 +119,7 @@ local function getMass(vehicle)
 end
 
 local function getLoads(motor)
-    local vehicle = motor ~= nil and motor.vehicle or nil
-    local adsSpec = vehicle ~= nil and vehicle.spec_AdvancedDamageSystem or nil
-    local ads = adsSpec ~= nil and tonumber(adsSpec.dynamicMotorLoad) or nil
-    local native = tonumber(safeFirst(motor, "getSmoothLoadPercentage"))
-    local selected = nil
-    local sourceName = "n/a"
-
-    if ads ~= nil and ads >= 0 and ads <= 1.05 then
-        selected = math.max(0, math.min(ads, 1.0))
-        sourceName = "ADS"
-    elseif native ~= nil then
-        selected = math.max(0, math.min(native, 1.5))
-        sourceName = "GIANTS"
-    end
-
+    local selected, sourceName, ads, native = C330Runtime.load(motor)
     return ads, native, selected, sourceName
 end
 
@@ -181,32 +172,46 @@ local function getImplementsSummary(vehicle)
     return #parts > 0 and table.concat(parts, " | ") or "none"
 end
 
-local function getRearWheelSummary(vehicle)
-    local wheels = vehicle ~= nil
-        and vehicle.spec_wheels ~= nil
-        and vehicle.spec_wheels.wheels
-        or nil
-    if type(wheels) ~= "table" then
-        return "n/a"
-    end
-
+local function getWheelSummary(vehicle)
+    local wheels = vehicle.spec_wheels and vehicle.spec_wheels.wheels
+    if type(wheels) ~= "table" then return "n/a" end
     local parts = {}
-    for _, index in ipairs({3, 4}) do
-        local wheel = wheels[index]
-        if wheel ~= nil then
-            local physics = wheel.physics or {}
-            parts[#parts + 1] = string.format(
-                "W%d{tireLoad=%s,restLoad=%s,addMass=%s,radius=%s}",
-                index,
-                fmt(tonumber(wheel.tireLoad), 3),
-                fmt(tonumber(physics.restLoad), 3),
-                fmt(tonumber(wheel.additionalMass), 3),
-                fmt(tonumber(wheel.radius) or tonumber(physics.radius), 4)
-            )
+    for index, wheel in ipairs(wheels) do
+        local physics = wheel.physics or {}
+        local net = physics.netInfo or {}
+        local load
+        -- GIANTS getTireLoad returns a mass-equivalent in tonnes, not newtons.
+        -- A client without a physical wheel shape has no local force measurement.
+        if vehicle.isServer and physics.wheelShapeCreated then
+            load = tonumber(safeFirst(physics, "getTireLoad"))
         end
+        parts[#parts+1] = string.format(
+            "W%d{tireLoadT=%s,forceSource=%s,contact=%s,ground=%s,slip=%s,angularRadS=%s,suspensionM=%s,radiusM=%s,friction=%s,restLoadT=%s,addMassT=%s}",
+            index, fmt(load), load ~= nil and "physics.getTireLoad" or "unavailable",
+            fmt(physics.contact, 0), bool(physics.hasGroundContact), fmt(net.slip),
+            fmt(net.xDriveSpeed), fmt(net.suspensionLength), fmt(wheel.radius or physics.radius, 4),
+            fmt(physics.tireGroundFrictionCoeff), fmt(physics.restLoad), fmt(wheel.additionalMass))
     end
-
-    return #parts > 0 and table.concat(parts, " ") or "n/a"
+    return table.concat(parts, " ")
+end
+-- Event queue is bounded and flushed off the drivetrain path. It preserves
+-- multiple shifts between 250 ms snapshots and exposes any overflow explicitly.
+local function queueTransition(motor, beforeGear, beforeTarget, beforeRange)
+    if beforeGear == motor.gear and beforeTarget == motor.targetGear and beforeRange == motor.activeGearGroupIndex then return end
+    local queue = motor.c330FullDiagTransitions or {}
+    motor.c330FullDiagTransitions = queue
+    if #queue >= 128 then
+        motor.c330FullDiagDropped = (motor.c330FullDiagDropped or 0) + 1
+        return
+    end
+    motor.c330FullDiagTransitionSeq = (motor.c330FullDiagTransitionSeq or 0) + 1
+    local p2 = motor.c330P2 or {}
+    queue[#queue+1] = {seq=motor.c330FullDiagTransitionSeq, time=g_time or 0,
+        before=beforeGear, after=motor.gear, beforeTarget=beforeTarget, target=motor.targetGear,
+        beforeRange=beforeRange, range=motor.activeGearGroupIndex,
+        reason=p2.reason, decisionAt=p2.decisionAt,
+        allowTimer=motor.allowGearChangeTimer, gearTimer=motor.gearChangeTimer,
+        groupTimer=motor.groupChangeTimer}
 end
 
 local function ageSince(value, now)
@@ -228,6 +233,7 @@ function C330FullDiagnostic:flushMotor(motor, now)
         return
     end
 
+    local PREFIX = PREFIX .. "[v" .. tostring(motor.c330FullDiagId or "?") .. "]"
     local vehicle = motor.vehicle
     if motor.c330FullDiagModel == nil then
         motor.c330FullDiagModel = getMotorConfigName(vehicle)
@@ -268,6 +274,35 @@ function C330FullDiagnostic:flushMotor(motor, now)
         tostring(motor.c330FixRequestedGear or "n/a"),
         tostring(motor.c330FixRequestedRangeReason or "n/a")
     )
+
+    local p2, smoke = motor.c330P2 or {}, vehicle.c330Smoke or {}
+    Logging.info("%s[CONTROL] server=%s predictionAgeMs=%s reqAgeMs=%s allowTimerMs=%s allowDirection=%s gearTimerMs=%s groupTimerMs=%s directionTimerMs=%s workLimit=%s ceiling=%s gate=%s decision=%s decisionAgeMs=%s candidate=%s candidateAgeMs=%s decisionRpm=%s predictedRpm=%s predictedLoad=%s decisionLoad=%s filteredLoad=%s decisionLoadSrc=%s speedTrendKmhS=%s rearSlip=%s failedGear=%s failedLoad=%s failedAgeMs=%s reductionAgeMs=%s reductionCompletedMs=%s vetoBeforeMs=%s vetoReleaseAgeMs=%s",
+        PREFIX, bool(vehicle.isServer), fmt(ageSince(prediction.time, now),0),
+        fmt(ageSince(motor.c330FixRequestedRangeAt, now),0), fmt(motor.allowGearChangeTimer,0),
+        fmt(motor.allowGearChangeDirection,0), fmt(motor.gearChangeTimer,0), fmt(motor.groupChangeTimer,0),
+        fmt(motor.directionChangeTimer,0), fmt(motor.c330WorkSpeedLimit), fmt(motor.c330WorkTargetVirtual,0),
+        tostring(p2.gate or "n/a"), tostring(p2.reason or "n/a"), fmt(ageSince(p2.decisionAt,now),0),
+        fmt(p2.candidateVirtual,0), fmt(ageSince(p2.candidateAt,now),0), fmt(p2.decisionRpm,1), fmt(p2.predictedRpm,1), fmt(p2.predictedLoad), fmt(p2.decisionLoad),
+        fmt(p2.filteredLoad), tostring(p2.decisionSource or "n/a"), fmt(p2.speedTrend), fmt(p2.slip),
+        fmt(p2.failure and p2.failure.to,0), fmt(p2.failure and p2.failure.load), fmt(ageSince(p2.failure and p2.failure.at,now),0),
+        fmt(p2.reduction and ageSince(p2.reduction.at,now),0),
+        fmt(p2.reductionCompletedAt and p2.reductionRequestedAt and (p2.reductionCompletedAt-p2.reductionRequestedAt),0),
+        fmt(p2.vetoBefore,0), fmt(ageSince(p2.vetoReleasedAt,now),0))
+    Logging.info("%s[WHEELS] %s", PREFIX, getWheelSummary(vehicle))
+    Logging.info("%s[EXHAUST] source=%s rawLoad=%s filteredLoad=%s extension=%s intensity=%s disabled=%s",
+        PREFIX, tostring(smoke.source or "n/a"), fmt(smoke.rawLoad), fmt(smoke.load), bool(smoke.extension), fmt(smoke.intensity), bool(vehicle.c330SmokeDisabled))
+    for _, event in ipairs(motor.c330FullDiagTransitions or {}) do
+        Logging.info("%s[SHIFT_ACTUAL] seq=%s eventTimeMs=%s ageMs=%s gear=%s->%s target=%s->%s range=%s->%s decision=%s decisionAgeMs=%s allowTimerMs=%s gearTimerMs=%s groupTimerMs=%s",
+            PREFIX, fmt(event.seq,0), fmt(event.time,0), fmt(now-event.time,0), fmt(event.before,0), fmt(event.after,0),
+            fmt(event.beforeTarget,0), fmt(event.target,0), fmt(event.beforeRange,0), fmt(event.range,0),
+            tostring(event.reason or "external/base"), fmt(ageSince(event.decisionAt,event.time),0),
+            fmt(event.allowTimer,0), fmt(event.gearTimer,0), fmt(event.groupTimer,0))
+    end
+    motor.c330FullDiagTransitions = nil
+    if (motor.c330FullDiagDropped or 0) > 0 then
+        Logging.warning("%s[EVENT_OVERFLOW] dropped=%d", PREFIX, motor.c330FullDiagDropped)
+        motor.c330FullDiagDropped = 0
+    end
 
     local predictionSig = table.concat({
         tostring(prediction.curGear or "n/a"),
@@ -350,7 +385,6 @@ function C330FullDiagnostic:flushMotor(motor, now)
     if now - lastImpl >= IMPLEMENT_INTERVAL_MS then
         motor.c330FullDiagLastImplement = now
         Logging.info("%s[IMPLEMENTS] %s", PREFIX, getImplementsSummary(vehicle))
-        Logging.info("%s[REAR_WHEELS] %s", PREFIX, getRearWheelSummary(vehicle))
     end
 end
 
@@ -360,6 +394,15 @@ function C330FullDiagnostic:install()
     end
     self.installed = true
 
+    local originalUpdateGear = VehicleMotor.updateGear
+    if type(originalUpdateGear) == "function" then
+        VehicleMotor.updateGear = function(motor, ...)
+            local beforeGear, beforeTarget, beforeRange = motor.gear, motor.targetGear, motor.activeGearGroupIndex
+            local result = originalUpdateGear(motor, ...)
+            if trackMotor(motor) then queueTransition(motor, beforeGear, beforeTarget, beforeRange) end
+            return result
+        end
+    end
     local originalPrediction = VehicleMotor.findGearChangeTargetGearPrediction
     if type(originalPrediction) == "function" then
         VehicleMotor.findGearChangeTargetGearPrediction = function(selfMotor, curGear, gears, gearSign, gearChangeTimer, acceleratorPedal, dt)
@@ -412,7 +455,8 @@ function C330FullDiagnostic:install()
             local before = selfMotor.activeGearGroupIndex
             local beforeGear = selfMotor.gear
             local beforeTarget = selfMotor.targetGear
-            local reason = selfMotor.c330FixRequestedRangeReason
+            local reason = selfMotor.c330FixRequestedRangeAt == (g_time or 0)
+                and selfMotor.c330FixRequestedRangeReason or "external/base"
             local result = originalSetGearGroup(selfMotor, groupIndex, ...)
             if target and groupIndex ~= before then
                 selfMotor.c330FullDiagRangeSeq = (selfMotor.c330FullDiagRangeSeq or 0) + 1
@@ -453,7 +497,7 @@ function C330FullDiagnostic:install()
         end
     end
 
-    Logging.info("%s flight recorder installed; state=%dms implements=%dms; critical hooks are RAM-only", PREFIX, SNAPSHOT_INTERVAL_MS, IMPLEMENT_INTERVAL_MS)
+    Logging.info("%s 0.0.5.1P2 flight recorder installed; state=%dms implements=%dms; critical hooks are RAM-only", PREFIX, SNAPSHOT_INTERVAL_MS, IMPLEMENT_INTERVAL_MS)
 end
 
 function C330FullDiagnostic:update(dt)

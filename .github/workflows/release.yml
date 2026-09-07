@@ -19,6 +19,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Validate Lua and regression cases
+        shell: bash
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y lua5.4
+          for script in Scripts/*.lua; do luac -p "$script"; done
+          lua tests/regression.lua .
+          python3 tests/package_check.py --source-only
+
       - name: Read release configuration
         id: cfg
         shell: bash
@@ -59,6 +68,8 @@ jobs:
             --exclude='.release/' \
             --exclude='debug/' \
             --exclude='docs/' \
+            --exclude='tests/' \
+            --exclude='spostrzezenia/' \
             --exclude='README.md' \
             --exclude='CHANGELOG.md' \
             --exclude='build/'
@@ -133,6 +144,10 @@ jobs:
           else:
               print('OK: full release contains no temporary C330 diagnostics')
           PY
+
+      - name: Verify source files in built artifact
+        shell: bash
+        run: python3 tests/package_check.py "build/${{ steps.cfg.outputs.zip_name }}"
 
       - name: Create or update GitHub release
         env:
