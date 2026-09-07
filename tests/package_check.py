@@ -10,7 +10,7 @@ for node in mod.findall('./extraSourceFiles/sourceFile'):
     assert (root/node.attrib['filename']).is_file(), node.attrib
 for path in root.rglob('*.xml'):
     if '.git' not in path.parts: ET.parse(path)
-required=['Scripts/C330Runtime.lua','Scripts/C330ExhaustBridge.lua','Scripts/C330TransmissionFix.lua','Scripts/C330TransmissionWorkFix.lua']
+required=['Scripts/C330Runtime.lua','Scripts/C330TransmissionFix.lua','Scripts/C330TransmissionWorkFix.lua']
 if cfg['prerelease']:required.append('Scripts/C330FullDiagnostic.lua')
 if '--source-only' not in sys.argv:
     with zipfile.ZipFile(sys.argv[1]) as z:
