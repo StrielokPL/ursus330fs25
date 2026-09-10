@@ -36,7 +36,8 @@ local function boot(diagnostics)
                 m.previousGear=m.gear; m.targetGear=new; m.gear=0; m.gearChangeTimer=400
             end
         end
-        return 0.42
+        -- Distinct adjusted brake detects dropped results and input-brake substitution.
+        return 0.42, m.testAdjustedBrake or 0.73
     end
     dofile(root..'/Scripts/C330Runtime.lua')
     dofile(root..'/Scripts/C330TransmissionFix.lua')
@@ -158,4 +159,27 @@ g_time=g_time+300;C330FullDiagnostic:update(16)
 check(#logs==count,'disabled diagnostic does not spam errors')
 check(tick(queued)==0.42,'drivetrain still runs after diagnostic shutdown')
 C330FullDiagnostic.flushMotor=originalFlush
+-- P4: two-return contract, with and without the diagnostic wrapper, including
+-- paths that bypass the automatic-forward controller and unrelated vehicles.
+for _, diagnostics in ipairs({false, true}) do
+    for _, mode in ipairs({'automatic', 'manual', 'reverse', 'client', 'other'}) do
+        for _, brake in ipairs({0, 0.73, 1}) do
+            boot(diagnostics)
+            local motor, vehicle = make({manual=mode=='manual', reverse=mode=='reverse'})
+            if mode=='client' then vehicle.isServer=false end
+            if mode=='other' then vehicle.configFileName='/other/tractor.xml' end
+            motor.testAdjustedBrake=brake
+            local accelerator, adjustedBrake=tick(motor)
+            check(accelerator==0.42 and adjustedBrake==brake,
+                'both adjusted pedals preserved: '..mode..' diagnostics='..tostring(diagnostics))
+            local automaticBrake=false
+            local brakeLights=not automaticBrake and math.abs(adjustedBrake)>0
+            check(brakeLights==(brake>0),'Lights brake expression receives numeric pedal')
+        end
+    end
+end
+-- Loading the inert exhaust stub must leave Vehicle.update untouched.
+local originalVehicleUpdate=Vehicle.update
+dofile(root..'/Scripts/C330ExhaustBridge.lua')
+check(Vehicle.update==originalVehicleUpdate,'P4 does not install exhaust bridge')
 print(string.format('PASS: %d regression assertions (isolated GIANTS contract model; game test still required)',passed))

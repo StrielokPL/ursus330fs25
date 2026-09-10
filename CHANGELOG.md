@@ -1,3 +1,10 @@
+## 0.0.5.1 P4 — 2026-09-10
+
+- Naprawiono utratę drugiego wyniku `VehicleMotor.updateGear` (hamulca) w obu nakładkach: sterowaniu skrzynią i diagnostyce. Usuwa to źródło `nil` przekazywanego do świateł STOP.
+- Przywrócono kompletny `C330FullDiagnostic.lua` po uciętej próbie publikacji P4.
+- Dodano testy obu skorygowanych pedałów, trybów jazdy, izolacji innych pojazdów oraz pozostawienia mostka dymu wyłączonego.
+- Mostek efektów dymu nadal wyłączony. Weryfikacja fizyki i multiplayer wymaga testu w grze.
+
 # Changelog
 
 ## 0.0.5.1 P2 — working-gear recovery and load-driven exhaust

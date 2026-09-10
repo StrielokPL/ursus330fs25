@@ -335,9 +335,10 @@ function C330TransmissionWorkFix:install()
         end
         sample(motor, dt)
         observeSettled(motor, g_time or 0)
-        local result = originalUpdateGear(motor, acceleratorPedal, brakePedal, dt)
+        -- Preserve both adjusted pedals; GIANTS may change braking during reversal.
+        local result, adjustedBrake = originalUpdateGear(motor, acceleratorPedal, brakePedal, dt)
         observeSettled(motor, g_time or 0)
-        return result
+        return result, adjustedBrake
     end
     VehicleMotor.findGearChangeTargetGearPrediction = function(motor, curGear, gears, gearSign, gearChangeTimer, acceleratorPedal, dt)
         if not isAutomaticForward(motor) or motor.vehicle.isServer == false or not curGear or curGear <= 0 or not gears or #gears < 1 then
@@ -403,7 +404,7 @@ function C330TransmissionWorkFix:install()
         decision(motor, range, result or curGear, result == curGear and "KEEP GEAR" or "BASE PREDICTION")
         return result
     end
-    Logging.info("[C330WORKFIX] 0.0.5.1P2 installed; load reserve, failed-gear memory, executable lug recovery")
+    Logging.info("[C330WORKFIX] 0.0.5.1P4 installed; load reserve, failed-gear memory, executable lug recovery")
 end
 function C330TransmissionWorkFix:update(dt)
     if not self.installed then self:install() end
