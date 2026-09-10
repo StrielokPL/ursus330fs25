@@ -275,7 +275,7 @@ function C330FullDiagnostic:flushMotor(motor, now)
         tostring(motor.c330FixRequestedRangeReason or "n/a")
     )
 
-    local p2, smoke = motor.c330P2 or {}, vehicle.c330Smoke or {}
+    local p2 = motor.c330P2 or {}
     Logging.info("%s[CONTROL] server=%s predictionAgeMs=%s reqAgeMs=%s allowTimerMs=%s allowDirection=%s gearTimerMs=%s groupTimerMs=%s directionTimerMs=%s workLimit=%s ceiling=%s gate=%s decision=%s decisionAgeMs=%s candidate=%s candidateAgeMs=%s decisionRpm=%s predictedRpm=%s predictedLoad=%s decisionLoad=%s filteredLoad=%s decisionLoadSrc=%s speedTrendKmhS=%s rearSlip=%s failedGear=%s failedLoad=%s failedAgeMs=%s reductionAgeMs=%s reductionCompletedMs=%s vetoBeforeMs=%s vetoReleaseAgeMs=%s",
         PREFIX, bool(vehicle.isServer), fmt(ageSince(prediction.time, now),0),
         fmt(ageSince(motor.c330FixRequestedRangeAt, now),0), fmt(motor.allowGearChangeTimer,0),
@@ -289,8 +289,6 @@ function C330FullDiagnostic:flushMotor(motor, now)
         fmt(p2.reductionCompletedAt and p2.reductionRequestedAt and (p2.reductionCompletedAt-p2.reductionRequestedAt),0),
         fmt(p2.vetoBefore,0), fmt(ageSince(p2.vetoReleasedAt,now),0))
     Logging.info("%s[WHEELS] %s", PREFIX, getWheelSummary(vehicle))
-    Logging.info("%s[EXHAUST] source=%s rawLoad=%s filteredLoad=%s extension=%s intensity=%s disabled=%s",
-        PREFIX, tostring(smoke.source or "n/a"), fmt(smoke.rawLoad), fmt(smoke.load), bool(smoke.extension), fmt(smoke.intensity), bool(vehicle.c330SmokeDisabled))
     for _, event in ipairs(motor.c330FullDiagTransitions or {}) do
         Logging.info("%s[SHIFT_ACTUAL] seq=%s eventTimeMs=%s ageMs=%s gear=%s->%s target=%s->%s range=%s->%s decision=%s decisionAgeMs=%s allowTimerMs=%s gearTimerMs=%s groupTimerMs=%s",
             PREFIX, fmt(event.seq,0), fmt(event.time,0), fmt(now-event.time,0), fmt(event.before,0), fmt(event.after,0),
@@ -497,7 +495,7 @@ function C330FullDiagnostic:install()
         end
     end
 
-    Logging.info("%s 0.0.5.1P4 flight recorder installed; state=%dms implements=%dms; critical hooks are RAM-only", PREFIX, SNAPSHOT_INTERVAL_MS, IMPLEMENT_INTERVAL_MS)
+    Logging.info("%s 0.0.5.1P5 flight recorder installed; state=%dms implements=%dms; critical hooks are RAM-only", PREFIX, SNAPSHOT_INTERVAL_MS, IMPLEMENT_INTERVAL_MS)
 end
 
 function C330FullDiagnostic:update(dt)

@@ -69,7 +69,6 @@ Configurations:
     <!-- C-330 stable drivetrain + inherited C-330M calibration test + shared shop ordering. -->
     <extraSourceFiles>
         <sourceFile filename="Scripts/C330Runtime.lua" />
-        <sourceFile filename="Scripts/C330ExhaustBridge.lua" />
         <sourceFile filename="Scripts/C330LiquidBallast.lua" />
         <sourceFile filename="Scripts/C330ShopOrder.lua" />
         <sourceFile filename="Scripts/C330TransmissionFix.lua" />

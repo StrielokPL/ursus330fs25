@@ -1,3 +1,5 @@
+> Aktualizacja P5: sekcja EXHAUST została usunięta wraz z mostkiem dymu. Pozostałe pola zachowują znaczenie opisane poniżej. Reguły ponawiania biegów opisuje wydanie P5.
+
 # P2: interpretacja diagnostyki
 
 Wersja moda 0.0.5.1, tag 0.0.5.1P2. Pole `[vN]` rozróżnia egzemplarze ciągnika w tej sesji; nie jest trwałym ID zapisu gry.
@@ -15,7 +17,6 @@ Wersja moda 0.0.5.1, tag 0.0.5.1P2. Pole `[vN]` rozróżnia egzemplarze ciągnik
 
 `WHEELS.tireLoadT` jest wynikiem GIANTS `wheel.physics:getTireLoad()`: masa równoważna w tonach. To nie surowa siła w N. `forceSource=unavailable` na kliencie bez lokalnego wheelShape jest poprawnym brakiem danych.
 `slip` pochodzi z `physics.netInfo.slip` (GIANTS 0…1), nie jest własnym modelem opony. `angularRadS` jest w rad/s, `suspensionM` i `radiusM` w metrach. Rejestrowane są wszystkie koła: zmniejszenie nacisku i utrata kontaktu przednich kół pomogą ocenić unoszenie przodu. Odstęp 250 ms nie wystarcza do analizy szybkich drgań power hop.
-`EXHAUST` pokazuje osobne filtrowanie wizualne: narastanie 200 ms, opadanie 500 ms. `extension=false` oznacza brak aktywnego sterowania efektem dodatku w danej próbce (np. brak moda lub trwający rozruch), nie automatycznie błąd.
 
 ## Walidacja
 

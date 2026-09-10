@@ -1,3 +1,10 @@
+## 0.0.5.1 P5 — 2026-09-10
+
+- Wspólna kontrola gotowości dla wszystkich automatycznych zmian w górę obsługiwanych przez WorkFix, także bez narzędzia.
+- Ponawianie nieudanego biegu w jeździe bez limitu pracy przy aktualnej rezerwie momentu i obrotów, z okresem stabilizacji; zachowany próg obciążenia podczas pracy.
+- Usunięto nieaktywny mostek ADS–dym, wpis ładowania i jego diagnostykę. Natywny wydech pozostaje bez zmian.
+- 102 sprawdzenia regresji; jazda w grze i multiplayer wymagają potwierdzenia.
+
 ## 0.0.5.1 P4 — 2026-09-10
 
 - Naprawiono utratę drugiego wyniku `VehicleMotor.updateGear` (hamulca) w obu nakładkach: sterowaniu skrzynią i diagnostyce. Usuwa to źródło `nil` przekazywanego do świateł STOP.

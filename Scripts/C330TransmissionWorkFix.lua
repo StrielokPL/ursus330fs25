@@ -248,8 +248,14 @@ local function canUpshift(motor, range, gear, targetRange, targetGear, now)
     end
     local failure = s.failure
     if reason == nil and failure and failure.to == s.candidateVirtual then
-        -- Time alone never retries a failed gear. Demand must fall as well.
-        if now < failure.at + 5000 or load == nil or load > failure.load - 0.12
+        -- Keep the work-load improvement rule. On an unloaded road run, a
+        -- failed low-RPM attempt must not permanently blacklist the top gear.
+        -- Retry only with current reserve, usable RPM and sustained readiness;
+        -- elapsed time alone is never enough.
+        local loadImproved = load ~= nil and load <= failure.load - 0.12
+        local roadRecovered = motor.c330WorkSpeedLimit == nil
+            and predicted >= 1300 and demand ~= nil and demand <= 0.75
+        if now < failure.at + 5000 or not (loadImproved or roadRecovered)
             or (s.speed or 0) < failure.speed - 0.2 then reason = "FAILED GEAR MEMORY" end
     end
     if reason ~= nil then
@@ -257,7 +263,8 @@ local function canUpshift(motor, range, gear, targetRange, targetGear, now)
         return false
     end
     if s.readyCandidate ~= s.candidateVirtual then s.readyAt, s.readyCandidate = now, s.candidateVirtual end
-    s.gate = now - (s.readyAt or now) >= 800 and "READY" or "STABILIZING"
+    local readyDuration = failure and failure.to == s.candidateVirtual and 2000 or 800
+    s.gate = now - (s.readyAt or now) >= readyDuration and "READY" or "STABILIZING"
     return s.gate == "READY"
 end
 local function rememberPlan(motor, fromRange, fromGear, toRange, toGear)
@@ -359,7 +366,7 @@ function C330TransmissionWorkFix:install()
         motor.c330P2RangeUpAllowed = true
         if range == LOW_RANGE and curGear == 3 then
             if workVirtual and workVirtual < 4 then motor.c330P2RangeUpAllowed = false
-            elseif workVirtual or s.failure then motor.c330P2RangeUpAllowed = canUpshift(motor, range, curGear, HIGH_RANGE, 1, now) end
+            else motor.c330P2RangeUpAllowed = canUpshift(motor, range, curGear, HIGH_RANGE, 1, now) end
         end
         local result = originalPrediction(motor, curGear, gears, gearSign, gearChangeTimer, acceleratorPedal, dt)
         local afterRange = motor.activeGearGroupIndex or LOW_RANGE
@@ -395,7 +402,7 @@ function C330TransmissionWorkFix:install()
                 decision(motor, range, curGear, "BLOCK UPSHIFT HOLD")
                 return curGear
             end
-            if (workVirtual or s.failure) and not canUpshift(motor, range, curGear, range, result, now) then
+            if not canUpshift(motor, range, curGear, range, result, now) then
                 decision(motor, range, curGear, s.gate)
                 return curGear
             end
@@ -404,7 +411,7 @@ function C330TransmissionWorkFix:install()
         decision(motor, range, result or curGear, result == curGear and "KEEP GEAR" or "BASE PREDICTION")
         return result
     end
-    Logging.info("[C330WORKFIX] 0.0.5.1P4 installed; load reserve, failed-gear memory, executable lug recovery")
+    Logging.info("[C330WORKFIX] 0.0.5.1P5 installed; load reserve, failed-gear memory, executable lug recovery")
 end
 function C330TransmissionWorkFix:update(dt)
     if not self.installed then self:install() end

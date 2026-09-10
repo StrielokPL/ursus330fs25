@@ -178,8 +178,35 @@ for _, diagnostics in ipairs({false, true}) do
         end
     end
 end
--- Loading the inert exhaust stub must leave Vehicle.update untouched.
-local originalVehicleUpdate=Vehicle.update
-dofile(root..'/Scripts/C330ExhaustBridge.lua')
-check(Vehicle.update==originalVehicleUpdate,'P4 does not install exhaust bridge')
+-- P5 replay: unloaded top-gear request at ~960 RPM must be rejected.
+boot(false)
+local roadLow=make({model='C-330M',gear=2,range=2,rpm=960.4,ads=0.436,speed=10,target=3})
+check(predict(roadLow)==2,'road upshift cannot bypass low RPM gate')
+check(roadLow.c330P2.gate=='UPSHIFT RPM','road upshift evaluated by common gate')
+-- Replay the later healthy II/2 run: old absolute load delta is NOT required
+-- when the road retry has adequate current torque reserve and postshift RPM.
+local function failedRoad(load,limit)
+    local m=make({model='C-330M',gear=2,range=2,rpm=2230.7,ads=load,speed=16.493,target=3,limit=limit})
+    predict(m)
+    m.c330P2.failure={to=6,load=0.436,speed=10,at=g_time-6000}
+    return m
+end
+local retry=failedRoad(0.343)
+predict(retry)
+check(retry.c330P2.gate=='STABILIZING','healthy road retry starts sustained observation')
+ticks(retry,10)
+check(retry.gear==2 and retry.targetGear==2,'retry cannot engage before 2s stability')
+ticks(retry,16)
+check(retry.gear==3,'healthy road retry reaches II/3 despite old absolute load threshold')
+local risky=failedRoad(0.8)
+ticks(risky,80)
+check(risky.gear==2,'time alone cannot unlock overloaded road retry')
+-- Realistic II/1 work case from C-330 dry-soil log remains protected.
+local work=make({gear=1,range=2,rpm=2222.7,ads=0.561,speed=7.445,limit=15,target=2})
+ticks(work,35)
+check(work.gear==1 and work.c330P2.gate=='TORQUE RESERVE','P5 does not relax working torque reserve')
+-- Two simultaneously present tractors must have independent failure memories.
+local clear=make({model='C-330',gear=2,range=2,rpm=2200,ads=0.2,speed=14.3,target=3})
+predict(clear)
+check(clear.c330P2.failure==nil and risky.c330P2.failure.to==6,'failed gear memory is per motor')
 print(string.format('PASS: %d regression assertions (isolated GIANTS contract model; game test still required)',passed))

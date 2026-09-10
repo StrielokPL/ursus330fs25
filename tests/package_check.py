@@ -10,11 +10,15 @@ for node in mod.findall('./extraSourceFiles/sourceFile'):
     assert (root/node.attrib['filename']).is_file(), node.attrib
 for path in root.rglob('*.xml'):
     if '.git' not in path.parts: ET.parse(path)
+assert not (root/'Scripts/C330ExhaustBridge.lua').exists()
+for script in (root/'Scripts').glob('*.lua'):
+    assert not any(marker in script.read_text() for marker in ['C330ExhaustBridge','c330Smoke','[EXHAUST]']), script
 required=['Scripts/C330Runtime.lua','Scripts/C330TransmissionFix.lua','Scripts/C330TransmissionWorkFix.lua']
 if cfg['prerelease']:required.append('Scripts/C330FullDiagnostic.lua')
 if '--source-only' not in sys.argv:
     with zipfile.ZipFile(sys.argv[1]) as z:
         assert z.testzip() is None
+        assert "Scripts/C330ExhaustBridge.lua" not in z.namelist()
         assert ET.fromstring(z.read('modDesc.xml')).findtext('version')==cfg['version']
         for name in required:assert z.read(name)==(root/name).read_bytes(),name
         for name in z.namelist():

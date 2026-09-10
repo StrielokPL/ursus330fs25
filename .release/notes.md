@@ -1,23 +1,19 @@
-## Ursus C-330 / C-330M 0.0.5.1 P4
+## Ursus C-330 / C-330M 0.0.5.1 P5
 
-Wersja testowa naprawiająca regresję P2/P3: `Lights.lua:1469: invalid argument #1 to abs (number expected, got nil)`.
-Wersja wewnętrzna: **0.0.5.1**, tag: **0.0.5.1P4**.
+Wersja testowa: **0.0.5.1P5**, wersja wewnętrzna **0.0.5.1**.
 
-### Poprawki
+### Skrzynia
+- Kontrola gotowości do zmiany obejmuje teraz również jazdę bez narzędzia: obroty, przewidywany moment, poślizg i prędkość. Dotyczy zmian w zakresie oraz I/3 → II/1.
+- Pamięć nieudanego biegu dopuszcza ponowną próbę bez aktywnego limitu pracy, gdy prognoza daje co najmniej 1300 obr./min i maksymalnie 75% obciążenia. Wymagane jest minimum 5 sekund od porażki oraz 2 sekundy ciągłego spełniania warunków gotowości. Sam upływ czasu nie wystarcza.
+- Przy pracy pozostaje wymóg poprawy obciążenia oraz dotychczasowy próg rezerwy momentu. Przełożenia, moc i masy nie są zmieniane.
+- Zachowana naprawa P4: obie nakładki przekazują skorygowany gaz i hamulec.
 
-- `C330TransmissionWorkFix` oraz `C330FullDiagnostic` przekazują oba wyniki `VehicleMotor.updateGear`: skorygowany gaz i hamulec. Każda z obu nakładek wcześniej odrzucała hamulec.
-- Przywrócony kompletny rejestrator diagnostyczny po uciętym pliku z nieukończonej próby P4. W logu identyfikuje się jako P4.
-- Mostek efektów dymu pozostaje wyłączony; nie instalujemy nakładki na `Vehicle.update` ani sterowania `toggleEffects` / `setParticleIntensity`.
-- Testy obejmują oba wyniki, hamulec 0 / częściowy / pełny, automat, manual, cofanie, klienta oraz inne pojazdy, z diagnostyką i bez niej.
+### Usunięcie mostka dymu
+- Usunięty nieaktywny C330ExhaustBridge.lua, wpis ładowania i diagnostyka EXHAUST/c330Smoke.
+- Usunięte testy pustego mostka; kontrola paczki pilnuje braku jego pozostałości.
+- Natywne efekty pojazdu i zewnętrzny Exhaust Extension nie są modyfikowane. Odczyt obciążenia ADS nadal służy skrzyni.
 
-### Zakres weryfikacji
+### Walidacja i jazda testowa
+102 sprawdzenia regresji Lua, w tym odtworzenie niskoobrotowej próby II/3 i późniejszego odblokowania, zachowanie rezerwy podczas bronowania oraz oddzielna pamięć dwóch silników. Testy izolowane nie zastępują FS25.
 
-Testy Lua i XML oraz porównanie skryptów w paczce ze źródłami są częścią budowania wydania. Test izolowany nie zastępuje jazdy w FS25 ani próby multiplayer.
-Silnik, przełożenia, masy, opony i reguły wyboru biegów z P2/P3 nie są przestrajane w tej poprawce.
-
-### Test w grze
-
-1. Zastąp dotychczasowy plik `FS25_UrsusC330_330M_4x2.zip` paczką z tego wydania i uruchom grę ponownie.
-2. Sprawdź C-330 i C-330M: ruszanie, hamowanie, światła STOP, zmianę kierunku oraz skrzynię ręczną i automatyczną.
-3. Sprawdź jazdę z narzędziem i redukcję pod obciążeniem. W logu powinien działać `[C330FULLDIAG]` w wersji P4, bez błędu `Lights.lua:1469`.
-4. Zachowaj pełny `log.txt` z testu.
+Podmień ZIP i uruchom grę ponownie. Sprawdź osobno C-330 oraz C-330M: rozpędzanie bez narzędzia, jazdę po nierównościach i ponowne rozpędzanie po redukcji. Następnie wykonaj próbę z tymi samymi bronami. Zachowaj pełny log; skrypty zgłaszają P5.
