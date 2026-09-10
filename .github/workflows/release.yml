@@ -24,7 +24,7 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y lua5.4
-          for script in Scripts/*.lua; do luac -p "$script"; done
+          for script in Scripts/*.lua debug/C330FullDiagnostic.lua; do luac -p "$script"; done
           lua tests/regression.lua .
           python3 tests/package_check.py --source-only
 
@@ -74,10 +74,12 @@ jobs:
             --exclude='CHANGELOG.md' \
             --exclude='build/'
 
-          # Policy: prereleases intentionally contain the integrated full diagnostic.
-          # Full releases automatically strip it from the final mod ZIP.
-          if [ "${{ steps.cfg.outputs.prerelease }}" = "false" ]; then
-            rm -f build/mod/Scripts/C330FullDiagnostic.lua
+          # Diagnostics live outside runtime sources. Only test builds opt in.
+          if [ "${{ steps.cfg.outputs.prerelease }}" = "true" ]; then
+            cp debug/C330FullDiagnostic.lua build/mod/Scripts/C330FullDiagnostic.lua
+            cat >> build/mod/Scripts/C330ShopOrder.lua <<'LUA'
+          source(Utils.getFilename("Scripts/C330FullDiagnostic.lua", g_currentModDirectory))
+          LUA
           fi
 
           cd build/mod

@@ -14,13 +14,23 @@ assert not (root/'Scripts/C330ExhaustBridge.lua').exists()
 for script in (root/'Scripts').glob('*.lua'):
     assert not any(marker in script.read_text() for marker in ['C330ExhaustBridge','c330Smoke','[EXHAUST]']), script
 required=['Scripts/C330Runtime.lua','Scripts/C330TransmissionFix.lua','Scripts/C330TransmissionWorkFix.lua']
-if cfg['prerelease']:required.append('Scripts/C330FullDiagnostic.lua')
+assert not (root/'Scripts/C330FullDiagnostic.lua').exists()
+assert 'C330FullDiagnostic' not in (root/'Scripts/C330ShopOrder.lua').read_text()
 if '--source-only' not in sys.argv:
     with zipfile.ZipFile(sys.argv[1]) as z:
         assert z.testzip() is None
         assert "Scripts/C330ExhaustBridge.lua" not in z.namelist()
         assert ET.fromstring(z.read('modDesc.xml')).findtext('version')==cfg['version']
         for name in required:assert z.read(name)==(root/name).read_bytes(),name
+        if cfg['prerelease']:
+            assert z.read('Scripts/C330FullDiagnostic.lua')==(root/'debug/C330FullDiagnostic.lua').read_bytes()
+        else:
+            assert 'Scripts/C330FullDiagnostic.lua' not in z.namelist()
+            assert z.read('Scripts/C330ShopOrder.lua')==(root/'Scripts/C330ShopOrder.lua').read_bytes()
+            for name in z.namelist():
+                if name.endswith('.lua'):
+                    text=z.read(name).decode('utf-8')
+                    assert not any(marker in text for marker in ['C330FullDiagnostic','[C330WORKFIX]','[EXHAUST]']),name
         for name in z.namelist():
             assert not any(name.startswith(prefix) for prefix in ['.git/','.github/','.release/','tests/','docs/','debug/','spostrzezenia/']),name
     print('ZIP verified:',hashlib.sha256(Path(sys.argv[1]).read_bytes()).hexdigest())

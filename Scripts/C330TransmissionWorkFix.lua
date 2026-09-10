@@ -1,7 +1,6 @@
 -- C-330/C-330M work-speed-aware automatic gearbox correction.
 -- Loaded before C330TransmissionFix.lua, but installs on the first mission update
 -- so it wraps the final validated controller instead of the raw GIANTS method.
--- The full prerelease diagnostic may then wrap this layer read-only.
 
 C330TransmissionWorkFix = C330TransmissionWorkFix or {}
 
@@ -411,7 +410,6 @@ function C330TransmissionWorkFix:install()
         decision(motor, range, result or curGear, result == curGear and "KEEP GEAR" or "BASE PREDICTION")
         return result
     end
-    Logging.info("[C330WORKFIX] 0.0.5.1P5 installed; load reserve, failed-gear memory, executable lug recovery")
 end
 function C330TransmissionWorkFix:update(dt)
     if not self.installed then self:install() end

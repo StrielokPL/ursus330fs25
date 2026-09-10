@@ -43,7 +43,7 @@ local function boot(diagnostics)
     dofile(root..'/Scripts/C330TransmissionFix.lua')
     dofile(root..'/Scripts/C330TransmissionWorkFix.lua')
     C330TransmissionWorkFix:install()
-    if diagnostics then dofile(root..'/Scripts/C330FullDiagnostic.lua'); C330FullDiagnostic:install() end
+    if diagnostics then dofile(root..'/debug/C330FullDiagnostic.lua'); C330FullDiagnostic:install() end
 end
 local function make(v)
     v=v or {}

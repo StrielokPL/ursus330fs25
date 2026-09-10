@@ -1,113 +1,29 @@
-# Validation status — Ursus C-330 / C-330M 0.0.4.3
+# Walidacja 0.0.5.1 — 2026-09-10
 
-## Status wydania
+## Dowody
 
-**Singleplayer / kariera: STABLE**
+Bazą pełnego wydania jest P5 (`4308ac90bcbf77a72340a7b03d795c26fde615d4`). Finalizacja usuwa diagnostykę i puste wywołania logujące bez strojenia progów skrzyni.
 
-Aktualny rebuild 0.0.4.3 został przetestowany w normalnej karierze oraz w kontrolowanych testach fizyki i konfiguracji. Ostatni pełny log testowy nie zawiera błędów Lua, call stacków ani błędów przypisanych do C-330.
+| Próba | Wynik i granice |
+| --- | --- |
+| P4, log 20260910-172726 | Jazda na mokrym; wcześniejszy błąd Lights nie wystąpił. |
+| P4, log 20260910-185005 | Suchy test obu ciągników; C330M nie odzyskał II3. Uzasadnienie poprawki P5. Lista aktywnych modów pochodziła z careerSavegame(1).xml. |
+| P5, log 20260910-191745 | FS25 1.23.1.0; nowo zakupione C330 i C330M, kolejno deski i te same Brony 5. 0 wpisów Error:, 0 decyzji FAILED GEAR MEMORY. |
+| C330 bez narzędzia, P5 | II3; maksimum 22,887 km/h. |
+| C330M bez narzędzia, P5 | II3; maksimum 26,289 km/h. Po redukcji ponownie II2 i II3. |
+| C330 z bronami, 21:14:50–21:14:53 | II1, mediana 7,406 km/h; przewidywane obciążenie II2 1,122. |
+| C330M z bronami, 21:17:04–21:17:11 | II1, mediana 8,479 km/h; przewidywane obciążenie II2 1,238. |
+| Izolowane regresje Lua | Oba wyniki updateGear, redukcje, gotowość do upshiftu, odzyskanie biegu, ochrona pracy i separacja motorów; nie symulują fizyki gry. |
 
-**Multiplayer aktualnego rebuildu: NOT YET VALIDATED**
+Prognozowane obciążenie to heurystyka sterownika, nie zmierzona praca na wyższym biegu. Brak Error: nie oznacza braku wszystkich ostrzeżeń innych modów. Lista modów dostępnych w logu nie jest równoznaczna z listą aktywnych.
 
-Aktualna wersja 0.0.4.3 nie przeszła jeszcze kompletnego testu host + drugi klient / dedicated server po wszystkich zmianach skrzyni, masy, opon, płynnego balastu i konfiguratora. Nie należy opisywać tego buildu jako „MP tested” tylko na podstawie historycznych testów wcześniejszego fixa dirty flagów.
+## Pozostałe obszary — kolejność
 
-## Ostatni zweryfikowany snapshot
+1. **Multiplayer:** host i klient, następnie serwer dedykowany; oba modele, zakup, warsztat, jazda, kierunek, ciężki zestaw, zapis/wczytanie, ponowne dołączenie, reset i sprzedaż. Sprawdzić synchronizację biegów i dirty flagi. Aktualny sterownik nie ma statusu MP-tested.
+2. **Rzeczywisty zapas II1 → II2:** kontrolowana próba na tym samym polu i z tym samym narzędziem, z pomiarem obrotów/prędkości po zmianie. Nie luzować ochrony wyłącznie na podstawie bieżącego obciążenia II1.
+3. **Pamięć nieudanej zmiany:** celowo wywołać nieudaną zmianę, następnie poprawić warunki bez odpinania narzędzia/resetu stanu. P5 potwierdziło odzyskanie prędkości drogowej, ale nie uruchomiło FAILED GEAR MEMORY; ścieżka ma tylko izolowany test regresyjny.
+4. **Warunki i kompatybilność:** ciężka przyczepa/podjazd, mokra gleba, różne ciśnienia i balast; porównać ADS włączony/wyłączony, zużyty silnik i zmianę konfiguracji C330 ↔ C330M. Wcześniejsze próby nie pokrywają całej macierzy P5.
+5. **Tryby sterowania:** manual/półautomat, rewers, tempomat i pracownik AI; testy izolowane kontraktu nie zastępują jazdy w tych trybach.
+6. **Finalna paczka:** krótka jazda po usunięciu diagnostyki, hamowanie/rewers, zapis i ponowne wczytanie. Nie wykonano nowej sesji gry po finalizacji.
 
-Środowisko:
-
-- Farming Simulator 25 **1.21.1.0**,
-- Ursus C-330/C-330M **0.0.4.3**,
-- normalny save kariery,
-- sklep/warsztat, jazda bez obciążenia i z zestawami, testowa górka, zmiana ciśnienia i konfiguracji.
-
-Aktywne mody skryptowe / fizyczne w ostatnim logu:
-
-| Mod | Wersja | Znaczenie dla testu |
-| --- | --- | --- |
-| Advanced Damage System | 0.9.2.4 | źródło opcjonalnego `dynamicMotorLoad`; C-330 używa go read-only i ma fallback GIANTS |
-| MudSystemPhysics | 1.3.1.0 | ciśnienie / fizyka opon; testy 1.00 i 2.40 bar |
-| Mud Sprayer | 1.0.0.0 | współpracuje z systemem błota/pojazdów |
-| tireSound | 1.0.0.0 | dodatkowa konfiguracja / dźwięk opon |
-| toggleSuperStrength | 1.1.0.0 | aktywny w sesji; brak konfliktu z C-330 |
-| Vehicle Years | 1.0.0.6 | aktywny w sesji; brak konfliktu z C-330 |
-
-AIASF nie był aktywnym modem w tym konkretnym ostatnim snapshotcie. Jego testy dotyczą wcześniejszej diagnozy dirty flagów i są opisane osobno poniżej.
-
-## Zweryfikowane punkty bezpieczeństwa
-
-### Skrzynia C-330
-
-- fabryczna wirtualna sekwencja 6F/2R: `I/1 -> I/2 -> I/3 -> II/1 -> II/2 -> II/3`,
-- 2 s minimalnego dwell przed automatycznym upshiftem,
-- mass-aware start: lekki zestaw może startować z I/3 / R-II, ciężki zachowuje niski zakres,
-- kontrolowany `II/1 -> I/3` pod obciążeniem,
-- ochrona `II/2 -> II/3` przed zbyt niskim RPM i wysokim obciążeniem,
-- ADS jest opcjonalny i wyłącznie read-only.
-
-Nietypowe przejście zakresu przy bardzo małej prędkości zaobserwowane w ostatnim teście zostało zreprodukowane podczas ekstremalnej próby wciągnięcia naczepy na testową górkę. Duży uślizg kół oraz geometria zestawu chwilowo odciążały / unosiły napędzaną tylną oś. W normalnym użytkowaniu nie zaobserwowano anomalii skrzyni; zdarzenie nie jest traktowane jako regresja sterownika.
-
-### Masa i fabryczny balast
-
-- masa bazowa gotowego do pracy C-330: **1675 kg**,
-- rozkład bazowy około **38% przód / 62% tył**,
-- przedni fabryczny balast: **42 kg**,
-- tylne metalowe warianty: **40 / 144 / 184 kg**,
-- pełny fabryczny metalowy balast: **226 kg**, około **1901 kg** całkowitej masy.
-
-### Opony suche
-
-- spring **12**,
-- damper **22**,
-- `suspTravel=0.07`,
-- wartości wybrane po kontrolowanych porównaniach A/B,
-- MudSystemPhysics pozostaje właścicielem warstwy ciśnienia/radius/friction.
-
-### Płynny balast tylnych opon
-
-- **+132 kg na każde tylne koło**,
-- **+264 kg łącznie**,
-- filled-tyre spring około **14**,
-- filled-tyre damper około **30**,
-- konfiguracja jest niezależna od metalowych obciążników kół,
-- podczas przebudowy preview w sklepie nie zaobserwowano kumulowania `additionalMass`.
-
-### Sklep
-
-Zweryfikowany początek kolejności:
-
-`Engine -> Wheels -> Water -> Front ballast -> Cabin -> Loader console`
-
-Hook sortowania jest ograniczony do `c330m.xml` i nie zmienia globalnych priorytetów konfiguracji GIANTS dla innych pojazdów.
-
-## Historyczny fix dirty flagów / geneza AIASF
-
-Źródłowa paczka użyta do obecnego rebuildu **już zawierała** wcześniejszy fix `Static Cabins`; nie był nakładany ponownie podczas prac w `ursus330fs25`.
-
-Oryginalna C-330 zużywała niemal cały 32-bitowy budżet dirty flagów. Wysokie bity zaczęły być współdzielone przez kilka systemów, w tym `AIAutomaticSteering`, `AttacherJoints`, `MoveableMirrors`, system brudu oraz dirty flagi Advanced Damage System. ADS mógł w efekcie podnieść bit interpretowany równocześnie jako Automatic Steering i doprowadzić w multiplayer do błędu `writeSegmentStatesToStream` przy `steeringFieldCourse == nil`.
-
-Naprawa `Static Cabins`:
-
-- usunęła 18 zbędnych kabinowych `movingTool`,
-- usunęła odpowiadające im wpisy Interactive Control i animacje,
-- zachowała kabiny jako statyczną geometrię,
-- odzyskała 18 dirty flagów.
-
-To dochodzenie doprowadziło do powstania AI Automatic Steering Fix (AIASF):
-https://github.com/StrielokPL/Farming25fixnmix
-
-Historyczny test fixa dirty flagów z ADS 0.9.2.4 i diagnostycznym AIASF był pomyślny, ale **nie zastępuje przyszłego testu multiplayer aktualnego rebuildu 0.0.4.3**.
-
-## Co zostało do walidacji multiplayer
-
-Przed zmianą statusu na MP-stable należy wykonać co najmniej:
-
-1. host + drugi klient,
-2. zakup nowego C-330 przez hosta i klienta,
-3. zmiana koła / woda / balast / kabina / silnik w warsztacie,
-4. jazda i zmiany kierunku na automacie,
-5. zestaw lekki i ciężki,
-6. zapis/reload serwera,
-7. ponowne dołączenie klienta,
-8. reset i sprzedaż/usunięcie pojazdu,
-9. kontrola `readStream`, `writeStream`, `readUpdateStream`, `writeUpdateStream` i dirty flagów.
-
-Do tego czasu oficjalny status pozostaje: **stable singleplayer career / multiplayer not yet validated**.
+WOM, hydraulika, zużycie paliwa i pełna kalibracja fizyczna C330M pozostają osobnymi obszarami realizmu; obecne testy skrzyni ich nie potwierdzają. Historyczny fix Static Cabins i wcześniejsza walidacja masy/ballastu pozostają zachowane, bez deklarowania nowego pełnego testu tych układów.

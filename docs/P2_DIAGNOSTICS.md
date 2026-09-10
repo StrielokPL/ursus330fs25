@@ -1,3 +1,5 @@
+> Dokument historyczny P2–P5. Pełne 0.0.5.1 nie zawiera rejestratora ani jego loadera. Kod narzędzia zachowano w `debug/C330FullDiagnostic.lua`; workflow dołącza go tylko do prerelease. Bieżący stan: [VALIDATION_STATUS.md](VALIDATION_STATUS.md).
+
 > Aktualizacja P5: sekcja EXHAUST została usunięta wraz z mostkiem dymu. Pozostałe pola zachowują znaczenie opisane poniżej. Reguły ponawiania biegów opisuje wydanie P5.
 
 # P2: interpretacja diagnostyki

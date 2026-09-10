@@ -200,17 +200,6 @@ if not C330TransmissionFix.installed then
         return LOW_RANGE, totalMass, "NATIVE_RI"
     end
 
-    -- Stable release keeps diagnostic call sites as no-ops so the validated
-    -- controller flow is unchanged while normal gameplay does not spam log.txt.
-    local function logForwardStartGear(...)
-    end
-
-    local function logReverseStartRange(...)
-    end
-
-    local function logDecision(...)
-    end
-
     local function getLoad(motor)
         return C330Runtime.load(motor)
     end
@@ -234,8 +223,7 @@ if not C330TransmissionFix.installed then
         local currentGear = motor.targetGear or motor.gear or 0
         local now = g_time or 0
 
-        -- Breadcrumbs are harmless internal state and remain available if the
-        -- external TractorDebugKit is temporarily reattached in a development build.
+        -- Shared controller state records the most recent range request.
         motor.c330FixRequestedRange = targetRange
         motor.c330FixRequestedGear = targetGear
         motor.c330FixRequestedRangeAt = now
@@ -252,7 +240,6 @@ if not C330TransmissionFix.installed then
         end
         motor.autoGearChangeTimer = math.max(motor.autoGearChangeTime or 0, RANGE_CHANGE_COOLDOWN_MS)
 
-        logDecision(motor, reason, currentGear, currentRange, targetGear, targetRange, rpm, load, loadSource)
         return targetGear
     end
 
@@ -277,12 +264,12 @@ if not C330TransmissionFix.installed then
             if isAutomaticForward(self) and #gears >= 3 then
                 local totalMass, startMode
                 gear, totalMass, startMode = getForwardStartGear(self, gears, gear)
-                logForwardStartGear(self, gear, totalMass, startMode)
+
             elseif isAutomaticReverse(self) then
                 local totalMass, startMode
                 gear = 1
                 startRange, totalMass, startMode = getReverseStartRange(self)
-                logReverseStartRange(self, startRange, totalMass, startMode)
+
             end
 
             group = startRange
@@ -340,7 +327,7 @@ if not C330TransmissionFix.installed then
             and range == HIGH_RANGE
             and speed <= FORWARD_LOW_SPEED_RANGE_RESET then
             local resetGear, totalMass, startMode = getForwardStartGear(self, gears, 1)
-            logForwardStartGear(self, resetGear, totalMass, startMode)
+
             return setAutomaticRange(
                 self, LOW_RANGE, resetGear, "LOW SPEED RANGE RESET",
                 rpm, load, loadSource, false
@@ -370,7 +357,7 @@ if not C330TransmissionFix.installed then
                 and (self.c330FixUpshiftHoldUntil == nil or now >= self.c330FixUpshiftHoldUntil)
 
             if reverseRecoveryBaseReady and not upshiftDwellReady then
-                logDecision(self, "BLOCK REVERSE UPSHIFT DWELL", curGear, range, curGear, range, rpm, load, loadSource)
+
             end
 
             local reverseRecoveryReady = reverseRecoveryBaseReady and upshiftDwellReady
@@ -417,7 +404,7 @@ if not C330TransmissionFix.installed then
             and (self.c330FixUpshiftHoldUntil == nil or now >= self.c330FixUpshiftHoldUntil)
 
         if rangeRecoveryBaseReady and not upshiftDwellReady then
-            logDecision(self, "BLOCK RANGE UPSHIFT DWELL", curGear, range, curGear, range, rpm, load, loadSource)
+
         end
 
         local rangeRecoveryReady = rangeRecoveryBaseReady and upshiftDwellReady
@@ -456,18 +443,18 @@ if not C330TransmissionFix.installed then
             if heavySet then
                 if load >= TOP_GEAR_HIGH_LOAD then
                     self.c330FixTopGearLowLoadSince = nil
-                    logDecision(self, "BLOCK TOP UPSHIFT HEAVY SET", curGear, range, curGear, range, rpm, load, loadSource)
+
                     self.autoGearChangeTimer = math.max(self.autoGearChangeTime or 0, 250)
                     return curGear
                 end
 
                 if self.c330FixTopGearLowLoadSince == nil then
                     self.c330FixTopGearLowLoadSince = now
-                    logDecision(self, "BLOCK TOP UPSHIFT STABILIZE", curGear, range, curGear, range, rpm, load, loadSource)
+
                     self.autoGearChangeTimer = math.max(self.autoGearChangeTime or 0, 250)
                     return curGear
                 elseif now - self.c330FixTopGearLowLoadSince < TOP_GEAR_HEAVY_SET_STABLE_MS then
-                    logDecision(self, "BLOCK TOP UPSHIFT STABILIZE", curGear, range, curGear, range, rpm, load, loadSource)
+
                     self.autoGearChangeTimer = math.max(self.autoGearChangeTime or 0, 250)
                     return curGear
                 end
@@ -475,7 +462,7 @@ if not C330TransmissionFix.installed then
                 self.c330FixTopGearLowLoadSince = nil
 
                 if load >= TOP_GEAR_HIGH_LOAD and rpm < TOP_GEAR_HIGH_LOAD_MIN_RPM then
-                    logDecision(self, "BLOCK TOP UPSHIFT HIGH LOAD", curGear, range, curGear, range, rpm, load, loadSource)
+
                     self.autoGearChangeTimer = math.max(self.autoGearChangeTime or 0, 250)
                     return curGear
                 end
@@ -484,7 +471,7 @@ if not C330TransmissionFix.installed then
             if load >= TOP_GEAR_PREDICTION_GUARD_MIN_LOAD then
                 local predictedRpm = rpm * TOP_GEAR_POSTSHIFT_RPM_RATIO
                 if predictedRpm < TOP_GEAR_POSTSHIFT_MIN_RPM then
-                    logDecision(self, "BLOCK TOP UPSHIFT", curGear, range, curGear, range, rpm, load, loadSource)
+
                     self.autoGearChangeTimer = math.max(self.autoGearChangeTime or 0, 250)
                     return curGear
                 end
@@ -495,7 +482,7 @@ if not C330TransmissionFix.installed then
 
         -- Generic 2-second failsafe for every within-range automatic upshift.
         if targetGear > curGear and not upshiftDwellReady then
-            logDecision(self, "BLOCK UPSHIFT DWELL", curGear, range, curGear, range, rpm, load, loadSource)
+
             self.autoGearChangeTimer = math.max(self.autoGearChangeTime or 0, 250)
             return curGear
         end
@@ -506,7 +493,7 @@ if not C330TransmissionFix.installed then
             and load ~= nil
             and load >= NORMAL_UPSHIFT_GUARD_LOAD
             and rpm < NORMAL_UPSHIFT_GUARD_RPM then
-            logDecision(self, "BLOCK UPSHIFT", curGear, range, curGear, range, rpm, load, loadSource)
+
             self.autoGearChangeTimer = math.max(self.autoGearChangeTime or 0, 250)
             return curGear
         end
